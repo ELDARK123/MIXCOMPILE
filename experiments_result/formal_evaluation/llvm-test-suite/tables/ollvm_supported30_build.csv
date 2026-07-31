@@ -1,0 +1,2 @@
+variant,scope,excluded_sample,configure_seconds,configure_exit,build_seconds,build_exit,status
+ollvm-full,supported30,MultiSource/Applications/Burg,5.031041101000483,0,201.9834444799999,0,PASS

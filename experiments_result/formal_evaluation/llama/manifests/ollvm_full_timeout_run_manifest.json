@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "run_id": "run_20260723T105728Z",
+  "stage": "formal_llama_ollvm_full",
+  "status": "completed_with_historical_build_timeout",
+  "formal_freeze_id": "freeze_20260723T095408Z",
+  "variant": "ollvm-full",
+  "strategies": ["sobf", "icall", "split", "fla", "sub", "bcf", "ibr", "igv"],
+  "timeout_seconds": 10800.13996,
+  "timeout_basis_run": "run_20260721T230414Z",
+  "timeout_basis": "Historical cumulative 3600-second initial build plus 7200-second resume; no llama-bench was produced.",
+  "current_attempt_terminated_by_user_policy": true,
+  "current_attempt_progress_at_termination": "50/210",
+  "current_attempt_time_not_added_to_timeout": true,
+  "llama_bench_created": false,
+  "measurement_rows": 0,
+  "runtime_result_imputed": false,
+  "network_used": false
+}

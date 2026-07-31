@@ -1,58 +1,110 @@
-# MIXCOMPILE — Feature-Driven LLVM Obfuscation Strategy Selector
+# MIXCOMPILE - Feature-Driven LLVM Obfuscation Pass Selection
 
-MIXCOMPILE is an LLVM 17.0.6-based compiler obfuscation tool that automatically selects and applies appropriate obfuscation strategies through a Cost Model, balancing **correctness**, **performance overhead**, and **security benefits**.
+MIXCOMPILE is an LLVM 17.0.6-based diversified compilation prototype. It inserts a
+`PassDecider` module into the LLVM pass pipeline, extracts program features from LLVM IR,
+and writes metadata that controls downstream obfuscation passes. The current version
+supports profile-based scoring, JSON-loaded pass weights, deterministic seeding,
+workload-aware BCF budgeting, and diagnostic output for control-flow pass decisions.
+
+The formal Cybersecurity experiment uses the `optimized` profile with a frozen JSON weight
+file. The built-in defaults remain available for calibration and debugging, but they are
+not the same as the formal optimized experiment configuration.
 
 ---
 
 ## Table of Contents
 
-- [MIXCOMPILE — Feature-Driven LLVM Obfuscation Strategy Selector](#mixcompile--feature-driven-llvm-obfuscation-strategy-selector)
-  - [Table of Contents](#table-of-contents)
-  - [1. Overview](#1-overview)
-  - [2. Build and Installation](#2-build-and-installation)
-  - [3. Quick Start](#3-quick-start)
-  - [4. Command-Line Options](#4-command-line-options)
-    - [4.1 Basic Options](#41-basic-options)
-    - [4.2 Cost Model Options](#42-cost-model-options)
-    - [4.3 Weight and Configuration Options](#43-weight-and-configuration-options)
-    - [4.4 Experiment and Debug Options](#44-experiment-and-debug-options)
-  - [5. Obfuscation Strategies](#5-obfuscation-strategies)
-  - [6. Cost Model](#6-cost-model)
-    - [6.1 Scoring Formula](#61-scoring-formula)
-    - [6.2 Profile Weights](#62-profile-weights)
-    - [6.3 Pass Base Weights](#63-pass-base-weights)
-    - [6.4 Feature-Adaptive Adjustments](#64-feature-adaptive-adjustments)
-  - [7. Operating Modes](#7-operating-modes)
-  - [8. Custom Weights](#8-custom-weights)
-    - [8.1 JSON Weight Configuration File Format](#81-json-weight-configuration-file-format)
-    - [8.2 Dimension Scaling](#82-dimension-scaling)
-    - [8.3 Dimension Ablation](#83-dimension-ablation)
-  - [9. Three-Profile Comparison](#9-three-profile-comparison)
-  - [10. Experimental Validation Summary](#10-experimental-validation-summary)
-    - [10.1 Parameter Sensitivity](#101-parameter-sensitivity)
-    - [10.2 Dimension Ablation](#102-dimension-ablation)
-    - [10.3 Pass-only Trend Consistency](#103-pass-only-trend-consistency)
-    - [10.4 Ghidra Decompilation Time](#104-ghidra-decompilation-time)
-    - [10.5 LLVM Normalized Optimization Weights](#105-llvm-normalized-optimization-weights)
-  - [11. Testing with LLVM test-suite](#11-testing-with-llvm-test-suite)
-  - [12. Experiment Directory Structure](#12-experiment-directory-structure)
-  - [13. FAQ](#13-faq)
+- [1. Overview](#1-overview)
+- [2. Repository Layout](#2-repository-layout)
+- [3. Build](#3-build)
+- [4. Quick Start](#4-quick-start)
+- [5. Command-Line Options](#5-command-line-options)
+- [6. Passes and Metadata](#6-passes-and-metadata)
+- [7. Cost Model](#7-cost-model)
+- [8. BCF Workload Model](#8-bcf-workload-model)
+- [9. Selection Rules](#9-selection-rules)
+- [10. Custom Weight Files](#10-custom-weight-files)
+- [11. Reproducibility](#11-reproducibility)
+- [12. Formal Experiment Summary](#12-formal-experiment-summary)
+- [13. Troubleshooting](#13-troubleshooting)
 
 ---
 
 ## 1. Overview
 
-MIXCOMPILE embeds a decision module `PassDecider` into the LLVM compilation pipeline. This module analyzes each function's **code features** (such as cyclomatic complexity, conditional jump ratio, instruction replacement rate, average basic block depth, IBR compatibility, etc.), computes a score for each obfuscation strategy based on a **Cost Model**, and automatically selects the optimal strategy combination.
+MIXCOMPILE differs from uniform obfuscation systems such as an "all passes enabled" OLLVM
+configuration. Instead of applying every transformation to every function, it:
 
-Unlike traditional obfuscation tools such as OLLVM, MIXCOMPILE does not blindly apply all obfuscation strategies. Instead, it performs **feature-driven selective obfuscation** on a per-function basis, thereby improving security while controlling performance and code bloat overhead.
+1. extracts function-level and basic-block-level IR features;
+2. scores candidate obfuscation passes under a selected deployment profile;
+3. filters unsafe or excessive candidates through applicability and budget checks;
+4. writes LLVM metadata such as `BCF_annotations`, `FLA_annotations`, `SUB_annotations`;
+5. lets the downstream transformation passes execute only where their metadata allows it.
 
-## 2. Build and Installation
+The current decision model has five dimensions:
 
-MIXCOMPILE is built on LLVM 17.0.6. Assuming the source is located at `~/llvm-project-17.0.6.src`:
+- `SecurityGain`
+- `DiversityGain`
+- `RuntimeCost`
+- `SizeCost`
+- `CorrectnessRisk`
+
+The scalar score is:
+
+```text
+Score(P, x, W) =
+  W_security  * SecurityGain(P, x)
++ W_diversity * DiversityGain(P, x)
+- W_runtime   * RuntimeCost(P, x)
+- W_size      * SizeCost(P, x)
+- W_risk      * CorrectnessRisk(P, x)
+```
+
+where `P` is a pass, `x` is the current function or basic block feature vector, and `W`
+is the selected profile.
+
+## 2. Repository Layout
+
+```text
+MIXCOMPILE/
+  Passes/
+    PassBuilder.cpp
+    CMakeLists.txt
+    Obfuscation/
+      PassDecider.cpp
+      PassDecider.h
+      BogusControlFlow.cpp
+      Flattening.cpp
+      SplitBasicBlock.cpp
+      Substitution.cpp
+      IndirectBranch.cpp
+      IndirectCall.cpp
+      IndirectGlobalVariable.cpp
+      StringEncryption.cpp
+      Utils.cpp
+      Utils.h
+      CryptoUtils.cpp
+      CryptoUtils.h
+  README.md
+  README_zh.md
+```
+
+The main files for the updated decision logic are:
+
+- `Passes/Obfuscation/PassDecider.cpp`: feature extraction, scoring, selection, metadata output, BCF budget diagnostics.
+- `Passes/Obfuscation/BogusControlFlow.cpp`: BCF transformation, `-bcf_prob`, `-bcf_loop`, and metadata check.
+- `Passes/Obfuscation/Utils.cpp`: `-mix-seed`, deterministic random seed derivation, annotation helpers.
+- `Passes/PassBuilder.cpp`: command-line pass flags and LLVM pass pipeline insertion order.
+
+## 3. Build
+
+MIXCOMPILE is integrated into LLVM 17.0.6. Assuming this repository's `Passes` directory has
+been copied into the LLVM source tree under `llvm/lib/Passes`, build Clang as usual:
 
 ```bash
 cd ~/llvm-project-17.0.6.src
-mkdir -p build && cd build
+mkdir -p build
+cd build
 
 cmake -G Ninja \
   -DCMAKE_BUILD_TYPE=Release \
@@ -63,338 +115,514 @@ cmake -G Ninja \
 ninja -j$(nproc) clang
 ```
 
-After compilation, MIXCOMPILE's clang is located at `build/bin/clang`.
-
-> **Note**: MIXCOMPILE's PassDecider code is located at `llvm/lib/Passes/Obfuscation/PassDecider.cpp`. If this file is modified, only the clang target needs to be recompiled:
-> ```bash
-> ninja -j$(nproc) clang
-> ```
-
-## 3. Quick Start
-
-**Basic usage** (enable all obfuscation strategies with the default balanced profile):
+After editing files in `llvm/lib/Passes/Obfuscation/`, rebuilding `clang` is normally enough:
 
 ```bash
-clang -mllvm -pd \
-  -mllvm -ibr -mllvm -icall \
-  -mllvm -fla -mllvm -split \
-  -mllvm -bcf -mllvm -igv \
+ninja -j$(nproc) clang
+```
+
+## 4. Quick Start
+
+### 4.1 Default balanced selection
+
+`-pd` enables PassDecider. The transformation pass flags still need to be provided; PassDecider
+then decides which functions or basic blocks actually receive metadata.
+
+```bash
+clang -O2 source.c -o output_program \
+  -mllvm -pd \
+  -mllvm -ibr \
+  -mllvm -bcf \
+  -mllvm -fla \
+  -mllvm -split \
+  -mllvm -igv \
   -mllvm -sub \
-  -O2 -o output_program source.c
+  -mllvm -icall
 ```
 
-**Using the security profile** (more aggressive security strategy):
+### 4.2 Formal optimized profile
+
+Use the optimized deployment profile together with the frozen optimized pass-weight JSON:
 
 ```bash
-clang -mllvm -pd \
-  -mllvm -ibr -mllvm -icall \
-  -mllvm -fla -mllvm -split \
-  -mllvm -bcf -mllvm -igv \
-  -mllvm -sub \
-  -mllvm -mix-profile=security \
-  -O2 -o output_program source.c
+clang -O2 source.c -o output_program \
+  -mllvm -pd \
+  -mllvm -ibr -mllvm -bcf -mllvm -fla -mllvm -split \
+  -mllvm -igv -mllvm -sub -mllvm -icall \
+  -mllvm -mix-profile=optimized \
+  -mllvm -mix-cost-config=../experiments-MIXCOMPILE/experiments_MIXCOMPILE_cybersecurity/result/llvm-test-suite/config/optimized_pass_weights.json \
+  -mllvm -mix-seed=1 \
+  -mllvm -mix-bcf-max-instructions=2000 \
+  -mllvm -mix-bcf-max-expected-modified-bb=500
 ```
 
-**Enabling a single pass for experiments**:
+### 4.3 Dump the actually used weight file
 
 ```bash
-clang [all pass flags] \
-  -mllvm -mix-only-pass=BCF \
-  -O2 -o output_program source.c
+clang -O2 source.c -o output_program \
+  -mllvm -pd \
+  -mllvm -ibr -mllvm -bcf -mllvm -fla -mllvm -split \
+  -mllvm -igv -mllvm -sub -mllvm -icall \
+  -mllvm -mix-profile=optimized \
+  -mllvm -mix-cost-config=weights.json \
+  -mllvm -mix-dump-cost-config=used_weights.json
 ```
 
-**Using a custom weight file**:
+### 4.4 Single-pass debugging
 
 ```bash
-clang [all pass flags] \
-  -mllvm -mix-cost-config=my_weights.json \
-  -mllvm -mix-dump-cost-config=used_weights.json \
-  -O2 -o output_program source.c
+clang -O2 source.c -o output_program \
+  -mllvm -pd \
+  -mllvm -ibr -mllvm -bcf -mllvm -fla -mllvm -split \
+  -mllvm -igv -mllvm -sub -mllvm -icall \
+  -mllvm -mix-only-pass=BCF
 ```
 
-## 4. Command-Line Options
+## 5. Command-Line Options
 
-All MIXCOMPILE options are passed to the LLVM backend via `-mllvm -<option>=<value>`.
+### 5.1 Pass enablement flags
 
-### 4.1 Basic Options
+| Option | Purpose |
+|---|---|
+| `-pd` | Enables PassDecider metadata selection. |
+| `-ibr` | Enables the indirect branch transformation pass. |
+| `-bcf` | Enables bogus control flow. |
+| `-fla` | Enables control-flow flattening. |
+| `-split` | Enables basic block splitting. |
+| `-igv` | Enables indirect global variable rewriting. |
+| `-sub` | Enables instruction substitution. |
+| `-icall` | Enables indirect call rewriting. |
+| `-sobf` | Enables string obfuscation. This pass is present but is not part of the current PassDecider cost model. |
+| `-fncmd` | Enables legacy function-name-controlled obfuscation. |
 
-| Option | Default | Description |
-|--------|---------|-------------|
-| `-pd` | N/A | **Required.** Enables the PassDecider module. No obfuscation is performed without this flag. |
-| `-mix-mode` | `cost` | Operating mode: `cost` (cost model), `rule` (rule + boundary random), `random` (fully random), `all` (enable all) |
-| `-mix-profile` | `balanced` | Profile selection: `balanced`, `security`, `performance` |
-| `-mix-seed` | `0` | Random seed (0 = use random_device) |
+### 5.2 MIXCOMPILE decision options
 
-### 4.2 Cost Model Options
+| Option | Default | Values / Meaning |
+|---|---:|---|
+| `-mix-mode` | `cost` | `cost`, `rule`, `random`, or `all`. |
+| `-mix-profile` | `balanced` | `balanced`, `optimized`, `security`, or `performance`. |
+| `-mix-score-threshold` | `0.0` | Minimum score needed in `cost` mode. |
+| `-mix-seed` | `0` | Fixed random seed. `0` uses `random_device`. |
+| `-mix-only-pass` | empty | Restrict decisions to one pass: `SUB`, `BCF`, `FLA`, `SPLIT`, `IBR`, `ICALL`, or `IGV`. |
+| `-mix-cost-config` | empty | JSON file containing pass base weights. |
+| `-mix-dump-cost-config` | empty | Output path for the actually used pass base weights. |
+| `-mix-disable-dimension` | empty | Comma-separated dimensions to disable: `security`, `diversity`, `runtime`, `size`, `risk`. |
 
-| Option | Default | Description |
-|--------|---------|-------------|
-| `-mix-score-threshold` | `0.0` | Minimum score threshold for pass enabling |
-| `-mix-security-scale` | `1.0` | SecurityGain dimension scaling factor |
-| `-mix-diversity-scale` | `1.0` | DiversityGain dimension scaling factor |
-| `-mix-runtime-scale` | `1.0` | RuntimeCost dimension scaling factor |
-| `-mix-size-scale` | `1.0` | SizeCost dimension scaling factor |
-| `-mix-risk-scale` | `1.0` | CorrectnessRisk dimension scaling factor |
+### 5.3 Dimension scaling
 
-### 4.3 Weight and Configuration Options
+These options scale the five feature-adaptive dimensions after pass-specific feature
+modulation:
 
-| Option | Default | Description |
-|--------|---------|-------------|
-| `-mix-cost-config` | `""` | Load pass base weights from a JSON file (built-in defaults are used if not specified) |
-| `-mix-dump-cost-config` | `""` | Export the actually used weights to a JSON file |
-| `-mix-disable-dimension` | `""` | Disable a dimension: `security`, `diversity`, `runtime`, `size`, `risk` (for ablation experiments) |
+| Option | Default |
+|---|---:|
+| `-mix-security-scale` | `1.0` |
+| `-mix-diversity-scale` | `1.0` |
+| `-mix-runtime-scale` | `1.0` |
+| `-mix-size-scale` | `1.0` |
+| `-mix-risk-scale` | `1.0` |
 
-### 4.4 Experiment and Debug Options
+The function-level and basic-block-level dimensions are clamped to `[0, 1]` after scaling,
+except during the special BCF-FLA comparison described below.
 
-| Option | Default | Description |
-|--------|---------|-------------|
-| `-mix-only-pass` | `""` | Allow only the specified single pass: `SUB`, `BCF`, `FLA`, `SPLIT`, `IBR`, `ICALL`, `IGV` (for pass-only experiments) |
+### 5.4 BCF controls
 
-## 5. Obfuscation Strategies
+| Option | Default | Meaning |
+|---|---:|---|
+| `-bcf_prob` | `70` | Probability, in percent, that each basic block is selected by BCF. Must satisfy `0 < x <= 100`. |
+| `-bcf_loop` | `2` | Number of BCF iterations on a function. Must be positive. |
+| `-mix-bcf-max-instructions` | `2000` | Maximum function instruction count eligible for BCF. |
+| `-mix-bcf-max-expected-modified-bb` | `500` | Maximum estimated modified basic blocks eligible for BCF. |
 
-MIXCOMPILE supports 7 obfuscation strategies, divided into two categories:
+## 6. Passes and Metadata
 
-**Function-level passes** (decided in selectFunctionPasses, subject to conflict rules):
+### 6.1 Function-level passes
 
-| Pass | Full Name | Description | Function-level |
-|:----:|-----------|-------------|:--------------:|
-| IBR | Indirect Branch Pass | Replaces direct branches with indirect branches | ✓ |
-| BCF | Bogus Control Flow | Inserts bogus control flow (opaque predicates + unreachable code) | ✓ |
-| FLA | Control Flow Flattening | Flattens CFG into a switch-case structure | ✓ |
-| SPLIT | Basic Block Splitting | Splits basic blocks into multiple sub-blocks | ✓ |
-| IGV | Indirect Global Variable | Indirects global variable accesses | ✓ |
+| Pass | Metadata key | Positive value | Negative value | Applicability filter |
+|---|---|---|---|---|
+| `IBR` | `IBR_annotations` | `ibr` | `noibr` | `CondJumpRatio >= 0.15` and IBR compatibility check passes. |
+| `BCF` | `BCF_annotations` | `bcf` | `nobcf` | `CyclomaticComplexity >= 3` and BCF budgets pass. |
+| `FLA` | `FLA_annotations` | `fla` | `nofla` | `AvgCFGDepth >= 2.0`. |
+| `SPLIT` | `SPLIT_annotations` | `split` | `nosplit` | `MaxBBSize >= 5`. |
+| `IGV` | `IGV_annotations` | `igv` | `noigv` | Function has no inline assembly. |
 
-**Basic-block-level passes** (decided independently at the basic block level):
+### 6.2 Basic-block-level passes
 
-| Pass | Full Name | Description |
-|:----:|-----------|-------------|
-| SUB | Instruction Substitution | Replaces substitutable instructions (Add, Sub, And, Or, Xor) with equivalent instruction sequences |
-| ICALL | Indirect Call | Replaces direct function calls with indirect calls |
+| Pass | Metadata key | Positive value | Applicability filter |
+|---|---|---|---|
+| `SUB` | `SUB_annotations` | `sub` | Basic block contains substitutable `add`, `sub`, `and`, `or`, or `xor` instructions. |
+| `ICALL` | `ICALL_annotations` | `icall` | Basic block contains a call and has fewer than five instructions. |
 
-**Conflict rules**:
-- IBR and IGV are mutually exclusive
-- SPLIT and ICALL are mutually exclusive (when a function has SPLIT applied, ICALL is not executed in that function's basic blocks)
+`SUB` and `ICALL` are attached to the first instruction of the basic block. Function-level
+passes are attached to the function.
 
-**Applicability filters**:
-- FLA: requires sufficient cyclomatic complexity and conditional jump ratio
-- IBR: requires passing the IBR compatibility check
-- IGV: requires that the function contains no inline assembly
+## 7. Cost Model
 
-## 6. Cost Model
+### 7.1 Deployment profiles
 
-### 6.1 Scoring Formula
+| Profile | Security | Diversity | Runtime | Size | Risk | Intended use |
+|---|---:|---:|---:|---:|---:|---|
+| `balanced` | 1.00 | 0.50 | 0.80 | 0.50 | 1.00 | Calibration and default exploratory runs. |
+| `optimized` | 1.10 | 1.05 | 0.90 | 0.25 | 0.95 | Formal Cybersecurity experiment profile. |
+| `security` | 1.40 | 0.70 | 0.55 | 0.35 | 0.90 | More aggressive security/diversity preference. |
+| `performance` | 0.80 | 0.35 | 1.40 | 0.90 | 1.20 | Conservative overhead control. |
 
-```
-Score(P, F) = Ws × SecurityGain(P, F) + Wd × DiversityGain(P, F)
-             - Wr × RuntimeCost(P, F)  - Wz × SizeCost(P, F)
-             - Wc × CorrectnessRisk(P, F)
-```
+### 7.2 Built-in pass base weights
 
-Where:
-- `Ws`, `Wd`, `Wr`, `Wz`, `Wc` are Profile weights
-- `SecurityGain(P, F)` etc. are feature-adaptive scores of Pass P on Function F (clamped to [0,1] via clamp01)
-
-**Decision logic**:
-- The pass is enabled when `Score > Threshold`, the pass is not blocked by conflict rules, and boundary condition checks pass
-- When a function is at a near-boundary condition (NearBoundary), `choose_machine()` is used for random selection
-
-### 6.2 Profile Weights
-
-| Profile | Ws (Security) | Wd (Diversity) | Wr (Runtime) | Wz (Size) | Wc (Risk) | Use Case |
-|---------|:-------------:|:--------------:|:------------:|:---------:|:---------:|----------|
-| **balanced** | 1.00 | 0.50 | 0.80 | 0.50 | 1.00 | Default: balances security, overhead, and risk |
-| **security** | 1.40 | 0.70 | 0.55 | 0.35 | 0.90 | Aggressive: favors security gains, tolerates higher overhead |
-| **performance** | 0.80 | 0.35 | 1.40 | 0.90 | 1.20 | Conservative: strictly controls overhead, suitable for performance-sensitive scenarios |
-
-### 6.3 Pass Base Weights
-
-Each pass has base weights `BaseWeight(P)` across 5 dimensions, representing default valuations without considering function features:
+If `-mix-cost-config` is not provided, PassDecider uses the built-in pass base weights:
 
 | Pass | SecurityGain | DiversityGain | RuntimeCost | SizeCost | CorrectnessRisk |
-|:----:|:------------:|:-------------:|:-----------:|:--------:|:---------------:|
-| SUB | 0.75 | 0.55 | 0.25 | 0.05 | 0.10 |
-| BCF | 0.45 | 0.65 | 0.20 | 0.10 | 0.20 |
-| FLA | **0.80** | **0.75** | **0.85** | **0.60** | 0.35 |
-| SPLIT | 0.30 | 0.40 | 0.15 | 0.25 | 0.10 |
-| IBR | 0.70 | 0.65 | 0.45 | 0.30 | **0.45** |
-| ICALL | 0.55 | 0.50 | 0.35 | 0.20 | 0.30 |
-| IGV | 0.55 | 0.50 | 0.30 | 0.35 | **0.50** |
+|---|---:|---:|---:|---:|---:|
+| `SUB` | 0.75 | 0.55 | 0.25 | 0.05 | 0.10 |
+| `BCF` | 0.45 | 0.65 | 0.20 | 0.10 | 0.20 |
+| `FLA` | 0.80 | 0.75 | 0.85 | 0.60 | 0.35 |
+| `SPLIT` | 0.30 | 0.40 | 0.15 | 0.25 | 0.10 |
+| `IBR` | 0.70 | 0.65 | 0.45 | 0.30 | 0.45 |
+| `ICALL` | 0.55 | 0.50 | 0.35 | 0.20 | 0.30 |
+| `IGV` | 0.55 | 0.50 | 0.30 | 0.35 | 0.50 |
 
-**Basis**: These weights were derived through normalization in pass-only experiments.
+### 7.3 Formal optimized pass base weights
 
-### 6.4 Feature-Adaptive Adjustments
+The formal experiment uses a JSON file whose SHA-256 is:
 
-Base weights are adaptively adjusted according to function features. For example:
+```text
+8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4
+```
 
-- **IBR.SecurityGain** × `clamp01(0.4 + CondJumpRatio)` — more conditional jumps lead to higher security gains from indirect branches
-- **FLA.RuntimeCost** × `1.0 + 0.5 × CyclomaticComplexity` — higher cyclomatic complexity leads to greater FLA overhead
-- **BCF.DiversityGain** × `1.0 + 0.3 × AvgCFGDepth` — deeper CFG leads to higher diversity gains from bogus control flow
-- All adjustments are constrained to [0, 1] via `clamp01()`
+Those optimized weights are:
 
-See the `estimateFunctionPassScore()` function in `PassDecider.cpp` for detailed adjustment rules.
+| Pass | SecurityGain | DiversityGain | RuntimeCost | SizeCost | CorrectnessRisk |
+|---|---:|---:|---:|---:|---:|
+| `SUB` | 0.490126 | 0.199157 | 0.075497 | 0.048800 | 0.108150 |
+| `BCF` | 0.434216 | 0.871526 | 0.773944 | 0.709331 | 0.254053 |
+| `FLA` | 0.707056 | 0.488146 | 0.736028 | 0.215843 | 0.365736 |
+| `SPLIT` | 0.306698 | 0.172056 | 0.108178 | 0.094880 | 0.114597 |
+| `IBR` | 0.572982 | 0.597764 | 0.242986 | 0.236418 | 0.520390 |
+| `ICALL` | 0.458715 | 0.157404 | 0.169846 | 0.106568 | 0.376419 |
+| `IGV` | 0.516724 | 0.362678 | 0.104081 | 0.135240 | 0.530250 |
 
-## 7. Operating Modes
+## 8. BCF Workload Model
 
-| Mode | Description |
-|------|-------------|
-| **cost** (default) | Standard cost model decision. Enabled when Score > Threshold, random selection at NearBoundary |
-| **rule** | Rule-based decision. Enabled only when not at NearBoundary, otherwise random selection |
-| **random** | Fully random selection. Each candidate pass is enabled with 50% probability |
-| **all** | Enable all applicable candidate passes |
+The current PassDecider no longer treats BCF as a static cost. It estimates BCF workload
+from the current function and the actual BCF command-line parameters.
 
-## 8. Custom Weights
+Definitions:
 
-### 8.1 JSON Weight Configuration File Format
+```text
+N_BB = number of basic blocks
+N_I  = number of instructions
+c    = cyclomatic complexity
+q    = -bcf_prob
+L    = -bcf_loop
+p    = clamp(q / 100, 0, 1)
+```
+
+Expected BCF-modified basic blocks:
+
+```text
+ExpansionSum = sum_{i=0}^{L-1} (1 + 3p)^i
+ExpectedModifiedBB = N_BB * p * ExpansionSum
+```
+
+Runtime and size multipliers:
+
+```text
+RuntimeMultiplier = 1 + log2(1 + 18 * ExpectedModifiedBB) / 10
+
+AvgBBInsts = N_I / N_BB
+EstimatedAddedInsts = ExpectedModifiedBB * (AvgBBInsts + 18)
+SizeMultiplier = 1 + log2(1 + EstimatedAddedInsts) / 12
+```
+
+BCF is applicable only when:
+
+```text
+CyclomaticComplexity >= 3
+TotalInsts <= -mix-bcf-max-instructions
+ExpectedModifiedBB <= -mix-bcf-max-expected-modified-bb
+```
+
+The default formal budgets are:
+
+```text
+-mix-bcf-max-instructions=2000
+-mix-bcf-max-expected-modified-bb=500
+```
+
+## 9. Selection Rules
+
+### 9.1 Operating modes
+
+| Mode | Behavior |
+|---|---|
+| `cost` | Enables a candidate if `Score > threshold`; near-boundary cases are randomized. |
+| `rule` | Ignores score and enables candidates that pass rule filters; near-boundary cases are randomized. |
+| `random` | Randomly enables applicable candidates with approximately 50% probability. |
+| `all` | Enables all applicable candidates, then applies conflict filtering. |
+
+### 9.2 Near-boundary randomization
+
+Near-boundary cases use `choose_machine()`, seeded by `-mix-seed` through the MIXCOMPILE
+random engine:
+
+| Pass | Near-boundary condition |
+|---|---|
+| `IBR` | `0.15 <= CondJumpRatio < 0.25` |
+| `BCF` | `3 <= CyclomaticComplexity < 5` |
+| `FLA` | `2.0 <= AvgCFGDepth < 3.0` |
+| `SPLIT` | `5 <= MaxBBSize < 8` |
+| `IGV` | Always treated as near-boundary. |
+| `SUB` | `SubInsts > 0` and either `SubInsts < 3` or `SubRatio < 0.5`. |
+| `ICALL` | Has a call and `BBSize < 5`. |
+
+### 9.3 Conflict handling
+
+The current conflict relation is:
+
+| Conflict | Handling |
+|---|---|
+| `IBR` vs `FLA` | `IBR` is retained and `FLA` is removed before final ranking. |
+| `IBR` vs `IGV` | The later-ranked pass is skipped by generic conflict filtering. |
+| `SPLIT` vs `ICALL` | If a function selects `SPLIT`, `ICALL` is not applied to its basic blocks. |
+
+When both BCF and FLA survive their initial filters and `IBR` does not remove FLA,
+PassDecider performs a second BCF-FLA comparison. This comparison intentionally does not
+clamp the BCF and FLA feature factors, so highly complex functions do not collapse to the
+same capped score.
+
+The second comparison uses:
+
+```text
+BCF factor = (CyclomaticComplexity - 2) / 4
+FLA factor = AvgCFGDepth / 3
+FLA runtime factor = 1 + CyclomaticComplexity / 6
+```
+
+The higher comparison score is retained. If the comparison scores tie, the initial
+clamped scores break the tie.
+
+### 9.4 Diagnostic output
+
+For each function, PassDecider emits a diagnostic line beginning with:
+
+```text
+[MIXCOMPILE][CF_DECISION]
+```
+
+The line includes:
+
+```text
+function
+NumBBs
+TotalInsts
+CyclomaticComplexity
+CondJumpRatio
+AvgCFGDepth
+bcf_prob
+bcf_loop
+ExpectedModifiedBB
+BCFMaxInstructions
+BCFMaxExpectedModifiedBB
+BCFBudgetEligible
+RuntimeMultiplier
+SizeMultiplier
+BCF_first_total
+FLA_first_total
+BCF_compare_total
+FLA_compare_total
+selected_pass
+```
+
+This output is the preferred source for checking why BCF was rejected, why FLA was retained,
+or which control-flow pass was finally selected.
+
+## 10. Custom Weight Files
+
+`-mix-cost-config` expects a JSON object whose provided pass entries each contain all five
+dimensions as finite values in `[0, 1]`. Pass entries omitted from the JSON fall back to the
+built-in base weights.
 
 ```json
 {
   "SUB": {
-    "SecurityGain": 0.70,
-    "DiversityGain": 0.55,
-    "RuntimeCost": 0.20,
-    "SizeCost": 0.05,
-    "CorrectnessRisk": 0.10
+    "SecurityGain": 0.490126,
+    "DiversityGain": 0.199157,
+    "RuntimeCost": 0.075497,
+    "SizeCost": 0.048800,
+    "CorrectnessRisk": 0.108150
   },
   "BCF": {
-    "SecurityGain": 0.60,
-    "DiversityGain": 0.80,
-    "RuntimeCost": 0.40,
-    "SizeCost": 0.25,
-    "CorrectnessRisk": 0.15
-  },
-  "FLA": { ... },
-  "SPLIT": { ... },
-  "IBR": { ... },
-  "ICALL": { ... },
-  "IGV": { ... }
+    "SecurityGain": 0.434216,
+    "DiversityGain": 0.871526,
+    "RuntimeCost": 0.773944,
+    "SizeCost": 0.709331,
+    "CorrectnessRisk": 0.254053
+  }
 }
 ```
 
-Usage:
-```bash
-clang [flags] -mllvm -mix-cost-config=my_weights.json -o prog source.c
-```
+Pass names are normalized to uppercase. Missing dimensions or out-of-range values cause a
+fatal error.
 
-Verify the actually applied weights with `-mix-dump-cost-config`:
-```bash
-clang [flags] \
-  -mllvm -mix-cost-config=my_weights.json \
-  -mllvm -mix-dump-cost-config=used.json \
-   -o prog source.c
-cat used.json
-```
-
-### 8.2 Dimension Scaling
-
-Globally scale the dimension weights at the Profile level without modifying the JSON:
+To disable one or more dimensions without editing the JSON:
 
 ```bash
-# Security gain × 1.2, runtime cost × 0.8 (approaching the security profile)
--mllvm -mix-security-scale=1.2 -mllvm -mix-runtime-scale=0.8
-```
-
-### 8.3 Dimension Ablation
-
-Disable a dimension (set weight to 0) using `-mix-disable-dimension`:
-
-```bash
-# Ablation experiment: disable the diversity dimension
 -mllvm -mix-disable-dimension=diversity
-```
-
-Multiple dimensions can be disabled simultaneously by separating with commas:
-
-```bash
 -mllvm -mix-disable-dimension=security,diversity
 ```
 
-## 9. Three-Profile Comparison
-
-| Dimension | balanced | security | performance |
-|-----------|:--------:|:--------:|:-----------:|
-| SecurityGain weight | 1.00 | 1.40 (+40%) | 0.80 (-20%) |
-| DiversityGain weight | 0.50 | 0.70 (+40%) | 0.35 (-30%) |
-| RuntimeCost weight | 0.80 | 0.55 (-31%) | 1.40 (+75%) |
-| SizeCost weight | 0.50 | 0.35 (-30%) | 0.90 (+80%) |
-| CorrectnessRisk weight | 1.00 | 0.90 (-10%) | 1.20 (+20%) |
-
-## 10. Experimental Validation Summary
-
-### 10.1 Parameter Sensitivity
-
-Global parameter experiments show that the cost model is robust to ±20% perturbations in profile weights. The average variation in pass enablement rate is within 3%, indicating that the model does not depend on precise parameter tuning.
-
-### 10.2 Dimension Ablation
-
-Ablation experiments show:
-- Disabling the SecurityGain dimension causes passes to trend toward conservative choices
-- Disabling RuntimeCost or SizeCost causes the enablement rate to rise significantly
-- The CorrectnessRisk dimension has the smallest individual impact but provides a safety net
-
-### 10.3 Pass-only Trend Consistency
-
-Pass-only experiments (7 groups) verify that the base weights of each pass are consistent with their independent application effects. The Spearman correlation between the base weight ranking and the pass-only experimental metric ranking exceeds 0.85.
-
-### 10.4 Ghidra Decompilation Time
-
-Ghidra decompilation experiments compare balanced and security profiles on the Coreutils dataset. The security profile increases average decompilation time by 3× to 8× compared to the baseline (no obfuscation), while the balanced profile increases it by 2× to 4×.
-
-### 10.5 LLVM Normalized Optimization Weights
-
-Final optimization experiments fit pass base weights using LLVM test-suite runtime data, producing a set of weights validated by LLVM's own performance metrics, further improving the rationality of the cost model.
-
-## 11. Testing with LLVM test-suite
+To scale dimensions globally:
 
 ```bash
-# Build test-suite
-cd ~/llvm-test-suite
-mkdir -p build && cd build
-cmake -G Ninja \
-  -DCMAKE_C_COMPILER=/path/to/mixcompile/clang \
-  -DTEST_SUITE_SUBDIRS=SingleSource \
-  ..
-ninja
-
-# Run tests under MIXCOMPILE
-./RunSafely.sh
+-mllvm -mix-security-scale=1.2 -mllvm -mix-runtime-scale=0.8
 ```
 
-## 12. Experiment Directory Structure
+## 11. Reproducibility
 
-| Directory | Content |
-|-----------|---------|
-| `experiments_mixcompile_param_sensitivity/` | Global parameter sensitivity experiments (±20% perturbation, dimension ablation, 30-group random sampling, transfer validation) |
-| `experiments_mixcompile_pass_level_and_ghidra/` | Pass-level parameter rationality experiments (7 pass-only) + Ghidra decompilation time experiments (balanced vs. security comparison) |
-| `experiments_mixcompile_misc_full/` | Misc full dataset experiments |
-| `experiments_mixcompile_final/` | Final parameter optimization experiments (JSON weight loading, LLVM normalization fitting, optimized weight validation, final Ghidra validation) |
+For deterministic experiments, set all of the following:
 
-Experiment documentation:
-- `MIXCOMPILE代价模型参数合理性实验指导文档.md` — Parameter sensitivity experiment design
-- `MIXCOMPILE补充实验_Pass级参数与Ghidra反编译时间指导.md` — Supplementary experiment design
-- `experiments_mixcompile_final/experiments_mixcompile_final.md` — Final optimization experiment design
+```bash
+-mllvm -mix-seed=1
+-mllvm -mix-profile=optimized
+-mllvm -mix-cost-config=<optimized_pass_weights.json>
+-mllvm -mix-bcf-max-instructions=2000
+-mllvm -mix-bcf-max-expected-modified-bb=500
+```
 
-## 13. FAQ
+The formal experiment freeze is:
 
-**Q: The compiled program crashes (Segfault)?**
+```text
+freeze_20260723T095408Z
+```
 
-A: Use the balanced or performance profile and avoid overly aggressive obfuscation. If using the security profile, verify correctness with lit on important programs first.
+The formal configuration archives are under:
 
-**Q: How do I confirm which passes were enabled?**
+```text
+../experiments-MIXCOMPILE/experiments_MIXCOMPILE_cybersecurity/result/
+```
 
-A: MIXCOMPILE outputs annotation information to stderr. You can also use `-mix-dump-cost-config` to export weights and confirm that parameters were loaded correctly.
+Important files:
 
-**Q: Why is the annotation count for FLA (or IBR, IGV) zero?**
+```text
+llvm-test-suite/config/optimized_pass_weights.json
+llvm-test-suite/config/experiment.json
+llama/config/optimized_experiment.json
+openssl/config/experiment.json
+```
 
-A: These passes have strict application conditions:
-- FLA requires the function to have high cyclomatic complexity and conditional jump ratio
-- IBR requires passing the IBR compatibility check
-- IGV requires the function to contain no inline assembly
-Not triggering on simple test programs is normal behavior and does not indicate that the pass is ineffective.
+## 12. Formal Experiment Summary
 
-**Q: How do I choose the right Profile?**
+These results describe the current formal Cybersecurity-oriented experiment. They replace
+older README claims that MIXCOMPILE generally stays within 5% overhead or accelerates
+SHA-512 under OpenSSL.
 
-A: Start with balanced. Use performance if strict performance requirements exist. Use security if higher security is desired (tolerating larger binaries and slightly higher risk).
+### 12.1 Correctness
 
-**Q: Can I adjust the weights of individual passes?**
+The optimized MIXCOMPILE configuration passed all 31 formal LLVM test-suite validation
+binaries.
 
-A: Yes. Use `-mix-cost-config=weights.json` to provide a custom weight file. See Section 8.1 for the format.
+### 12.2 llama.cpp
+
+Arithmetic-mean throughput over 20 formal measurements:
+
+| Variant | pp512 tokens/s | tg128 tokens/s |
+|---|---:|---:|
+| GCC | 31.994 | 11.276 |
+| LLVM | 37.012 | 12.019 |
+| balanced | 31.840 | 11.109 |
+| optimized | 32.329 | 11.119 |
+
+Interpretation:
+
+- `optimized` is 1.0% faster than GCC for pp512.
+- `optimized` is 1.4% slower than GCC for tg128.
+- `optimized` is 12.7% slower than LLVM for pp512.
+- `optimized` is 7.5% slower than LLVM for tg128.
+- OLLVM-full did not produce a llama.cpp executable within the historical 10800.14 s limit, so it is reported as a build timeout rather than a runtime baseline.
+
+### 12.3 OpenSSL
+
+Arithmetic-mean throughput at 16384-byte blocks, MB/s:
+
+| Algorithm | GCC | LLVM | optimized | OLLVM-full |
+|---|---:|---:|---:|---:|
+| AES-128-CBC | 384.7 | 414.0 | 238.7 | 43.8 |
+| ChaCha20-Poly1305 | 506.9 | 512.7 | 387.8 | 83.2 |
+| SHA-512 | 685.0 | 653.0 | 241.9 | 169.4 |
+
+Across all tested OpenSSL block sizes, optimized retains 20.0% to 75.6% of LLVM throughput
+depending on algorithm and block size, while consistently outperforming OLLVM-full.
+
+### 12.4 radiff2 similarity
+
+Median correctness-eligible radiff2 similarity:
+
+| Pair | Median |
+|---|---:|
+| GCC - LLVM | 0.8800 |
+| GCC - optimized | 0.5620 |
+| LLVM - optimized | 0.5900 |
+| OLLVM-full - optimized | 0.3140 |
+
+Lower similarity is used as a binary-diversity proxy. It should not be read as a complete
+security proof.
+
+### 12.5 Ghidra decompilation-time proxy
+
+Median per-program Ghidra time ratio relative to LLVM:
+
+| Variant | Median ratio |
+|---|---:|
+| GCC | 0.677x |
+| balanced | 8.615x |
+| optimized | 8.109x |
+| OLLVM-full | 3.626x |
+
+All 75 Ghidra analyses completed and were parsed. This result measures one automated
+reverse-engineering workflow and does not by itself prove resistance to human analysis,
+other decompilers, or semantic attacks.
+
+## 13. Troubleshooting
+
+### The binary receives no obfuscation even though `-pd` is set.
+
+`-pd` only runs PassDecider. You must also enable the candidate transformation passes:
+
+```bash
+-mllvm -ibr -mllvm -bcf -mllvm -fla -mllvm -split -mllvm -igv -mllvm -sub -mllvm -icall
+```
+
+### BCF is not selected.
+
+Check the `[MIXCOMPILE][CF_DECISION]` line. Common reasons are:
+
+- `CyclomaticComplexity < 3`
+- `TotalInsts > -mix-bcf-max-instructions`
+- `ExpectedModifiedBB > -mix-bcf-max-expected-modified-bb`
+- BCF lost the second BCF-FLA comparison
+- `-mix-only-pass` excludes BCF
+
+### FLA disappears when IBR is also selected.
+
+This is expected. The current code removes FLA when both IBR and FLA are candidates, then
+continues with the remaining conflict-filtered ranking.
+
+### ICALL is not applied inside a function.
+
+If the function selected `SPLIT`, PassDecider suppresses `ICALL` in that function's basic
+blocks. Otherwise, ICALL applies only to small basic blocks with calls.
+
+### The run is not reproducible.
+
+Set `-mix-seed` explicitly and make sure the same JSON weight file, profile, BCF budget,
+compiler binary, and optimization flags are used.
+
+### The optimized result does not match the formal experiment.
+
+Check that all of these are true:
+
+- `-mix-profile=optimized` is used.
+- The formal optimized JSON is loaded with `-mix-cost-config`.
+- The JSON hash is `8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4`.
+- `-mix-seed=1` is used.
+- BCF budgets are `2000` instructions and `500` expected modified basic blocks.
+- The same compile flags and benchmark protocol are used.

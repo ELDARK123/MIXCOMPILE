@@ -1,0 +1,10 @@
+config,type,build_status,binary_count,avg_file_size,enabled_pass_annotations,radiff_pairs,avg_radiff_similarity,lit_tests,lit_pass,lit_fail,avg_exec_time,avg_compile_time
+benefit_only,ablation,success,31,76631.48,501,26,0.732462,27,26,1,8.659815,41.195700
+cost_balanced_t0,default,success,31,32517.16,390,31,0.790290,27,27,0,1.784156,4.379800
+cost_only,ablation,success,31,18962.84,0,31,0.974419,27,27,0,0.820319,1.494600
+full,ablation,success,31,32781.42,390,31,0.788161,27,27,0,1.686526,4.244700
+wo_diversity,ablation,success,31,27605.94,190,31,0.833581,27,27,0,1.466067,2.974300
+wo_risk,ablation,success,31,38750.45,452,31,0.742613,27,27,0,1.870519,4.624800
+wo_runtime,ablation,success,31,71109.68,453,27,0.724481,27,26,1,10.481085,40.229900
+wo_security,ablation,success,31,18962.84,0,31,0.974419,27,27,0,0.814630,1.289900
+wo_size,ablation,success,31,70574.45,447,27,0.745630,27,26,1,8.441346,38.720700

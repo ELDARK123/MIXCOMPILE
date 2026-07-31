@@ -16,6 +16,7 @@
 #include <vector>
 #include <stdio.h>
 #include <sstream>
+#include <cstdint>
 // 常用宏定义
 #define INIT_CONTEXT(F) CONTEXT=&F.getContext()
 #define TYPE_I32 Type::getInt32Ty(*CONTEXT)
@@ -25,10 +26,21 @@ extern llvm::LLVMContext *CONTEXT;
 // fla和bcf在混淆部分函数时会报错, 所以无法用命令行开启整体混淆
 // 而且Visual Studio似乎没法把 annotate 传给LLVM, 只能用函数名控制
 extern bool obf_function_name_cmd;
+extern bool mix_decision_mode;
 using namespace std;
 namespace llvm{
+    class CryptoUtils;
+    uint64_t getMixRequestedSeed();
+    void initializeMixRandomSeed(uint64_t requestedSeed);
+    uint64_t getMixEffectiveSeed();
+    std::string deriveMixCryptoSeed(StringRef domain);
+    bool seedMixRandomEngine(CryptoUtils &engine, StringRef domain);
     std::string readAnnotate(Function *f); // 读取llvm.global.annotations中的annotation值
     bool toObfuscate(bool flag, llvm::Function *f, std::string const &attribute); // 判断是否开启混淆
+    bool hasExactFunctionMetadata(const Function &F, StringRef Key,
+                                  StringRef ExpectedValue);
+    bool hasExactBasicBlockMetadata(const BasicBlock &BB, StringRef Key,
+                                    StringRef ExpectedValue);
     void fixStack(Function &F); // 修复PHI指令和逃逸变量
     void FixBasicBlockConstantExpr(BasicBlock *BB);
     void FixFunctionConstantExpr(Function *Func);

@@ -1,0 +1,2 @@
+config,type,build_status,binary_count,avg_file_size,enabled_pass_annotations,radiff_pairs,avg_radiff_similarity,lit_tests,lit_pass,lit_fail,avg_exec_time,avg_compile_time
+transfer_cost_balanced_t0,transfer,success,15,36810.67,267,4,0.690000,11,11,0,0.072818,1.889300

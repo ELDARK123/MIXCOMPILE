@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "formal_freeze_id": "freeze_20260723T095408Z",
+  "variants": ["gcc", "llvm", "balanced", "optimized", "ollvm-full"],
+  "validation_split": "config/benchmark_split.json",
+  "expected_samples": 31,
+  "build_jobs": 4,
+  "seed": 1,
+  "build_timeout_seconds": 7200,
+  "correctness_timeout_seconds": 7200,
+  "runtime_timeout_seconds": 120,
+  "radiff_timeout_seconds": 120,
+  "warmups": 3,
+  "repetitions": 20,
+  "runtime_order_seed": 6701,
+  "compile_flags": ["-O2", "-fno-lto", "-fPIE", "-fno-stack-protector", "-fno-stack-clash-protection", "-fcf-protection=none", "-march=x86-64", "-mtune=generic"],
+  "link_flags": ["-pie", "-fno-lto", "-Wl,-z,relro", "-Wl,-z,now", "-Wl,--build-id=sha1"],
+  "ollvm_full_strategies": ["sobf", "icall", "split", "fla", "sub", "bcf", "ibr", "igv"],
+  "optimized_weights_sha256": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "baseline_weights_sha256": "8f94ee3880b6786d2cced9d4f783770b019c2c9a8b431bbf266131bef04cf7f0",
+  "compiler_sha256": {
+    "gcc": "821af3c74506283c179ca413bb33e6b528805a4dd8a5c09df125e5ad560a9e89",
+    "llvm": "c96fec80e8c0682c7152d05be50827da9604a78458d287ecbf53093d901389e8",
+    "balanced": "fe7f9bb8f584060e35771f66168da80c3b9eb3c75ce9071f73e4cd39b6e3b778",
+    "optimized": "fe7f9bb8f584060e35771f66168da80c3b9eb3c75ce9071f73e4cd39b6e3b778",
+    "ollvm-full": "933b85731b4a6b9447e34a917696950017f8ee005d43ee812cec23800b56746b"
+  },
+  "radiff_pairs": [
+    ["gcc", "llvm"],
+    ["gcc", "balanced"],
+    ["gcc", "optimized"],
+    ["gcc", "ollvm-full"],
+    ["llvm", "balanced"],
+    ["llvm", "optimized"],
+    ["llvm", "ollvm-full"],
+    ["balanced", "optimized"],
+    ["balanced", "ollvm-full"],
+    ["ollvm-full", "optimized"]
+  ],
+  "result_format": "CSV",
+  "cleanup_build_root": true
+}

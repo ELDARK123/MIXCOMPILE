@@ -135,6 +135,10 @@ static cl::opt<int> ObfProbRate("bcf_prob", cl::desc("Choose the probability [%]
 
 static cl::opt<int> ObfTimes("bcf_loop", cl::desc("Choose how many time the -bcf pass loop on a function"), cl::value_desc("number of times"), cl::init(defaultObfTime), cl::Optional);
 
+int llvm::getBCFProbability() { return ObfProbRate.getValue(); }
+
+int llvm::getBCFLoopCount() { return ObfTimes.getValue(); }
+
 
 BasicBlock *createAlteredBasicBlock(BasicBlock *basicBlock, const Twine &Name = "gen", Function *F = 0);
 
@@ -152,6 +156,9 @@ PreservedAnalyses BogusControlFlowPass::run(Function& F, FunctionAnalysisManager
     }
     // If fla annotations
     if (toObfuscate(flag, &F, "bcf")){
+      if (mix_decision_mode &&
+          !hasExactFunctionMetadata(F, "BCF_annotations", "bcf"))
+        return PreservedAnalyses::all();
       // 用于读取指定的函数元数据
       // 步骤1：通过key "IBR_annotations" 获取MDNode（和设置时的key完全一致）
       MDNode *BCFAnnotMD = F.getMetadata("BCF_annotations");
@@ -172,6 +179,9 @@ PreservedAnalyses BogusControlFlowPass::run(Function& F, FunctionAnalysisManager
         // 步骤4：转换为C++ std::string
         if(BCFAnnotStr->getString().str() == "nobcf") return PreservedAnalyses::all();;
       }
+      seedMixRandomEngine(*llvm::cryptoutils,
+                          (Twine("BCF:") + F.getParent()->getModuleIdentifier() +
+                           ":" + F.getName()).str());
       outs() << "[Soule] force.run.BogusControlFlowPass on "<< F.getName()<<"\n";
       bogus(F);
       doF(*F.getParent(), F);

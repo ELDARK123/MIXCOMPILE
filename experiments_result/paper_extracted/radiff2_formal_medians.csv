@@ -1,0 +1,7 @@
+﻿"variant_a","variant_b","planned","successful","timeouts","correctness_eligible_successful","median_similarity_correctness_eligible","source_file"
+"gcc","llvm","31","31","0","31","0.88","formal_evaluation/llvm-test-suite/tables/radiff2_summary.csv"
+"gcc","optimized","31","29","2","29","0.562","formal_evaluation/llvm-test-suite/tables/radiff2_summary.csv"
+"gcc","ollvm-full","30","26","4","24","0.1725","formal_evaluation/llvm-test-suite/tables/radiff2_summary.csv"
+"llvm","optimized","31","29","2","29","0.59","formal_evaluation/llvm-test-suite/tables/radiff2_summary.csv"
+"llvm","ollvm-full","30","26","4","24","0.1725","formal_evaluation/llvm-test-suite/tables/radiff2_summary.csv"
+"ollvm-full","optimized","30","21","9","19","0.314","formal_evaluation/llvm-test-suite/tables/radiff2_summary.csv"

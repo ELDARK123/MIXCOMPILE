@@ -1,0 +1,12 @@
+config,type,build_status,binary_count,avg_file_size,enabled_pass_annotations,radiff_pairs,avg_radiff_similarity,lit_tests,lit_pass,lit_fail,avg_exec_time,avg_compile_time
+cost_balanced_t0,default,success,31,32517.16,390,31,0.790290,27,27,0,1.784156,4.379800
+diversity_minus_20,sensitivity,success,31,29877.42,378,31,0.807677,27,27,0,1.410426,3.367600
+diversity_plus_20,sensitivity,success,31,33308.13,402,31,0.782097,27,27,0,1.701756,4.150300
+risk_minus_20,sensitivity,success,31,33044.90,393,31,0.787774,27,27,0,1.728785,4.209300
+risk_plus_20,sensitivity,success,31,32387.35,389,31,0.789097,27,27,0,1.718163,4.015100
+runtime_minus_20,sensitivity,success,31,33044.90,393,31,0.785548,27,27,0,1.735256,4.234200
+runtime_plus_20,sensitivity,success,31,32783.74,389,31,0.787871,27,27,0,1.705644,4.097000
+sg_minus_20,sensitivity,success,31,28161.03,411,31,0.820613,27,27,0,1.373026,3.206700
+sg_plus_20,sensitivity,success,31,32918.45,399,31,0.784806,27,27,0,1.754267,4.168400
+size_minus_20,sensitivity,success,31,33308.65,397,31,0.786645,27,27,0,1.711196,4.174200
+size_plus_20,sensitivity,success,31,29744.77,382,31,0.810161,27,27,0,1.397489,3.227700

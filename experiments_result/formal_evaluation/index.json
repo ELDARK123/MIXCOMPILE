@@ -1,0 +1,82 @@
+{
+  "schema_version": 1,
+  "description": "Curated formal result package for llama.cpp, OpenSSL, and LLVM test-suite.",
+  "provenance_policy": "Files are copied from runs; original run directories remain authoritative.",
+  "experiments": {
+    "llama": {
+      "source_runs": {
+        "optimized": "runs/run_20260723T095609Z",
+        "gcc_llvm_balanced": "runs/run_20260723T101552Z",
+        "ollvm_full_timeout": "runs/run_20260723T105728Z"
+      },
+      "primary_tables": [
+        "llama/tables/baselines_summary.csv",
+        "llama/tables/optimized_summary.csv",
+        "llama/tables/baselines_builds.csv",
+        "llama/tables/optimized_builds.csv",
+        "llama/tables/ollvm_full_timeout_builds.csv"
+      ],
+      "raw_measurements": [
+        "llama/raw/baselines_llama_bench_repetitions.csv",
+        "llama/raw/optimized_llama_bench_repetitions.csv"
+      ],
+      "model": {
+        "name": "Mistral-7B-Instruct-v0.3-Q4_K_M.gguf",
+        "sha256": "1270d22c0fbb3d092fb725d4d96c457b7b687a5f5a715abe1e818da303e562b6"
+      },
+      "notes": [
+        "CPU llama-bench with pp512 and tg128, 3 warmups and 20 measurements.",
+        "OLLVM-full timed out during build and has no runtime result."
+      ]
+    },
+    "openssl": {
+      "source_run": "runs/run_20260723T132837Z",
+      "primary_tables": [
+        "openssl/tables/builds.csv",
+        "openssl/tables/summary.csv"
+      ],
+      "raw_measurements": [
+        "openssl/raw/speed_repetitions.csv"
+      ],
+      "algorithms": [
+        "AES-128-CBC",
+        "ChaCha20-Poly1305",
+        "SHA-512"
+      ],
+      "variants": [
+        "gcc",
+        "llvm",
+        "balanced",
+        "optimized",
+        "ollvm-full"
+      ]
+    },
+    "llvm-test-suite": {
+      "source_runs": {
+        "static_radiff_build_validation": "runs/run_20260724T010719Z",
+        "ghidra": "runs/run_20260724T032516Z"
+      },
+      "primary_tables": [
+        "llvm-test-suite/tables/radiff2_summary.csv",
+        "llvm-test-suite/tables/ghidra_by_sample.csv",
+        "llvm-test-suite/tables/ghidra_ratios.csv"
+      ],
+      "primary_raw": [
+        "llvm-test-suite/raw/static_per_sample.csv",
+        "llvm-test-suite/raw/ollvm_static_per_sample.csv",
+        "llvm-test-suite/raw/radiff2_pairs.csv",
+        "llvm-test-suite/raw/ghidra_runs.csv",
+        "llvm-test-suite/raw/ghidra_input_binary_manifest.csv",
+        "llvm-test-suite/raw/ghidra_schedule.json"
+      ],
+      "excluded": [
+        "LLVM test-suite runtime repetitions and runtime schedule"
+      ],
+      "notes": [
+        "Build and correctness tables/manifests are retained only as validity and provenance evidence.",
+        "radiff2 covers all 10 unordered compiler pairs with 306 per-sample comparisons.",
+        "Ghidra contains 75 completed and parsed analyses: 5 variants x 5 samples x 3 repetitions."
+      ]
+    }
+  }
+}

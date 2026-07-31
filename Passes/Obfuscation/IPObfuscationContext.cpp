@@ -274,6 +274,10 @@ namespace llvm
         CalleeSlot->setAlignment(Align(4));
 
         CryptoUtils RandomEngine;
+        seedMixRandomEngine(RandomEngine,
+                            (Twine("IPO:") +
+                             F.getParent()->getModuleIdentifier() + ":" +
+                             F.getName()).str());
         uint32_t V = RandomEngine.get_uint32_t();
         ConstantInt *SecretCI = ConstantInt::get(I32Ty, V, false);
         IRB.CreateStore(SecretCI, CallerSlot);

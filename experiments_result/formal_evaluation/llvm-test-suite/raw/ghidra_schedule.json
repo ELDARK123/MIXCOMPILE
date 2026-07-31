@@ -1,0 +1,677 @@
+[
+  {
+    "order": 1,
+    "kind": "analysis",
+    "repetition": 1,
+    "variant": "balanced",
+    "benchmark": "nbench",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/balanced/MultiSource/Benchmarks/nbench/nbench",
+    "sha256": "16299409f34cf9f2c6d6178b0dc7c780f78c92961babf1e927eb4f484f7c08e7"
+  },
+  {
+    "order": 2,
+    "kind": "analysis",
+    "repetition": 1,
+    "variant": "llvm",
+    "benchmark": "Shootout-methcall",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/llvm/SingleSource/Benchmarks/Shootout/Shootout-methcall",
+    "sha256": "2ea4b12cfe9662f778a97fcfc801502b5a64fd82e226f0339c76bd6fde852729"
+  },
+  {
+    "order": 3,
+    "kind": "analysis",
+    "repetition": 1,
+    "variant": "optimized",
+    "benchmark": "chomp",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/optimized/SingleSource/Benchmarks/McGill/chomp",
+    "sha256": "94934dedc1991fd969b328a7368e66fd82ee2471ff46e987231f41f630367410"
+  },
+  {
+    "order": 4,
+    "kind": "analysis",
+    "repetition": 1,
+    "variant": "ollvm-full",
+    "benchmark": "SIBsim4",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/ollvm-full-supported30/MultiSource/Applications/SIBsim4/SIBsim4",
+    "sha256": "c3ac0ff4907cbafd81eaa92c636ae27166d785b11b1ae7f49f3d1727f422a3a9"
+  },
+  {
+    "order": 5,
+    "kind": "analysis",
+    "repetition": 1,
+    "variant": "balanced",
+    "benchmark": "Shootout-methcall",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/balanced/SingleSource/Benchmarks/Shootout/Shootout-methcall",
+    "sha256": "dc904db9c2c22168069b9d38d1b2d4424d9334be3ea03f6e2b1a89460296b0d8"
+  },
+  {
+    "order": 6,
+    "kind": "analysis",
+    "repetition": 1,
+    "variant": "optimized",
+    "benchmark": "aha",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/optimized/MultiSource/Applications/aha/aha",
+    "sha256": "eda4577367f13d94258f59850c63550178241925892cb96349a8987c432511a1"
+  },
+  {
+    "order": 7,
+    "kind": "analysis",
+    "repetition": 1,
+    "variant": "gcc",
+    "benchmark": "Shootout-methcall",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/gcc/SingleSource/Benchmarks/Shootout/Shootout-methcall",
+    "sha256": "0de2abde34a0143de3802de0817098dbbecb8b1e9c435c057bad51ce637679cb"
+  },
+  {
+    "order": 8,
+    "kind": "analysis",
+    "repetition": 1,
+    "variant": "llvm",
+    "benchmark": "nbench",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/llvm/MultiSource/Benchmarks/nbench/nbench",
+    "sha256": "e24c50e5eea425eb39ef728690cdc735a52379e46b00bc57e2116da5e7e06724"
+  },
+  {
+    "order": 9,
+    "kind": "analysis",
+    "repetition": 1,
+    "variant": "gcc",
+    "benchmark": "aha",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/gcc/MultiSource/Applications/aha/aha",
+    "sha256": "efb64b76a7dfb7bc41baacb38c3b774d71ce1f7d0f2f3bab0b6d1936b3408ea8"
+  },
+  {
+    "order": 10,
+    "kind": "analysis",
+    "repetition": 1,
+    "variant": "optimized",
+    "benchmark": "Shootout-methcall",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/optimized/SingleSource/Benchmarks/Shootout/Shootout-methcall",
+    "sha256": "3e42e05b5297a24700447d565361fa19c08cff27f8100b45755093014f077e58"
+  },
+  {
+    "order": 11,
+    "kind": "analysis",
+    "repetition": 1,
+    "variant": "balanced",
+    "benchmark": "chomp",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/balanced/SingleSource/Benchmarks/McGill/chomp",
+    "sha256": "2b8c9625c9df5d6f67127f69da981d62996cdd46560c562828bb30ef843ec0fe"
+  },
+  {
+    "order": 12,
+    "kind": "analysis",
+    "repetition": 1,
+    "variant": "balanced",
+    "benchmark": "aha",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/balanced/MultiSource/Applications/aha/aha",
+    "sha256": "5a26618dc5babded977f4d308f1cb99413edf7cf2a412ea885b07dffc5c3c40e"
+  },
+  {
+    "order": 13,
+    "kind": "analysis",
+    "repetition": 1,
+    "variant": "ollvm-full",
+    "benchmark": "Shootout-methcall",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/ollvm-full-supported30/SingleSource/Benchmarks/Shootout/Shootout-methcall",
+    "sha256": "65501a052dd86fb9daf3352876f5494de8f468584b58e4aaea6f2b520b050487"
+  },
+  {
+    "order": 14,
+    "kind": "analysis",
+    "repetition": 1,
+    "variant": "ollvm-full",
+    "benchmark": "chomp",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/ollvm-full-supported30/SingleSource/Benchmarks/McGill/chomp",
+    "sha256": "2087abaed3e4b5434edf06ce6b21f80620d12e9d29493de99a1d8e991c9cd061"
+  },
+  {
+    "order": 15,
+    "kind": "analysis",
+    "repetition": 1,
+    "variant": "gcc",
+    "benchmark": "nbench",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/gcc/MultiSource/Benchmarks/nbench/nbench",
+    "sha256": "8b05d435983314ca40b4156037f309ce200e7e5357e93c4cb37e19169489dc4a"
+  },
+  {
+    "order": 16,
+    "kind": "analysis",
+    "repetition": 1,
+    "variant": "llvm",
+    "benchmark": "chomp",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/llvm/SingleSource/Benchmarks/McGill/chomp",
+    "sha256": "ad8f040d2219da353ebc7e44af5a964b0ddcf095d7fd7a9f02a669bf37a1ad05"
+  },
+  {
+    "order": 17,
+    "kind": "analysis",
+    "repetition": 1,
+    "variant": "ollvm-full",
+    "benchmark": "aha",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/ollvm-full-supported30/MultiSource/Applications/aha/aha",
+    "sha256": "d8c735272927c75e85da404093315bdb5da138de5081205a1c3f1159c16d98e0"
+  },
+  {
+    "order": 18,
+    "kind": "analysis",
+    "repetition": 1,
+    "variant": "balanced",
+    "benchmark": "SIBsim4",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/balanced/MultiSource/Applications/SIBsim4/SIBsim4",
+    "sha256": "a611f58e3467669ccd717423b786bc5e2a3773ab7bb66ac296f82dc96c010632"
+  },
+  {
+    "order": 19,
+    "kind": "analysis",
+    "repetition": 1,
+    "variant": "llvm",
+    "benchmark": "SIBsim4",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/llvm/MultiSource/Applications/SIBsim4/SIBsim4",
+    "sha256": "caea29c3cc97024a77f1f00792a3ff6e8e7b432b78a7c526f817e28df1fb6f62"
+  },
+  {
+    "order": 20,
+    "kind": "analysis",
+    "repetition": 1,
+    "variant": "optimized",
+    "benchmark": "nbench",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/optimized/MultiSource/Benchmarks/nbench/nbench",
+    "sha256": "c2904d330b5a23405d6b33e97e706a99fcf691e3653d600c2b702d0d4383393b"
+  },
+  {
+    "order": 21,
+    "kind": "analysis",
+    "repetition": 1,
+    "variant": "gcc",
+    "benchmark": "chomp",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/gcc/SingleSource/Benchmarks/McGill/chomp",
+    "sha256": "31fee91c52a6644d0a0ff3095936da7ee506f827cd7b40f74df9fe4a85ff1886"
+  },
+  {
+    "order": 22,
+    "kind": "analysis",
+    "repetition": 1,
+    "variant": "gcc",
+    "benchmark": "SIBsim4",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/gcc/MultiSource/Applications/SIBsim4/SIBsim4",
+    "sha256": "8797e70aea5d367b0b98f1c7ea1461b42b9d08fd8143bde47e5102666c60d98a"
+  },
+  {
+    "order": 23,
+    "kind": "analysis",
+    "repetition": 1,
+    "variant": "optimized",
+    "benchmark": "SIBsim4",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/optimized/MultiSource/Applications/SIBsim4/SIBsim4",
+    "sha256": "177572e7a800f742f0d1bb5fab0829ea3143bd99adac3ba905dedc91e82a3770"
+  },
+  {
+    "order": 24,
+    "kind": "analysis",
+    "repetition": 1,
+    "variant": "llvm",
+    "benchmark": "aha",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/llvm/MultiSource/Applications/aha/aha",
+    "sha256": "701f58e381b06040f87d05f3b96acc86cf582e6e766f2cc6136d64fe67056467"
+  },
+  {
+    "order": 25,
+    "kind": "analysis",
+    "repetition": 1,
+    "variant": "ollvm-full",
+    "benchmark": "nbench",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/ollvm-full-supported30/MultiSource/Benchmarks/nbench/nbench",
+    "sha256": "b5da67f0bc1c713643e44d48fe9b6e4c9b8f4546ae1a3e8855afb8a16a3f9e80"
+  },
+  {
+    "order": 26,
+    "kind": "analysis",
+    "repetition": 2,
+    "variant": "ollvm-full",
+    "benchmark": "SIBsim4",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/ollvm-full-supported30/MultiSource/Applications/SIBsim4/SIBsim4",
+    "sha256": "c3ac0ff4907cbafd81eaa92c636ae27166d785b11b1ae7f49f3d1727f422a3a9"
+  },
+  {
+    "order": 27,
+    "kind": "analysis",
+    "repetition": 2,
+    "variant": "ollvm-full",
+    "benchmark": "Shootout-methcall",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/ollvm-full-supported30/SingleSource/Benchmarks/Shootout/Shootout-methcall",
+    "sha256": "65501a052dd86fb9daf3352876f5494de8f468584b58e4aaea6f2b520b050487"
+  },
+  {
+    "order": 28,
+    "kind": "analysis",
+    "repetition": 2,
+    "variant": "gcc",
+    "benchmark": "SIBsim4",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/gcc/MultiSource/Applications/SIBsim4/SIBsim4",
+    "sha256": "8797e70aea5d367b0b98f1c7ea1461b42b9d08fd8143bde47e5102666c60d98a"
+  },
+  {
+    "order": 29,
+    "kind": "analysis",
+    "repetition": 2,
+    "variant": "balanced",
+    "benchmark": "SIBsim4",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/balanced/MultiSource/Applications/SIBsim4/SIBsim4",
+    "sha256": "a611f58e3467669ccd717423b786bc5e2a3773ab7bb66ac296f82dc96c010632"
+  },
+  {
+    "order": 30,
+    "kind": "analysis",
+    "repetition": 2,
+    "variant": "balanced",
+    "benchmark": "nbench",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/balanced/MultiSource/Benchmarks/nbench/nbench",
+    "sha256": "16299409f34cf9f2c6d6178b0dc7c780f78c92961babf1e927eb4f484f7c08e7"
+  },
+  {
+    "order": 31,
+    "kind": "analysis",
+    "repetition": 2,
+    "variant": "balanced",
+    "benchmark": "chomp",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/balanced/SingleSource/Benchmarks/McGill/chomp",
+    "sha256": "2b8c9625c9df5d6f67127f69da981d62996cdd46560c562828bb30ef843ec0fe"
+  },
+  {
+    "order": 32,
+    "kind": "analysis",
+    "repetition": 2,
+    "variant": "optimized",
+    "benchmark": "SIBsim4",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/optimized/MultiSource/Applications/SIBsim4/SIBsim4",
+    "sha256": "177572e7a800f742f0d1bb5fab0829ea3143bd99adac3ba905dedc91e82a3770"
+  },
+  {
+    "order": 33,
+    "kind": "analysis",
+    "repetition": 2,
+    "variant": "ollvm-full",
+    "benchmark": "aha",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/ollvm-full-supported30/MultiSource/Applications/aha/aha",
+    "sha256": "d8c735272927c75e85da404093315bdb5da138de5081205a1c3f1159c16d98e0"
+  },
+  {
+    "order": 34,
+    "kind": "analysis",
+    "repetition": 2,
+    "variant": "gcc",
+    "benchmark": "chomp",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/gcc/SingleSource/Benchmarks/McGill/chomp",
+    "sha256": "31fee91c52a6644d0a0ff3095936da7ee506f827cd7b40f74df9fe4a85ff1886"
+  },
+  {
+    "order": 35,
+    "kind": "analysis",
+    "repetition": 2,
+    "variant": "llvm",
+    "benchmark": "SIBsim4",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/llvm/MultiSource/Applications/SIBsim4/SIBsim4",
+    "sha256": "caea29c3cc97024a77f1f00792a3ff6e8e7b432b78a7c526f817e28df1fb6f62"
+  },
+  {
+    "order": 36,
+    "kind": "analysis",
+    "repetition": 2,
+    "variant": "llvm",
+    "benchmark": "Shootout-methcall",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/llvm/SingleSource/Benchmarks/Shootout/Shootout-methcall",
+    "sha256": "2ea4b12cfe9662f778a97fcfc801502b5a64fd82e226f0339c76bd6fde852729"
+  },
+  {
+    "order": 37,
+    "kind": "analysis",
+    "repetition": 2,
+    "variant": "optimized",
+    "benchmark": "Shootout-methcall",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/optimized/SingleSource/Benchmarks/Shootout/Shootout-methcall",
+    "sha256": "3e42e05b5297a24700447d565361fa19c08cff27f8100b45755093014f077e58"
+  },
+  {
+    "order": 38,
+    "kind": "analysis",
+    "repetition": 2,
+    "variant": "optimized",
+    "benchmark": "nbench",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/optimized/MultiSource/Benchmarks/nbench/nbench",
+    "sha256": "c2904d330b5a23405d6b33e97e706a99fcf691e3653d600c2b702d0d4383393b"
+  },
+  {
+    "order": 39,
+    "kind": "analysis",
+    "repetition": 2,
+    "variant": "gcc",
+    "benchmark": "Shootout-methcall",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/gcc/SingleSource/Benchmarks/Shootout/Shootout-methcall",
+    "sha256": "0de2abde34a0143de3802de0817098dbbecb8b1e9c435c057bad51ce637679cb"
+  },
+  {
+    "order": 40,
+    "kind": "analysis",
+    "repetition": 2,
+    "variant": "optimized",
+    "benchmark": "aha",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/optimized/MultiSource/Applications/aha/aha",
+    "sha256": "eda4577367f13d94258f59850c63550178241925892cb96349a8987c432511a1"
+  },
+  {
+    "order": 41,
+    "kind": "analysis",
+    "repetition": 2,
+    "variant": "optimized",
+    "benchmark": "chomp",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/optimized/SingleSource/Benchmarks/McGill/chomp",
+    "sha256": "94934dedc1991fd969b328a7368e66fd82ee2471ff46e987231f41f630367410"
+  },
+  {
+    "order": 42,
+    "kind": "analysis",
+    "repetition": 2,
+    "variant": "gcc",
+    "benchmark": "nbench",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/gcc/MultiSource/Benchmarks/nbench/nbench",
+    "sha256": "8b05d435983314ca40b4156037f309ce200e7e5357e93c4cb37e19169489dc4a"
+  },
+  {
+    "order": 43,
+    "kind": "analysis",
+    "repetition": 2,
+    "variant": "llvm",
+    "benchmark": "aha",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/llvm/MultiSource/Applications/aha/aha",
+    "sha256": "701f58e381b06040f87d05f3b96acc86cf582e6e766f2cc6136d64fe67056467"
+  },
+  {
+    "order": 44,
+    "kind": "analysis",
+    "repetition": 2,
+    "variant": "llvm",
+    "benchmark": "chomp",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/llvm/SingleSource/Benchmarks/McGill/chomp",
+    "sha256": "ad8f040d2219da353ebc7e44af5a964b0ddcf095d7fd7a9f02a669bf37a1ad05"
+  },
+  {
+    "order": 45,
+    "kind": "analysis",
+    "repetition": 2,
+    "variant": "llvm",
+    "benchmark": "nbench",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/llvm/MultiSource/Benchmarks/nbench/nbench",
+    "sha256": "e24c50e5eea425eb39ef728690cdc735a52379e46b00bc57e2116da5e7e06724"
+  },
+  {
+    "order": 46,
+    "kind": "analysis",
+    "repetition": 2,
+    "variant": "ollvm-full",
+    "benchmark": "chomp",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/ollvm-full-supported30/SingleSource/Benchmarks/McGill/chomp",
+    "sha256": "2087abaed3e4b5434edf06ce6b21f80620d12e9d29493de99a1d8e991c9cd061"
+  },
+  {
+    "order": 47,
+    "kind": "analysis",
+    "repetition": 2,
+    "variant": "balanced",
+    "benchmark": "Shootout-methcall",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/balanced/SingleSource/Benchmarks/Shootout/Shootout-methcall",
+    "sha256": "dc904db9c2c22168069b9d38d1b2d4424d9334be3ea03f6e2b1a89460296b0d8"
+  },
+  {
+    "order": 48,
+    "kind": "analysis",
+    "repetition": 2,
+    "variant": "ollvm-full",
+    "benchmark": "nbench",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/ollvm-full-supported30/MultiSource/Benchmarks/nbench/nbench",
+    "sha256": "b5da67f0bc1c713643e44d48fe9b6e4c9b8f4546ae1a3e8855afb8a16a3f9e80"
+  },
+  {
+    "order": 49,
+    "kind": "analysis",
+    "repetition": 2,
+    "variant": "balanced",
+    "benchmark": "aha",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/balanced/MultiSource/Applications/aha/aha",
+    "sha256": "5a26618dc5babded977f4d308f1cb99413edf7cf2a412ea885b07dffc5c3c40e"
+  },
+  {
+    "order": 50,
+    "kind": "analysis",
+    "repetition": 2,
+    "variant": "gcc",
+    "benchmark": "aha",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/gcc/MultiSource/Applications/aha/aha",
+    "sha256": "efb64b76a7dfb7bc41baacb38c3b774d71ce1f7d0f2f3bab0b6d1936b3408ea8"
+  },
+  {
+    "order": 51,
+    "kind": "analysis",
+    "repetition": 3,
+    "variant": "llvm",
+    "benchmark": "Shootout-methcall",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/llvm/SingleSource/Benchmarks/Shootout/Shootout-methcall",
+    "sha256": "2ea4b12cfe9662f778a97fcfc801502b5a64fd82e226f0339c76bd6fde852729"
+  },
+  {
+    "order": 52,
+    "kind": "analysis",
+    "repetition": 3,
+    "variant": "gcc",
+    "benchmark": "SIBsim4",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/gcc/MultiSource/Applications/SIBsim4/SIBsim4",
+    "sha256": "8797e70aea5d367b0b98f1c7ea1461b42b9d08fd8143bde47e5102666c60d98a"
+  },
+  {
+    "order": 53,
+    "kind": "analysis",
+    "repetition": 3,
+    "variant": "optimized",
+    "benchmark": "Shootout-methcall",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/optimized/SingleSource/Benchmarks/Shootout/Shootout-methcall",
+    "sha256": "3e42e05b5297a24700447d565361fa19c08cff27f8100b45755093014f077e58"
+  },
+  {
+    "order": 54,
+    "kind": "analysis",
+    "repetition": 3,
+    "variant": "optimized",
+    "benchmark": "aha",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/optimized/MultiSource/Applications/aha/aha",
+    "sha256": "eda4577367f13d94258f59850c63550178241925892cb96349a8987c432511a1"
+  },
+  {
+    "order": 55,
+    "kind": "analysis",
+    "repetition": 3,
+    "variant": "llvm",
+    "benchmark": "nbench",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/llvm/MultiSource/Benchmarks/nbench/nbench",
+    "sha256": "e24c50e5eea425eb39ef728690cdc735a52379e46b00bc57e2116da5e7e06724"
+  },
+  {
+    "order": 56,
+    "kind": "analysis",
+    "repetition": 3,
+    "variant": "balanced",
+    "benchmark": "Shootout-methcall",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/balanced/SingleSource/Benchmarks/Shootout/Shootout-methcall",
+    "sha256": "dc904db9c2c22168069b9d38d1b2d4424d9334be3ea03f6e2b1a89460296b0d8"
+  },
+  {
+    "order": 57,
+    "kind": "analysis",
+    "repetition": 3,
+    "variant": "ollvm-full",
+    "benchmark": "chomp",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/ollvm-full-supported30/SingleSource/Benchmarks/McGill/chomp",
+    "sha256": "2087abaed3e4b5434edf06ce6b21f80620d12e9d29493de99a1d8e991c9cd061"
+  },
+  {
+    "order": 58,
+    "kind": "analysis",
+    "repetition": 3,
+    "variant": "balanced",
+    "benchmark": "SIBsim4",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/balanced/MultiSource/Applications/SIBsim4/SIBsim4",
+    "sha256": "a611f58e3467669ccd717423b786bc5e2a3773ab7bb66ac296f82dc96c010632"
+  },
+  {
+    "order": 59,
+    "kind": "analysis",
+    "repetition": 3,
+    "variant": "llvm",
+    "benchmark": "SIBsim4",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/llvm/MultiSource/Applications/SIBsim4/SIBsim4",
+    "sha256": "caea29c3cc97024a77f1f00792a3ff6e8e7b432b78a7c526f817e28df1fb6f62"
+  },
+  {
+    "order": 60,
+    "kind": "analysis",
+    "repetition": 3,
+    "variant": "ollvm-full",
+    "benchmark": "Shootout-methcall",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/ollvm-full-supported30/SingleSource/Benchmarks/Shootout/Shootout-methcall",
+    "sha256": "65501a052dd86fb9daf3352876f5494de8f468584b58e4aaea6f2b520b050487"
+  },
+  {
+    "order": 61,
+    "kind": "analysis",
+    "repetition": 3,
+    "variant": "llvm",
+    "benchmark": "chomp",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/llvm/SingleSource/Benchmarks/McGill/chomp",
+    "sha256": "ad8f040d2219da353ebc7e44af5a964b0ddcf095d7fd7a9f02a669bf37a1ad05"
+  },
+  {
+    "order": 62,
+    "kind": "analysis",
+    "repetition": 3,
+    "variant": "optimized",
+    "benchmark": "chomp",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/optimized/SingleSource/Benchmarks/McGill/chomp",
+    "sha256": "94934dedc1991fd969b328a7368e66fd82ee2471ff46e987231f41f630367410"
+  },
+  {
+    "order": 63,
+    "kind": "analysis",
+    "repetition": 3,
+    "variant": "ollvm-full",
+    "benchmark": "aha",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/ollvm-full-supported30/MultiSource/Applications/aha/aha",
+    "sha256": "d8c735272927c75e85da404093315bdb5da138de5081205a1c3f1159c16d98e0"
+  },
+  {
+    "order": 64,
+    "kind": "analysis",
+    "repetition": 3,
+    "variant": "gcc",
+    "benchmark": "Shootout-methcall",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/gcc/SingleSource/Benchmarks/Shootout/Shootout-methcall",
+    "sha256": "0de2abde34a0143de3802de0817098dbbecb8b1e9c435c057bad51ce637679cb"
+  },
+  {
+    "order": 65,
+    "kind": "analysis",
+    "repetition": 3,
+    "variant": "balanced",
+    "benchmark": "nbench",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/balanced/MultiSource/Benchmarks/nbench/nbench",
+    "sha256": "16299409f34cf9f2c6d6178b0dc7c780f78c92961babf1e927eb4f484f7c08e7"
+  },
+  {
+    "order": 66,
+    "kind": "analysis",
+    "repetition": 3,
+    "variant": "ollvm-full",
+    "benchmark": "nbench",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/ollvm-full-supported30/MultiSource/Benchmarks/nbench/nbench",
+    "sha256": "b5da67f0bc1c713643e44d48fe9b6e4c9b8f4546ae1a3e8855afb8a16a3f9e80"
+  },
+  {
+    "order": 67,
+    "kind": "analysis",
+    "repetition": 3,
+    "variant": "ollvm-full",
+    "benchmark": "SIBsim4",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/ollvm-full-supported30/MultiSource/Applications/SIBsim4/SIBsim4",
+    "sha256": "c3ac0ff4907cbafd81eaa92c636ae27166d785b11b1ae7f49f3d1727f422a3a9"
+  },
+  {
+    "order": 68,
+    "kind": "analysis",
+    "repetition": 3,
+    "variant": "gcc",
+    "benchmark": "nbench",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/gcc/MultiSource/Benchmarks/nbench/nbench",
+    "sha256": "8b05d435983314ca40b4156037f309ce200e7e5357e93c4cb37e19169489dc4a"
+  },
+  {
+    "order": 69,
+    "kind": "analysis",
+    "repetition": 3,
+    "variant": "optimized",
+    "benchmark": "nbench",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/optimized/MultiSource/Benchmarks/nbench/nbench",
+    "sha256": "c2904d330b5a23405d6b33e97e706a99fcf691e3653d600c2b702d0d4383393b"
+  },
+  {
+    "order": 70,
+    "kind": "analysis",
+    "repetition": 3,
+    "variant": "llvm",
+    "benchmark": "aha",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/llvm/MultiSource/Applications/aha/aha",
+    "sha256": "701f58e381b06040f87d05f3b96acc86cf582e6e766f2cc6136d64fe67056467"
+  },
+  {
+    "order": 71,
+    "kind": "analysis",
+    "repetition": 3,
+    "variant": "optimized",
+    "benchmark": "SIBsim4",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/optimized/MultiSource/Applications/SIBsim4/SIBsim4",
+    "sha256": "177572e7a800f742f0d1bb5fab0829ea3143bd99adac3ba905dedc91e82a3770"
+  },
+  {
+    "order": 72,
+    "kind": "analysis",
+    "repetition": 3,
+    "variant": "balanced",
+    "benchmark": "aha",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/balanced/MultiSource/Applications/aha/aha",
+    "sha256": "5a26618dc5babded977f4d308f1cb99413edf7cf2a412ea885b07dffc5c3c40e"
+  },
+  {
+    "order": 73,
+    "kind": "analysis",
+    "repetition": 3,
+    "variant": "gcc",
+    "benchmark": "chomp",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/gcc/SingleSource/Benchmarks/McGill/chomp",
+    "sha256": "31fee91c52a6644d0a0ff3095936da7ee506f827cd7b40f74df9fe4a85ff1886"
+  },
+  {
+    "order": 74,
+    "kind": "analysis",
+    "repetition": 3,
+    "variant": "gcc",
+    "benchmark": "aha",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/gcc/MultiSource/Applications/aha/aha",
+    "sha256": "efb64b76a7dfb7bc41baacb38c3b774d71ce1f7d0f2f3bab0b6d1936b3408ea8"
+  },
+  {
+    "order": 75,
+    "kind": "analysis",
+    "repetition": 3,
+    "variant": "balanced",
+    "benchmark": "chomp",
+    "binary_path": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/balanced/SingleSource/Benchmarks/McGill/chomp",
+    "sha256": "2b8c9625c9df5d6f67127f69da981d62996cdd46560c562828bb30ef843ec0fe"
+  }
+]

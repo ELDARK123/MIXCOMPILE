@@ -1,0 +1,4 @@
+﻿"algorithm","minimum_percent_of_llvm","maximum_percent_of_llvm","block_sizes","source_file"
+"AES-128-CBC","23.293","57.941","16;64;256;1024;8192;16384","paper_extracted/openssl_arithmetic_means_all_blocks.csv"
+"ChaCha20-Poly1305","22.505","75.638","16;64;256;1024;8192;16384","paper_extracted/openssl_arithmetic_means_all_blocks.csv"
+"SHA-512","20","37.221","16;64;256;1024;8192;16384","paper_extracted/openssl_arithmetic_means_all_blocks.csv"

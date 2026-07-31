@@ -1,0 +1,4 @@
+﻿"variant","validation_binaries","passed","non_passed","source_file"
+"gcc","31","31","0","formal_evaluation/llvm-test-suite/tables/correctness.csv"
+"llvm","31","31","0","formal_evaluation/llvm-test-suite/tables/correctness.csv"
+"optimized","31","31","0","formal_evaluation/llvm-test-suite/tables/correctness.csv"

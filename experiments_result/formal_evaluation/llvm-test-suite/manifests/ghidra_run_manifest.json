@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "run_id": "run_20260724T032516Z",
+  "stage": "formal_testsuite_ghidra",
+  "status": "completed",
+  "planned_analyses": 75,
+  "network_used": false,
+  "analyses": 75,
+  "parsed": 75,
+  "process_timeouts": 0,
+  "metric_role": "controlled automated reverse-engineering cost proxy",
+  "claim_scope": "proxy evidence only; not a cryptographic security proof"
+}

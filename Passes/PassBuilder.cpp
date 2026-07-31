@@ -467,6 +467,7 @@ PassBuilder::PassBuilder(TargetMachine *TM, PipelineTuningOptions PTO,
          llvm::OptimizationLevel Level) {
         outs() << "[obf] run.registerOptimizerLastEPCallback\n";
         obf_function_name_cmd = s_obf_fn_name_cmd;
+        mix_decision_mode = s_obf_pd;
         if (obf_function_name_cmd) {
           outs() << "[obf] enable function name control obfuscation(_ + command + _ | example: function_fla_)\n";
         }

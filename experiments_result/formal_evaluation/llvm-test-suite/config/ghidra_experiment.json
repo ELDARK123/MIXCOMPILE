@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "formal_freeze_id": "freeze_20260723T095408Z",
+  "source_run": "runs/run_20260724T010719Z",
+  "build_root": "artifacts/formal_testsuite_builds/run_20260724T010719Z",
+  "variants": {
+    "gcc": "gcc",
+    "llvm": "llvm",
+    "balanced": "balanced",
+    "optimized": "optimized",
+    "ollvm-full": "ollvm-full-supported30"
+  },
+  "samples": [
+    {"name": "chomp", "relative_elf": "SingleSource/Benchmarks/McGill/chomp"},
+    {"name": "Shootout-methcall", "relative_elf": "SingleSource/Benchmarks/Shootout/Shootout-methcall"},
+    {"name": "nbench", "relative_elf": "MultiSource/Benchmarks/nbench/nbench"},
+    {"name": "aha", "relative_elf": "MultiSource/Applications/aha/aha"},
+    {"name": "SIBsim4", "relative_elf": "MultiSource/Applications/SIBsim4/SIBsim4"}
+  ],
+  "analysis_repetitions": 3,
+  "order_seed": 20260724,
+  "process_timeout_seconds": 600,
+  "function_decompile_timeout_seconds": 30,
+  "analysis_timeout_per_file_seconds": 540,
+  "max_cpu": 1,
+  "parallelism": 1,
+  "metric_role": "controlled automated reverse-engineering cost proxy",
+  "claim_scope": "proxy evidence only; not a cryptographic security proof"
+}

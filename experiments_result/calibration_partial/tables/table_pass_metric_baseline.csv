@@ -1,0 +1,8 @@
+pass,samples,lit_pass,lit_fail,activation_count,median_size_ratio_vs_llvm,median_exec_ratio_vs_llvm,median_radiff_similarity,median_diversity_gain,insufficient_activation
+SUB,27,27,0,281,1.0211,1.1198,0.9569,0.0431,no
+BCF,27,27,0,45,1.4953,2.0327,0.8139,0.1861,no
+FLA,27,27,0,0,1.0070,1.0678,0.9744,0.0256,yes
+SPLIT,27,27,0,50,1.0070,1.0518,0.9738,0.0262,no
+IBR,27,27,0,0,1.0070,1.2026,0.9744,0.0256,yes
+ICALL,27,27,0,105,1.0074,1.0869,0.9665,0.0335,no
+IGV,27,27,0,0,1.0070,1.0588,0.9744,0.0256,yes

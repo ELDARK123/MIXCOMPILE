@@ -46,6 +46,9 @@ PreservedAnalyses SubstitutionPass::run(Function &F, FunctionAnalysisManager &AM
   Function *tmp = &F;
   // Do we obfuscate
   if (toObfuscate(flag, tmp, "sub")) {
+	seedMixRandomEngine(*llvm::cryptoutils,
+	                    (Twine("SUB:") + F.getParent()->getModuleIdentifier() +
+	                     ":" + F.getName()).str());
 	outs() << "[Soule] force.run.SubstitutionPass\n";
     substitute(tmp);
     return PreservedAnalyses::none();
@@ -64,7 +67,9 @@ bool SubstitutionPass::substitute(Function *f) {
 	  BasicBlock &BB = *bb;
 	  if (BB.empty()) continue;
       Instruction &firstInst = *BB.begin();
-	  if(!firstInst.hasMetadata("SUB_annotations")){
+	  if (mix_decision_mode
+              ? !hasExactBasicBlockMetadata(BB, "SUB_annotations", "sub")
+              : !firstInst.hasMetadata("SUB_annotations")) {
 		continue;
 	  }
 	  dbgs()<<"Successfully execute sub pass on"<<f->getName()<<"\n";

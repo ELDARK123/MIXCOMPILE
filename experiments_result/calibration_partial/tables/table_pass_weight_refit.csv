@@ -1,0 +1,8 @@
+pass,old_sec,new_sec,old_div,new_div,old_run,new_run,old_size,new_size,old_risk,new_risk,note
+SUB,0.75,0.7,0.55,0.55,0.25,0.2,0.05,0.05,0.1,0.1,refined_from_fit
+BCF,0.45,0.6,0.65,0.8,0.2,0.4,0.1,0.25,0.2,0.15,LLVM-normalized fit
+FLA,0.8,0.8,0.75,0.75,0.85,0.85,0.6,0.6,0.35,0.35,refined_from_fit
+SPLIT,0.3,0.3,0.4,0.4,0.15,0.1,0.25,0.15,0.1,0.1,LLVM-normalized fit
+IBR,0.7,0.7,0.65,0.65,0.45,0.45,0.3,0.3,0.45,0.45,refined_from_fit
+ICALL,0.55,0.55,0.5,0.5,0.35,0.3,0.2,0.15,0.3,0.2,LLVM-normalized fit
+IGV,0.55,0.55,0.5,0.5,0.3,0.3,0.35,0.35,0.5,0.5,refined_from_fit

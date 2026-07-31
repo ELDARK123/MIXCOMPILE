@@ -1,0 +1,13 @@
+{
+  "build_passes": 3,
+  "build_variants": 3,
+  "formal_freeze_id": "freeze_20260723T095408Z",
+  "measurement_rows": 120,
+  "model_sha256": "1270d22c0fbb3d092fb725d4d96c457b7b687a5f5a715abe1e818da303e562b6",
+  "network_used": false,
+  "planned_measurement_rows": 120,
+  "run_id": "run_20260723T101552Z",
+  "schema_version": 1,
+  "stage": "formal_llama",
+  "status": "completed"
+}

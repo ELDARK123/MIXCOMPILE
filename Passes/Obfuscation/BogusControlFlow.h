@@ -32,6 +32,9 @@
 using namespace std;
 using namespace llvm;
 namespace llvm{ // 基本块分割
+    int getBCFProbability();
+    int getBCFLoopCount();
+
     class BogusControlFlowPass : public PassInfoMixin<BogusControlFlowPass>{
         public:
             bool flag;

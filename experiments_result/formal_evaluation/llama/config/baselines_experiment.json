@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "run_id": "run_20260723T101552Z",
+  "formal_freeze_id": "freeze_20260723T095408Z",
+  "source_optimized_run": "run_20260723T095609Z",
+  "build_root": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_llama_builds/run_20260723T101552Z",
+  "variants": ["gcc", "llvm", "balanced"],
+  "baseline_weights_sha256": "8f94ee3880b6786d2cced9d4f783770b019c2c9a8b431bbf266131bef04cf7f0",
+  "scenarios": {
+    "pp512": {"n_prompt": 512, "n_gen": 0},
+    "tg128": {"n_prompt": 0, "n_gen": 128}
+  },
+  "warmups": 3,
+  "repetitions": 20,
+  "threads": 6,
+  "gpu_layers": 0,
+  "seed": 1,
+  "build_jobs": 4,
+  "configure_timeout_seconds": 600,
+  "build_timeout_seconds": 86400,
+  "bench_timeout_seconds": 1800,
+  "cmake_options": [
+    "-DGGML_NATIVE=OFF",
+    "-DGGML_CUDA=OFF",
+    "-DGGML_OPENCL=OFF",
+    "-DGGML_VULKAN=OFF",
+    "-DGGML_METAL=OFF",
+    "-DGGML_BLAS=OFF",
+    "-DGGML_CCACHE=OFF",
+    "-DLLAMA_BUILD_TESTS=OFF",
+    "-DLLAMA_BUILD_EXAMPLES=ON",
+    "-DLLAMA_BUILD_SERVER=OFF"
+  ],
+  "compile_flags": [
+    "-O2",
+    "-fno-lto",
+    "-fPIE",
+    "-fno-stack-protector",
+    "-fno-stack-clash-protection",
+    "-fcf-protection=none",
+    "-march=x86-64",
+    "-mtune=generic",
+    "-DNDEBUG"
+  ],
+  "link_flags": [
+    "-pie",
+    "-fno-lto",
+    "-Wl,-z,relro",
+    "-Wl,-z,now",
+    "-Wl,--build-id=sha1"
+  ],
+  "result_format": "CSV",
+  "metric_note": "Fresh same-protocol GCC, LLVM, and balanced llama.cpp baselines collected immediately after the BCF-gated optimized formal run."
+}

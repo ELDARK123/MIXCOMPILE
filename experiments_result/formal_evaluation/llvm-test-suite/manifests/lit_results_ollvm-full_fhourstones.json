@@ -1,0 +1,50 @@
+{
+  "__version__": [
+    17,
+    0,
+    6
+  ],
+  "elapsed": 23.768460035324097,
+  "tests": [
+    {
+      "code": "PASS",
+      "elapsed": 23.758747100830078,
+      "metrics": {
+        "compile_maxrss": 0,
+        "compile_time": 2.1983,
+        "exec_time": 23.7303,
+        "hash": "544560dead2473b9fdd6ca43e9c2d98d",
+        "link_maxrss": 0,
+        "link_time": 0.011,
+        "size": 510216,
+        "size..bss": 1192,
+        "size..comment": 66,
+        "size..data": 44880,
+        "size..dynamic": 448,
+        "size..dynstr": 166,
+        "size..dynsym": 264,
+        "size..eh_frame": 1684,
+        "size..eh_frame_hdr": 292,
+        "size..fini": 13,
+        "size..fini_array": 8,
+        "size..gnu.hash": 36,
+        "size..gnu.version": 22,
+        "size..gnu.version_r": 48,
+        "size..got": 64,
+        "size..init": 27,
+        "size..init_array": 8,
+        "size..interp": 28,
+        "size..note.ABI-tag": 32,
+        "size..note.gnu.build-id": 36,
+        "size..note.gnu.property": 32,
+        "size..plt": 16,
+        "size..plt.got": 8,
+        "size..rela.dyn": 134400,
+        "size..rodata": 774,
+        "size..text": 313724
+      },
+      "name": "test-suite :: MultiSource/Benchmarks/Fhourstones-3.1/fhourstones3.1.test",
+      "output": "\n/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/ollvm-full-supported30/tools/timeit-target --timeout 7200 --limit-core 0 --limit-cpu 7200 --limit-file-size 10485760 --limit-rss-size 838860800 --append-exitstatus --redirect-output /home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/ollvm-full-supported30/MultiSource/Benchmarks/Fhourstones-3.1/Output/fhourstones3.1.test.out --redirect-input /home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/ollvm-full-supported30/MultiSource/Benchmarks/Fhourstones-3.1/inputs --chdir /home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/ollvm-full-supported30/MultiSource/Benchmarks/Fhourstones-3.1 --summary /home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/ollvm-full-supported30/MultiSource/Benchmarks/Fhourstones-3.1/Output/fhourstones3.1.test.time /home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/ollvm-full-supported30/MultiSource/Benchmarks/Fhourstones-3.1/fhourstones3.1\n/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/ollvm-full-supported30/tools/fpcmp-target /home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/ollvm-full-supported30/MultiSource/Benchmarks/Fhourstones-3.1/Output/fhourstones3.1.test.out /home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_testsuite_builds/run_20260724T010719Z/ollvm-full-supported30/MultiSource/Benchmarks/Fhourstones-3.1/fhourstones3.1.reference_output"
+    }
+  ]
+}

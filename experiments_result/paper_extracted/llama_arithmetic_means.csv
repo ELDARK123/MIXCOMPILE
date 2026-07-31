@@ -1,0 +1,7 @@
+﻿"variant","scenario","measurements","arithmetic_mean_tokens_per_second","source_file"
+"gcc","pp512","20","31.99393","formal_evaluation/llama/raw/baselines_llama_bench_repetitions.csv"
+"gcc","tg128","20","11.276267","formal_evaluation/llama/raw/baselines_llama_bench_repetitions.csv"
+"llvm","pp512","20","37.011894","formal_evaluation/llama/raw/baselines_llama_bench_repetitions.csv"
+"llvm","tg128","20","12.018928","formal_evaluation/llama/raw/baselines_llama_bench_repetitions.csv"
+"optimized","pp512","20","32.328656","formal_evaluation/llama/raw/optimized_llama_bench_repetitions.csv"
+"optimized","tg128","20","11.119202","formal_evaluation/llama/raw/optimized_llama_bench_repetitions.csv"

@@ -1,0 +1,4 @@
+variant,compiler,compiler_sha256,configure_exit_code,configure_seconds,build_exit_code,build_seconds,status
+gcc,/usr/bin/gcc,821af3c74506283c179ca413bb33e6b528805a4dd8a5c09df125e5ad560a9e89,0,1.418418,0,70.428573,PASS
+llvm,/home/vincent/Desktop/LLVM/llvm-project-17.0.6.src/build/bin/clang,c96fec80e8c0682c7152d05be50827da9604a78458d287ecbf53093d901389e8,0,1.769982,0,68.474097,PASS
+balanced,/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_toolchain/freeze_20260723T095408Z/bin/clang,fe7f9bb8f584060e35771f66168da80c3b9eb3c75ce9071f73e4cd39b6e3b778,0,1.769938,0,139.766898,PASS

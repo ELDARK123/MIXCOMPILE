@@ -1,14 +1,20 @@
 ﻿#include "PassDecider.h"
 #include "llvm/IR/Function.h"
+#include "BogusControlFlow.h"
+#include "Utils.h"
 #include "llvm/IR/Instruction.h"
 #include "llvm/Support/CommandLine.h"
+#include "llvm/Support/ErrorHandling.h"
 #include "llvm/Support/JSON.h"
 #include "llvm/Support/MemoryBuffer.h"
 #include "llvm/Support/raw_ostream.h"
 #include <algorithm>
+#include <cmath>
 #include <map>
 #include <queue>
 #include <random>
+#include <set>
+#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -20,7 +26,8 @@ void add_annotation_bb(BasicBlock &BB, const char *annotation,
 bool choose_machine();
 static llvm::cl::opt<std::string> MixProfile(
     "mix-profile",
-    llvm::cl::desc("MIXCOMPILE profile: balanced, security, performance"),
+    llvm::cl::desc(
+        "MIXCOMPILE profile: balanced, optimized, security, performance"),
     llvm::cl::init("balanced"));
 
 static llvm::cl::opt<double>
@@ -32,11 +39,6 @@ static llvm::cl::opt<std::string>
     MixMode("mix-mode",
             llvm::cl::desc("MIXCOMPILE mode: cost, rule, random, all"),
             llvm::cl::init("cost"));
-
-static llvm::cl::opt<unsigned>
-    MixSeed("mix-seed",
-            llvm::cl::desc("Fixed random seed for MIXCOMPILE; 0 uses random_device"),
-            llvm::cl::init(0));
 
 static llvm::cl::opt<double>
     MixSecurityScale("mix-security-scale",
@@ -83,6 +85,18 @@ static llvm::cl::opt<std::string>
     MixDisableDimension("mix-disable-dimension",
                         llvm::cl::desc("Disable one dimension: security, diversity, runtime, size, risk."),
                         llvm::cl::init(""));
+
+static llvm::cl::opt<unsigned> MixBCFMaxInstructions(
+    "mix-bcf-max-instructions",
+    llvm::cl::desc(
+        "Maximum function instruction count eligible for BCF (default: 2000)"),
+    llvm::cl::init(2000));
+
+static llvm::cl::opt<double> MixBCFMaxExpectedModifiedBB(
+    "mix-bcf-max-expected-modified-bb",
+    llvm::cl::desc(
+        "Maximum estimated modified basic blocks eligible for BCF (default: 500)"),
+    llvm::cl::init(500.0));
 
 namespace {
 
@@ -132,6 +146,57 @@ static double clamp01(double Value) {
   return Value;
 }
 
+static std::string normalizeOptionToken(StringRef Value) {
+  return Value.trim().lower();
+}
+
+static std::set<std::string> parseDisabledDimensions() {
+  std::set<std::string> Disabled;
+  std::stringstream Stream(MixDisableDimension.getValue());
+  std::string Raw;
+  while (std::getline(Stream, Raw, ',')) {
+    std::string Token = normalizeOptionToken(Raw);
+    if (Token.empty())
+      continue;
+    if (Token != "security" && Token != "diversity" && Token != "runtime" &&
+        Token != "size" && Token != "risk")
+      report_fatal_error(Twine("Unknown MIXCOMPILE dimension: ") + Token);
+    Disabled.insert(Token);
+  }
+  return Disabled;
+}
+
+static void validateCommandLineOptions() {
+  const std::string Profile = normalizeOptionToken(MixProfile.getValue());
+  if (Profile != "balanced" && Profile != "optimized" &&
+      Profile != "security" && Profile != "performance")
+    report_fatal_error(Twine("Unknown MIXCOMPILE profile: ") + Profile);
+
+  const std::string Mode = normalizeOptionToken(MixMode.getValue());
+  if (Mode != "cost" && Mode != "rule" && Mode != "random" && Mode != "all")
+    report_fatal_error(Twine("Unknown MIXCOMPILE mode: ") + Mode);
+
+  if (!MixOnlyPass.empty()) {
+    const std::string Only = normalizeOptionToken(MixOnlyPass.getValue());
+    if (Only != "sub" && Only != "bcf" && Only != "fla" &&
+        Only != "split" && Only != "ibr" && Only != "icall" &&
+        Only != "igv")
+      report_fatal_error(Twine("Unknown MIXCOMPILE only-pass: ") + Only);
+  }
+
+  for (double Scale : {MixSecurityScale.getValue(), MixDiversityScale.getValue(),
+                       MixRuntimeScale.getValue(), MixSizeScale.getValue(),
+                       MixRiskScale.getValue()}) {
+    if (!std::isfinite(Scale) || Scale < 0.0)
+      report_fatal_error("MIXCOMPILE dimension scales must be finite and non-negative");
+  }
+  if (!std::isfinite(MixBCFMaxExpectedModifiedBB.getValue()) ||
+      MixBCFMaxExpectedModifiedBB.getValue() < 0.0)
+    report_fatal_error(
+        "MIXCOMPILE BCF expected-modified-BB budget must be finite and non-negative");
+  (void)parseDisabledDimensions();
+}
+
 // Global map for JSON-loaded pass weights (pass_name -> weight struct).
 // Populated once on first access via loadCostConfig().
 static std::map<std::string, PassBaseWeight> LoadedPassWeights;
@@ -154,19 +219,17 @@ static void loadCostConfig() {
     return;
   auto MB = MemoryBuffer::getFile(MixCostConfig);
   if (!MB) {
-    errs() << "[MIXCOMPILE] Cannot open cost config file: " << MixCostConfig << "\n";
-    return;
+    report_fatal_error(Twine("Cannot open MIXCOMPILE cost config: ") +
+                       MixCostConfig.getValue());
   }
   auto Parsed = json::parse(MB.get()->getBuffer());
   if (!Parsed) {
-    errs() << "[MIXCOMPILE] Invalid JSON in cost config: "
-           << toString(Parsed.takeError()) << "\n";
-    return;
+    report_fatal_error(Twine("Invalid MIXCOMPILE cost config JSON: ") +
+                       toString(Parsed.takeError()));
   }
   auto *Root = Parsed->getAsObject();
   if (!Root) {
-    errs() << "[MIXCOMPILE] Cost config root is not a JSON object.\n";
-    return;
+    report_fatal_error("MIXCOMPILE cost config root must be an object");
   }
   for (auto &[Key, Val] : *Root) {
     auto *Obj = Val.getAsObject();
@@ -176,7 +239,18 @@ static void loadCostConfig() {
     auto Run  = Obj->getNumber("RuntimeCost");
     auto Sz   = Obj->getNumber("SizeCost");
     auto Risk = Obj->getNumber("CorrectnessRisk");
-    if (Sec && Div && Run && Sz && Risk) {
+    if (!(Sec && Div && Run && Sz && Risk))
+      report_fatal_error(Twine("Incomplete MIXCOMPILE weights for pass ") +
+                         Key.str());
+    if (!std::isfinite(*Sec) || !std::isfinite(*Div) || !std::isfinite(*Run) ||
+        !std::isfinite(*Sz) || !std::isfinite(*Risk) || *Sec < 0.0 ||
+        *Sec > 1.0 || *Div < 0.0 || *Div > 1.0 || *Run < 0.0 ||
+        *Run > 1.0 || *Sz < 0.0 || *Sz > 1.0 || *Risk < 0.0 ||
+        *Risk > 1.0)
+      report_fatal_error(
+          Twine("MIXCOMPILE weights must be finite values in [0,1] for pass ") +
+          Key.str());
+    {
       std::string UpperKey = Key.str();
       for (auto &C : UpperKey) C = (C >= 'a' && C <= 'z') ? C - 'a' + 'A' : C;
       PassBaseWeight WB;
@@ -258,6 +332,42 @@ struct FunctionCostFeatures {
   bool IBRCompatible = true;
 };
 
+struct BCFWorkEstimate {
+  int Probability = 0;
+  int LoopCount = 0;
+  double ExpectedModifiedBB = 0.0;
+  double RuntimeMultiplier = 1.0;
+  double SizeMultiplier = 1.0;
+};
+
+static BCFWorkEstimate estimateBCFWork(const FunctionCostFeatures &F) {
+  BCFWorkEstimate Work;
+  Work.Probability = getBCFProbability();
+  Work.LoopCount = getBCFLoopCount();
+
+  const double Probability =
+      clamp01(static_cast<double>(Work.Probability) / 100.0);
+  const int LoopCount = std::max(0, Work.LoopCount);
+  double ExpansionSum = 0.0;
+  double Expansion = 1.0;
+  for (int I = 0; I < LoopCount; ++I) {
+    ExpansionSum += Expansion;
+    Expansion *= 1.0 + 3.0 * Probability;
+  }
+
+  Work.ExpectedModifiedBB =
+      static_cast<double>(F.NumBBs) * Probability * ExpansionSum;
+  const double RuntimeWork = Work.ExpectedModifiedBB * 18.0;
+  Work.RuntimeMultiplier = 1.0 + std::log2(1.0 + RuntimeWork) / 10.0;
+
+  const double AvgBBInsts = safeRatio(F.TotalInsts, F.NumBBs);
+  const double EstimatedAddedInsts =
+      Work.ExpectedModifiedBB * (AvgBBInsts + 18.0);
+  Work.SizeMultiplier =
+      1.0 + std::log2(1.0 + EstimatedAddedInsts) / 12.0;
+  return Work;
+}
+
 static void dumpCostConfig() {
   if (MixDumpCostConfig.empty())
     return;
@@ -290,17 +400,19 @@ static CostModelWeights getProfileWeights(const std::string &Profile) {
   CostModelWeights W;
   if (Profile == "security")
     W = {1.40, 0.70, 0.55, 0.35, 0.90};
+  else if (Profile == "optimized")
+    W = {1.10, 1.05, 0.90, 0.25, 0.95};
   else if (Profile == "performance")
     W = {0.80, 0.35, 1.40, 0.90, 1.20};
   else
     W = {1.00, 0.50, 0.80, 0.50, 1.00};
 
-  // Override for dimension ablation via -mix-disable-dimension
-  if (MixDisableDimension == "security")  W.Security = 0.0;
-  if (MixDisableDimension == "diversity") W.Diversity = 0.0;
-  if (MixDisableDimension == "runtime")   W.Runtime = 0.0;
-  if (MixDisableDimension == "size")      W.Size = 0.0;
-  if (MixDisableDimension == "risk")      W.Risk = 0.0;
+  const std::set<std::string> Disabled = parseDisabledDimensions();
+  if (Disabled.count("security"))  W.Security = 0.0;
+  if (Disabled.count("diversity")) W.Diversity = 0.0;
+  if (Disabled.count("runtime"))   W.Runtime = 0.0;
+  if (Disabled.count("size"))      W.Size = 0.0;
+  if (Disabled.count("risk"))      W.Risk = 0.0;
 
   return W;
 }
@@ -313,30 +425,54 @@ static PassScore estimateFunctionPassScore(ObfPass P,
 
   switch (P) {
   case ObfPass::IBR:
-    S.SecurityGain *= clamp01(0.4 + F.CondJumpRatio);
-    S.RuntimeCost *= 1.0 + 0.5 * F.CondJumpRatio;
+    S.SecurityGain *= (F.CondJumpRatio >= 0) ? ( 1.0 + F.CondJumpRatio) : 0.0;
+    S.DiversityGain *= (F.CondJumpRatio >= 0) ? 1.0 : 0.0;
+    S.RuntimeCost *= (F.CondJumpRatio >= 0) ? (1.0 + F.CondJumpRatio) : 0.0;
+    S.SizeCost *= (F.CondJumpRatio >= 0) ? 1.0 : 0.0;
     if (!F.IBRCompatible)
-      S.CorrectnessRisk = 1.0;
+      S.CorrectnessRisk *= 1.0;
+    else
+      S.CorrectnessRisk *= 0.0;
     break;
   case ObfPass::BCF:
-    S.SecurityGain *=
-        clamp01(static_cast<double>(F.CyclomaticComplexity) / 6.0);
-    S.SizeCost *= 1.0 + clamp01(F.CondJumpRatio);
+    {
+      const double Factor = clamp01((static_cast<double>(F.CyclomaticComplexity) - 2.0) / 4.0);
+      const BCFWorkEstimate Work = estimateBCFWork(F);
+      S.SecurityGain *= Factor;
+      S.DiversityGain *= Factor;
+      S.RuntimeCost *= Factor * Work.RuntimeMultiplier;
+      S.SizeCost *= Factor * (1.0 + F.CondJumpRatio) * Work.SizeMultiplier;
+      S.CorrectnessRisk *= Factor;
+    }
     break;
   case ObfPass::FLA:
-    S.SecurityGain *= clamp01(F.AvgCFGDepth / 3.0);
-    S.RuntimeCost *=
-        1.0 + clamp01(static_cast<double>(F.CyclomaticComplexity) / 10.0);
-    S.SizeCost *= 1.0 + clamp01(static_cast<double>(F.NumBBs) / 20.0);
+    {
+      const double Factor = clamp01(F.AvgCFGDepth / 3.0);
+      const double ComplexityRuntimeFactor =
+          1.0 + clamp01(static_cast<double>(F.CyclomaticComplexity) / 6.0);
+      S.SecurityGain *= Factor;
+      S.DiversityGain *= Factor;
+      S.RuntimeCost *= Factor * ComplexityRuntimeFactor;
+      S.SizeCost *= Factor;
+      S.CorrectnessRisk *= Factor;
+    }
     break;
   case ObfPass::SPLIT:
-    S.SecurityGain *= clamp01(static_cast<double>(F.MaxBBSize) / 20.0);
-    S.SizeCost *= 1.0 + clamp01(static_cast<double>(F.MaxBBSize) / 30.0);
+    {
+      const double Factor = clamp01((static_cast<double>(F.MaxBBSize) - 4.0) / 16.0);
+      S.SecurityGain *= Factor;
+      S.DiversityGain *= Factor;
+      S.RuntimeCost *= Factor;
+      S.SizeCost *= Factor;
+      S.CorrectnessRisk *= Factor;
+    }
     break;
   case ObfPass::IGV:
-    S.SecurityGain *= F.HasInlineAsm ? 0.0 : 0.6;
-    if (F.HasInlineAsm)
-      S.CorrectnessRisk = 1.0;
+    S.SecurityGain *= F.HasInlineAsm ? 0.0 : 1.0;
+    S.DiversityGain *= F.HasInlineAsm ? 0.0 : 1.0;
+    S.RuntimeCost *= F.HasInlineAsm ? 0.0 : 1.0;
+    S.SizeCost *= F.HasInlineAsm ? 0.0 : 1.0;
+    S.CorrectnessRisk *= F.HasInlineAsm ? 0.0 : 1.0;
     break;
   case ObfPass::SUB:
   case ObfPass::ICALL:
@@ -352,6 +488,40 @@ static PassScore estimateFunctionPassScore(ObfPass P,
   return S;
 }
 
+static PassScore estimateControlFlowComparisonScore(
+    ObfPass P, const FunctionCostFeatures &F) {
+  PassBaseWeight B = getBaseWeight(P);
+  PassScore S{B.SecurityGain, B.DiversityGain, B.RuntimeCost, B.SizeCost,
+              B.CorrectnessRisk};
+
+  if (P == ObfPass::BCF) {
+    const double Factor =
+        (static_cast<double>(F.CyclomaticComplexity) - 2.0) / 4.0;
+    const BCFWorkEstimate Work = estimateBCFWork(F);
+    S.SecurityGain *= Factor;
+    S.DiversityGain *= Factor;
+    S.RuntimeCost *= Factor * Work.RuntimeMultiplier;
+    S.SizeCost *= Factor * (1.0 + F.CondJumpRatio) * Work.SizeMultiplier;
+    S.CorrectnessRisk *= Factor;
+  } else {
+    const double Factor = F.AvgCFGDepth / 3.0;
+    const double ComplexityRuntimeFactor =
+        1.0 + static_cast<double>(F.CyclomaticComplexity) / 6.0;
+    S.SecurityGain *= Factor;
+    S.DiversityGain *= Factor;
+    S.RuntimeCost *= Factor * ComplexityRuntimeFactor;
+    S.SizeCost *= Factor;
+    S.CorrectnessRisk *= Factor;
+  }
+
+  S.SecurityGain *= MixSecurityScale;
+  S.DiversityGain *= MixDiversityScale;
+  S.RuntimeCost *= MixRuntimeScale;
+  S.SizeCost *= MixSizeScale;
+  S.CorrectnessRisk *= MixRiskScale;
+  return S;
+}
+
 static PassScore estimateBasicBlockPassScore(ObfPass P,
                                              const BasicBlockCostFeatures &B) {
   PassBaseWeight Base = getBaseWeight(P);
@@ -360,13 +530,18 @@ static PassScore estimateBasicBlockPassScore(ObfPass P,
 
   switch (P) {
   case ObfPass::SUB:
-    S.SecurityGain *= clamp01(0.3 + B.SubRatio);
-    S.RuntimeCost *= 1.0 + clamp01(B.SubRatio);
-    S.SizeCost *= 1.0 + clamp01(static_cast<double>(B.SubInsts) / 10.0);
+    S.SecurityGain *= (B.SubRatio > 0) ? (1.0 + B.SubRatio) : 0.0;
+    S.DiversityGain *= (B.SubRatio > 0) ? 1.0 : 0.0;
+    S.RuntimeCost *= (B.SubRatio > 0) ? (1.0 + B.SubRatio) : 0.0;
+    S.SizeCost *= (B.SubRatio > 0) ? (1.0 + B.SubRatio) : 0.0;
+    S.CorrectnessRisk *= (B.SubRatio > 0) ? 1.0 : 0.0;
     break;
   case ObfPass::ICALL:
     S.SecurityGain *= B.HasCall ? 1.0 : 0.0;
+    S.DiversityGain *= B.HasCall ? 1.0 : 0.0;
     S.RuntimeCost *= B.HasCall ? 1.0 : 0.0;
+    S.SizeCost *= B.HasCall ? 1.0 : 0.0;
+    S.CorrectnessRisk *= B.HasCall ? 1.0 : 0.0;
     break;
   default:
     break;
@@ -386,7 +561,10 @@ static bool isFunctionPassApplicable(ObfPass P, const FunctionCostFeatures &F) {
   case ObfPass::IBR:
     return F.CondJumpRatio >= 0.15 && F.IBRCompatible;
   case ObfPass::BCF:
-    return F.CyclomaticComplexity >= 3;
+    return F.CyclomaticComplexity >= 3 &&
+           F.TotalInsts <= MixBCFMaxInstructions.getValue() &&
+           estimateBCFWork(F).ExpectedModifiedBB <=
+               MixBCFMaxExpectedModifiedBB.getValue();
   case ObfPass::FLA:
     return F.AvgCFGDepth >= 2.0;
   case ObfPass::SPLIT:
@@ -421,7 +599,7 @@ static bool isFunctionPassNearBoundary(ObfPass P,
   case ObfPass::BCF:
     return F.CyclomaticComplexity >= 3 && F.CyclomaticComplexity < 5;
   case ObfPass::FLA:
-    return F.AvgCFGDepth >= 2.0 && F.AvgCFGDepth < 2.5;
+    return F.AvgCFGDepth >= 2.0 && F.AvgCFGDepth < 3.0;
   case ObfPass::SPLIT:
     return F.MaxBBSize >= 5 && F.MaxBBSize < 8;
   case ObfPass::IGV:
@@ -438,7 +616,7 @@ static bool isBasicBlockPassNearBoundary(ObfPass P,
                                          const BasicBlockCostFeatures &B) {
   switch (P) {
   case ObfPass::SUB:
-    return B.SubInsts > 0 && B.SubInsts < 3 && B.SubRatio < 0.5;
+    return B.SubInsts > 0 && (B.SubInsts < 3 || B.SubRatio < 0.5);
   case ObfPass::ICALL:
     return B.HasCall && B.BBSize < 5;
   default:
@@ -475,8 +653,7 @@ static bool skipDueToMixOnlyPass(ObfPass P) {
   else if (Lower == "ibr")  Match = P == ObfPass::IBR;
   else if (Lower == "icall")Match = P == ObfPass::ICALL;
   else if (Lower == "igv")  Match = P == ObfPass::IGV;
-  // If the string doesn't match any known pass, allow everything.
-  else return false;
+  else report_fatal_error(Twine("Unknown MIXCOMPILE only-pass: ") + Lower);
   return !Match;
 }
 
@@ -508,6 +685,30 @@ static std::vector<ObfPass> selectFunctionPasses(const FunctionCostFeatures &F,
 
     if (Enable)
       Candidates.push_back({P, Total});
+  }
+
+  auto FindCandidate = [&Candidates](ObfPass P) {
+    return std::find_if(Candidates.begin(), Candidates.end(),
+                        [P](const auto &Candidate) {
+                          return Candidate.first == P;
+                        });
+  };
+  auto IBRIt = FindCandidate(ObfPass::IBR);
+  auto BCFIt = FindCandidate(ObfPass::BCF);
+  auto FLAIt = FindCandidate(ObfPass::FLA);
+  if (IBRIt != Candidates.end() && FLAIt != Candidates.end()) {
+    Candidates.erase(FLAIt);
+  } else if (BCFIt != Candidates.end() && FLAIt != Candidates.end()) {
+    const PassScore BCFCompare =
+        estimateControlFlowComparisonScore(ObfPass::BCF, F);
+    const PassScore FLACompare =
+        estimateControlFlowComparisonScore(ObfPass::FLA, F);
+    const double BCFCompareTotal = BCFCompare.total(W);
+    const double FLACompareTotal = FLACompare.total(W);
+    const bool SelectBCF =
+        BCFCompareTotal > FLACompareTotal ||
+        (BCFCompareTotal == FLACompareTotal && BCFIt->second >= FLAIt->second);
+    Candidates.erase(SelectBCF ? FLAIt : BCFIt);
   }
 
   std::sort(Candidates.begin(), Candidates.end(),
@@ -643,11 +844,7 @@ double calculateFuncBBAverageDepth(Function &F) {
 
 
 bool choose_machine() {
-  static std::mt19937 gen([] {
-    if (MixSeed.getValue() != 0)
-      return MixSeed.getValue();
-    return std::random_device{}();
-  }());
+  static std::mt19937_64 gen(getMixEffectiveSeed());
   static std::uniform_int_distribution<> dist(1, 100);
   int pro_num = dist(gen);
   while (pro_num == 50)
@@ -657,11 +854,12 @@ bool choose_machine() {
 
 bool checkBasicBlockPreds(const BasicBlock *BB,
                           const BasicBlock *TargetPredBB) {
-  if (!BB || !TargetPredBB) {
+  if (!BB || !TargetPredBB)
     return false;
-  }
-
-  if (BB != TargetPredBB) {
+  std::set<const BasicBlock *> Visited;
+  while (BB != TargetPredBB) {
+    if (!Visited.insert(BB).second)
+      return false;
     const Instruction *Term = BB->getTerminator();
     if (const BranchInst *BI = dyn_cast<BranchInst>(Term)) {
       if (BI->isConditional()) {
@@ -671,8 +869,7 @@ bool checkBasicBlockPreds(const BasicBlock *BB,
     if (pred_size(BB) != 1) {
       return false;
     }
-    const BasicBlock *PredBB = *predecessors(BB).begin();
-    return checkBasicBlockPreds(PredBB, TargetPredBB);
+    BB = *predecessors(BB).begin();
   }
   return true;
 }
@@ -681,6 +878,8 @@ PreservedAnalyses PassDecider::run(Module &M, ModuleAnalysisManager &AM) {
   if (this->flag)
     outs() << "[Soule] force.run.PassDecider\n";
 
+  validateCommandLineOptions();
+  initializeMixRandomSeed(getMixRequestedSeed());
   loadCostConfig();
   CostModelWeights Weights = getProfileWeights(MixProfile.getValue());
   double ScoreThreshold = MixScoreThreshold.getValue();
@@ -725,7 +924,7 @@ PreservedAnalyses PassDecider::run(Module &M, ModuleAnalysisManager &AM) {
         if (isSubstitutableOpcode(DefInst.getOpcode()))
           BBCost.SubInsts++;
 
-        if (auto *CI = dyn_cast<CallInst>(&DefInst)) {
+        if (auto *CI = dyn_cast<CallBase>(&DefInst)) {
           BBCost.HasCall = true;
           if (isa<InlineAsm>(CI->getCalledOperand()))
             BBCost.HasInlineAsm = true;
@@ -746,7 +945,7 @@ PreservedAnalyses PassDecider::run(Module &M, ModuleAnalysisManager &AM) {
           } else if (Instruction *UseInst = dyn_cast<Instruction>(UseUser)) {
             const BasicBlock *UseBB = UseInst->getParent();
             if (&BB != UseBB) {
-              if (pred_size(UseBB) > 1) {
+              if (pred_size(UseBB) != 1) {
                 IBRCompatible = false;
                 break;
               }
@@ -792,6 +991,52 @@ PreservedAnalyses PassDecider::run(Module &M, ModuleAnalysisManager &AM) {
 
     std::vector<ObfPass> SelectedFunctionPasses =
         selectFunctionPasses(CostFeatures, Weights, ScoreThreshold, Mode);
+    const BCFWorkEstimate BCFWork = estimateBCFWork(CostFeatures);
+    const bool BCFBudgetEligible =
+        CostFeatures.TotalInsts <= MixBCFMaxInstructions.getValue() &&
+        BCFWork.ExpectedModifiedBB <=
+            MixBCFMaxExpectedModifiedBB.getValue();
+    const double BCFFirstTotal =
+        estimateFunctionPassScore(ObfPass::BCF, CostFeatures).total(Weights);
+    const double FLAFirstTotal =
+        estimateFunctionPassScore(ObfPass::FLA, CostFeatures).total(Weights);
+    const double BCFCompareTotal =
+        estimateControlFlowComparisonScore(ObfPass::BCF, CostFeatures)
+            .total(Weights);
+    const double FLACompareTotal =
+        estimateControlFlowComparisonScore(ObfPass::FLA, CostFeatures)
+            .total(Weights);
+    errs() << "[MIXCOMPILE][CF_DECISION]"
+           << " function=" << Fn.getName()
+           << " NumBBs=" << CostFeatures.NumBBs
+           << " TotalInsts=" << CostFeatures.TotalInsts
+           << " CyclomaticComplexity=" << CostFeatures.CyclomaticComplexity
+           << " CondJumpRatio=" << CostFeatures.CondJumpRatio
+           << " AvgCFGDepth=" << CostFeatures.AvgCFGDepth
+           << " bcf_prob=" << BCFWork.Probability
+           << " bcf_loop=" << BCFWork.LoopCount
+           << " ExpectedModifiedBB=" << BCFWork.ExpectedModifiedBB
+           << " BCFMaxInstructions=" << MixBCFMaxInstructions.getValue()
+           << " BCFMaxExpectedModifiedBB="
+           << MixBCFMaxExpectedModifiedBB.getValue()
+           << " BCFBudgetEligible=" << (BCFBudgetEligible ? 1 : 0)
+           << " RuntimeMultiplier=" << BCFWork.RuntimeMultiplier
+           << " SizeMultiplier=" << BCFWork.SizeMultiplier
+           << " BCF_first_total=" << BCFFirstTotal
+           << " FLA_first_total=" << FLAFirstTotal
+           << " BCF_compare_total=" << BCFCompareTotal
+           << " FLA_compare_total=" << FLACompareTotal
+           << " selected_pass=";
+    bool FirstSelectedPass = true;
+    for (ObfPass P : SelectedFunctionPasses) {
+      if (!FirstSelectedPass)
+        errs() << ',';
+      errs() << passToString(P);
+      FirstSelectedPass = false;
+    }
+    if (FirstSelectedPass)
+      errs() << "NONE";
+    errs() << "\n";
     annotateFunctionPasses(Fn, SelectedFunctionPasses);
 
     bool FunctionHasSplit =

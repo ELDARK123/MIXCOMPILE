@@ -1,0 +1,11 @@
+reference_variant,candidate_variant,planned,ok,timeouts,correctness_eligible_ok,median_similarity_correctness_eligible,median_similarity_all_ok
+gcc,llvm,31,31,0,31,0.88,0.88
+gcc,balanced,31,30,1,30,0.57,0.57
+gcc,optimized,31,29,2,29,0.562,0.562
+gcc,ollvm-full,30,26,4,24,0.1725,0.1725
+llvm,balanced,31,29,2,29,0.602,0.602
+llvm,optimized,31,29,2,29,0.59,0.59
+llvm,ollvm-full,30,26,4,24,0.1725,0.1725
+balanced,optimized,31,29,2,29,0.782,0.782
+balanced,ollvm-full,30,23,7,21,0.27,0.27
+ollvm-full,optimized,30,21,9,19,0.314,0.314

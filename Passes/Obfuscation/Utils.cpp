@@ -10,14 +10,95 @@
  *
  */
 #include "Utils.h"
+#include "CryptoUtils.h"
+#include "llvm/ADT/SmallString.h"
 #include "llvm/IR/IntrinsicInst.h"
+#include "llvm/Support/CommandLine.h"
+#include "llvm/Support/ErrorHandling.h"
+#include "llvm/Support/MD5.h"
+#include "llvm/Support/raw_ostream.h"
 #include "llvm/Transforms/Scalar/Reg2Mem.h"
+#include <random>
 
 using namespace llvm;
 using std::vector;
 
 LLVMContext *CONTEXT = nullptr;
 bool obf_function_name_cmd = false;
+bool mix_decision_mode = false;
+
+static cl::opt<uint64_t> MixSeed(
+    "mix-seed",
+    cl::desc("Fixed random seed for MIXCOMPILE; 0 uses random_device"),
+    cl::init(0));
+
+static uint64_t MixEffectiveSeed = 0;
+static bool MixRandomSeedInitialized = false;
+
+uint64_t llvm::getMixRequestedSeed() { return MixSeed.getValue(); }
+
+void llvm::initializeMixRandomSeed(uint64_t RequestedSeed) {
+  if (MixRandomSeedInitialized) {
+    if (RequestedSeed != 0 && RequestedSeed != MixEffectiveSeed)
+      report_fatal_error(Twine("MIXCOMPILE random seed already initialized as ") +
+                         Twine(MixEffectiveSeed) + ", cannot change it to " +
+                         Twine(RequestedSeed));
+    return;
+  }
+
+  if (RequestedSeed == 0) {
+    std::random_device Device;
+    MixEffectiveSeed = (uint64_t(Device()) << 32) ^ uint64_t(Device());
+    if (MixEffectiveSeed == 0)
+      MixEffectiveSeed = 0x6d6978636f6d7069ULL;
+    outs() << "[MIXCOMPILE] effective random seed: " << MixEffectiveSeed
+           << "\n";
+  } else {
+    MixEffectiveSeed = RequestedSeed;
+  }
+  MixRandomSeedInitialized = true;
+}
+
+uint64_t llvm::getMixEffectiveSeed() {
+  if (!MixRandomSeedInitialized)
+    initializeMixRandomSeed(getMixRequestedSeed());
+  return MixEffectiveSeed;
+}
+
+std::string llvm::deriveMixCryptoSeed(StringRef Domain) {
+  std::string Material =
+      (Twine(getMixEffectiveSeed()) + ":" + Domain).str();
+  MD5 Hash;
+  Hash.update(Material);
+  MD5::MD5Result Result;
+  Hash.final(Result);
+  SmallString<32> Hex;
+  MD5::stringifyResult(Result, Hex);
+  return std::string(Hex);
+}
+
+bool llvm::seedMixRandomEngine(CryptoUtils &Engine, StringRef Domain) {
+  return Engine.prng_seed(deriveMixCryptoSeed(Domain));
+}
+
+static bool hasExactMetadata(const MDNode *Node, StringRef ExpectedValue) {
+  if (!Node || Node->getNumOperands() != 1)
+    return false;
+  const auto *Value = dyn_cast<MDString>(Node->getOperand(0));
+  return Value && Value->getString() == ExpectedValue;
+}
+
+bool llvm::hasExactFunctionMetadata(const Function &F, StringRef Key,
+                                    StringRef ExpectedValue) {
+  return hasExactMetadata(F.getMetadata(Key), ExpectedValue);
+}
+
+bool llvm::hasExactBasicBlockMetadata(const BasicBlock &BB, StringRef Key,
+                                      StringRef ExpectedValue) {
+  if (BB.empty())
+    return false;
+  return hasExactMetadata(BB.front().getMetadata(Key), ExpectedValue);
+}
 
 static bool valueEscapes(const Instruction &Inst) {
   if (!Inst.getType()->isSized())
@@ -282,7 +363,7 @@ string llvm::rand_str(int len) {
   int idx;
   for (idx = 0; idx < len; idx++) {
 
-    switch ((rand() % 3)) {
+    switch (cryptoutils->get_range(3)) {
     case 1:
       c = 'O';
       break;
@@ -348,4 +429,3 @@ void llvm::LowerConstantExpr(Function &F) {
     }
   }
 }
-

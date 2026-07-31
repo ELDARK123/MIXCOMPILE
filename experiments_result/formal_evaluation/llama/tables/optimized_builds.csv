@@ -1,0 +1,2 @@
+variant,compiler,compiler_sha256,configure_exit_code,configure_seconds,build_exit_code,build_seconds,status
+optimized,/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_toolchain/freeze_20260723T095408Z/bin/clang,fe7f9bb8f584060e35771f66168da80c3b9eb3c75ce9071f73e4cd39b6e3b778,0,1.819152,0,138.155869,PASS

@@ -38,6 +38,9 @@ static cl::opt<int> SplitNum("split_num", cl::init(3), cl::desc("Split <split_nu
 PreservedAnalyses SplitBasicBlockPass::run(Function& F, FunctionAnalysisManager& AM) {
     Function *tmp = &F; // 传入的Function
     if (toObfuscate(flag, tmp, "split")){ // 判断什么函数需要开启混淆
+      if (mix_decision_mode &&
+          !hasExactFunctionMetadata(F, "SPLIT_annotations", "split"))
+        return PreservedAnalyses::all();
         // 步骤1：通过key "FLA_annotations" 获取MDNode（和设置时的key完全一致）
       MDNode *SPLITAnnotMD = (*tmp).getMetadata("SPLIT_annotations");
       if (SPLITAnnotMD) {
@@ -57,6 +60,10 @@ PreservedAnalyses SplitBasicBlockPass::run(Function& F, FunctionAnalysisManager&
         // 步骤4：转换为C++ std::string
         if(SPLITAnnotStr->getString().str() == "nosplit") return PreservedAnalyses::all();
       }
+        seedMixRandomEngine(*llvm::cryptoutils,
+                            (Twine("SPLIT:") +
+                             F.getParent()->getModuleIdentifier() + ":" +
+                             F.getName()).str());
         split(tmp); // 分割流程
         ++Split; // 计次
         return PreservedAnalyses::none();

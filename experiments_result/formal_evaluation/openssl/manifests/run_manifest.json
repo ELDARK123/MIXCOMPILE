@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "run_id": "run_20260723T132837Z",
+  "stage": "formal_openssl",
+  "status": "completed",
+  "build_passes": 5,
+  "build_variants": 5,
+  "measurement_rows": 1800,
+  "formal_freeze_id": "freeze_20260723T095408Z",
+  "temporary_build_root_removed": true,
+  "network_used": false
+}

@@ -24,6 +24,11 @@ bool IndirectCallPass::doIndirctCall(Function &Fn){
         return false;
     }
 
+    seedMixRandomEngine(RandomEngine,
+                        (Twine("ICALL:") +
+                         Fn.getParent()->getModuleIdentifier() + ":" +
+                         Fn.getName()).str());
+
     LLVMContext &Ctx = Fn.getContext();
 
     CalleeNumbering.clear();
@@ -131,7 +136,9 @@ void IndirectCallPass::NumberCallees(Function &F){
 		BasicBlock &bb = BB;
 	  	if (bb.empty()) continue;
       	Instruction &firstInst = *bb.begin();
-	 	if(!firstInst.hasMetadata("ICALL_annotations")){
+	 	if (mix_decision_mode
+                ? !hasExactBasicBlockMetadata(bb, "ICALL_annotations", "icall")
+                : !firstInst.hasMetadata("ICALL_annotations")) {
 			continue;
 	  	}
 	  	dbgs()<<"Successfully execute icall pass on"<<F.getName()<<"\n";

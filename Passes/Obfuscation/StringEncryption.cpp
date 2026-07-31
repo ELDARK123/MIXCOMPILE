@@ -5,6 +5,9 @@
 using namespace llvm;
 
 bool StringEncryptionPass::do_StrEnc(Module &M, ModuleAnalysisManager &AM) {
+  seedMixRandomEngine(
+      RandomEngine,
+      (Twine("STRING:") + M.getModuleIdentifier()).str());
   std::set<GlobalVariable *> ConstantStringUsers;
 
   // collect all c strings

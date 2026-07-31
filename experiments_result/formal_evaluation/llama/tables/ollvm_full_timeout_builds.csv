@@ -1,0 +1,2 @@
+variant,compiler,compiler_sha256,build_exit_code,build_seconds,status,timeout_basis_run,current_attempt_progress,llama_bench_created
+ollvm-full,/home/vincent/Desktop/OLLVM/llvm-project-17.0.6.src/build/bin/clang,933b85731b4a6b9447e34a917696950017f8ee005d43ee812cec23800b56746b,TIMEOUT,10800.139960,TIMEOUT,run_20260721T230414Z,50/210,false

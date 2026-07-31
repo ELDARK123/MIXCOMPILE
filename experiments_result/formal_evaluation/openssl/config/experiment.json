@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "formal_freeze_id": "freeze_20260723T095408Z",
+  "run_id": "run_20260723T132837Z",
+  "build_root": "/tmp/mixcompile_formal_openssl_20260723T132837Z",
+  "variants": ["gcc", "llvm", "balanced", "optimized", "ollvm-full"],
+  "optimized_weights_sha256": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "baseline_weights_sha256": "8f94ee3880b6786d2cced9d4f783770b019c2c9a8b431bbf266131bef04cf7f0",
+  "optimized_profile": {
+    "Security": 1.1,
+    "Diversity": 1.05,
+    "Runtime": 0.9,
+    "Size": 0.25,
+    "Risk": 0.95
+  },
+  "bcf_budget": {
+    "max_instructions": 2000,
+    "max_expected_modified_bb": 500
+  },
+  "ollvm_full_strategies": ["sobf", "icall", "split", "fla", "sub", "bcf", "ibr", "igv"],
+  "algorithms": {
+    "AES-128-CBC": "aes-128-cbc",
+    "ChaCha20-Poly1305": "chacha20-poly1305",
+    "SHA-512": "sha512"
+  },
+  "block_sizes": [16, 64, 256, 1024, 8192, 16384],
+  "warmups": 3,
+  "repetitions": 20,
+  "seconds_per_speed": 1,
+  "build_jobs": 4,
+  "seed": 1,
+  "build_timeout_seconds": 7200,
+  "speed_timeout_seconds": 30,
+  "configure_options": ["linux-x86_64", "no-shared", "no-module", "no-asm", "no-tests", "no-docs"],
+  "compile_flags": ["-O2", "-fno-lto", "-fPIC", "-fno-stack-protector", "-fcf-protection=none", "-march=x86-64", "-mtune=generic"],
+  "link_flags": ["-fno-lto", "-Wl,-z,relro", "-Wl,-z,now", "-Wl,--build-id=sha1"],
+  "result_format": "CSV",
+  "cleanup_build_root": true,
+  "metric_note": "Fresh five-variant OpenSSL 3.6.1 no-asm static/no-module comparison with three warmups and twenty one-second measurements per algorithm and block size. Full rerun after run_20260723T113858Z was interrupted before result serialization."
+}

@@ -1,0 +1,116 @@
+{
+  "schema_version": 1,
+  "status": "gate7_formal_approved",
+  "approved_operation": 31,
+  "generated_operation": 30,
+  "common": {
+    "compile_flags": [
+      "-O2",
+      "-fno-lto",
+      "-fPIE",
+      "-fno-stack-protector",
+      "-fno-stack-clash-protection",
+      "-fcf-protection=none",
+      "-march=x86-64",
+      "-mtune=generic"
+    ],
+    "link_flags": [
+      "-pie",
+      "-fno-lto",
+      "-Wl,-z,relro",
+      "-Wl,-z,now",
+      "-Wl,--build-id=sha1"
+    ],
+    "c_and_cxx_standard": "per-test-suite-target",
+    "exceptions_and_rtti": "compiler defaults; no global override",
+    "linkage": "dynamic",
+    "build_type": "Release",
+    "build_jobs": 4,
+    "march_native": false
+  },
+  "variants": {
+    "gcc": {
+      "cc_path_key": "GCC",
+      "cxx_path_key": "GXX",
+      "compiler_sha256": "821af3c74506283c179ca413bb33e6b528805a4dd8a5c09df125e5ad560a9e89",
+      "cxx_compiler_sha256": "2360901d864cf10bfd6296e261cb2c14053552a80377761ab07146ec9ec9a2c0",
+      "backend_flags": [],
+      "role": "GCC 11.4 baseline"
+    },
+    "llvm": {
+      "cc_path_key": "LLVM_CLANG",
+      "cxx_path_key": "LLVM_CLANGXX",
+      "compiler_sha256": "c96fec80e8c0682c7152d05be50827da9604a78458d287ecbf53093d901389e8",
+      "cxx_compiler_sha256": "c96fec80e8c0682c7152d05be50827da9604a78458d287ecbf53093d901389e8",
+      "backend_flags": [],
+      "role": "Vanilla LLVM 17.0.6 baseline"
+    },
+    "ollvm-full": {
+      "cc_path_key": "OLLVM_CLANG",
+      "cxx_path_key": "OLLVM_CLANGXX",
+      "compiler_sha256": "933b85731b4a6b9447e34a917696950017f8ee005d43ee812cec23800b56746b",
+      "cxx_compiler_sha256": "933b85731b4a6b9447e34a917696950017f8ee005d43ee812cec23800b56746b",
+      "backend_flags": [
+        "-mllvm", "-sobf",
+        "-mllvm", "-icall",
+        "-mllvm", "-split",
+        "-mllvm", "-fla",
+        "-mllvm", "-sub",
+        "-mllvm", "-bcf",
+        "-mllvm", "-ibr",
+        "-mllvm", "-igv"
+      ],
+      "defaults": {"split_num": 3, "sub_loop": 1, "bcf_prob": 70, "bcf_loop": 2},
+      "rng_note": "No experiment-wide deterministic CryptoUtils seed is exposed; preserve each built artifact and hash.",
+      "role": "All eight locally implemented OLLVM obfuscation switches"
+    },
+    "pd-only": {
+      "cc_path_key": "MIXCOMPILE_CLANG",
+      "cxx_path_key": "MIXCOMPILE_CLANGXX",
+      "compiler_sha256": "3d180e76f31103f6bd26bca85f489afe2440faee6db2ef7e7f303fe1f777dd1e",
+      "cxx_compiler_sha256": "3d180e76f31103f6bd26bca85f489afe2440faee6db2ef7e7f303fe1f777dd1e",
+      "backend_flags": [
+        "-mllvm", "-pd",
+        "-mllvm", "-mix-mode=cost",
+        "-mllvm", "-mix-profile=balanced",
+        "-mllvm", "-mix-seed={mix_seed}",
+        "-mllvm", "-mix-cost-config={baseline_weights}"
+      ],
+      "role": "PassDecider preprocessing without downstream transforms"
+    },
+    "mixcompile": {
+      "cc_path_key": "MIXCOMPILE_CLANG",
+      "cxx_path_key": "MIXCOMPILE_CLANGXX",
+      "compiler_sha256": "3d180e76f31103f6bd26bca85f489afe2440faee6db2ef7e7f303fe1f777dd1e",
+      "cxx_compiler_sha256": "3d180e76f31103f6bd26bca85f489afe2440faee6db2ef7e7f303fe1f777dd1e",
+      "backend_flags": [
+        "-mllvm", "-pd",
+        "-mllvm", "-ibr", "-mllvm", "-bcf", "-mllvm", "-fla",
+        "-mllvm", "-split", "-mllvm", "-igv", "-mllvm", "-sub",
+        "-mllvm", "-icall",
+        "-mllvm", "-mix-mode=cost",
+        "-mllvm", "-mix-profile=balanced",
+        "-mllvm", "-mix-seed={mix_seed}",
+        "-mllvm", "-mix-cost-config={baseline_weights}"
+      ],
+      "role": "MIXCOMPILE balanced cost mode with Metadata-gated downstream passes"
+    },
+    "mixcompile-optimized": {
+      "cc_path_key": "MIXCOMPILE_CLANG",
+      "cxx_path_key": "MIXCOMPILE_CLANGXX",
+      "compiler_sha256": "3d180e76f31103f6bd26bca85f489afe2440faee6db2ef7e7f303fe1f777dd1e",
+      "cxx_compiler_sha256": "3d180e76f31103f6bd26bca85f489afe2440faee6db2ef7e7f303fe1f777dd1e",
+      "backend_flags": [
+        "-mllvm", "-pd",
+        "-mllvm", "-ibr", "-mllvm", "-bcf", "-mllvm", "-fla",
+        "-mllvm", "-split", "-mllvm", "-igv", "-mllvm", "-sub",
+        "-mllvm", "-icall",
+        "-mllvm", "-mix-mode=cost",
+        "-mllvm", "-mix-profile=optimized",
+        "-mllvm", "-mix-seed={mix_seed}",
+        "-mllvm", "-mix-cost-config={optimized_weights}"
+      ],
+      "role": "MIXCOMPILE optimized pass weights with optimized global cost profile"
+    }
+  }
+}

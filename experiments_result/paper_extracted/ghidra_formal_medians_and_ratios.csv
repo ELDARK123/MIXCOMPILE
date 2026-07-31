@@ -1,0 +1,5 @@
+﻿"variant","programs","repetitions_per_program","cross_program_median_decompilation_seconds","median_ratio_vs_llvm","source_by_sample","source_ratio"
+"gcc","5","3","0.147237099","0.67681896","formal_evaluation/llvm-test-suite/tables/ghidra_by_sample.csv","formal_evaluation/llvm-test-suite/tables/ghidra_ratios.csv"
+"llvm","5","3","0.217542811","1","formal_evaluation/llvm-test-suite/tables/ghidra_by_sample.csv","formal_evaluation/llvm-test-suite/tables/ghidra_ratios.csv"
+"optimized","5","3","4.739043484","8.108811085","formal_evaluation/llvm-test-suite/tables/ghidra_by_sample.csv","formal_evaluation/llvm-test-suite/tables/ghidra_ratios.csv"
+"ollvm-full","5","3","0.799863754","3.626186115","formal_evaluation/llvm-test-suite/tables/ghidra_by_sample.csv","formal_evaluation/llvm-test-suite/tables/ghidra_ratios.csv"

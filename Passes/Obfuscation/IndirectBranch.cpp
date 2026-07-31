@@ -207,6 +207,9 @@ PreservedAnalyses IndirectBranchPass::run(Module &M, ModuleAnalysisManager &AM) 
   }
   for (Function &Fn : M) {
     if (toObfuscate(flag, &Fn, "ibr")) {
+      if (mix_decision_mode &&
+          !hasExactFunctionMetadata(Fn, "IBR_annotations", "ibr"))
+        continue;
 
       if (Options && Options->skipFunction(Fn.getName())) {
         continue;
@@ -237,6 +240,10 @@ PreservedAnalyses IndirectBranchPass::run(Module &M, ModuleAnalysisManager &AM) 
       }
 
       LLVMContext &Ctx = Fn.getContext();
+
+      seedMixRandomEngine(RandomEngine,
+                          (Twine("IBR:") + M.getModuleIdentifier() + ":" +
+                           Fn.getName()).str());
 
       // Init member fields
       BBNumbering.clear();

@@ -2,6 +2,7 @@
 #include "CryptoUtils.h"
 #include "Flattening.h"
 #include "SplitBasicBlock.h"
+#include <algorithm>
 //#include "llvm/Transforms/Utils/LowerSwitch.h"
 // namespace
 using namespace llvm;
@@ -15,6 +16,9 @@ PreservedAnalyses FlatteningPass::run(Function& F, FunctionAnalysisManager& AM) 
     Function *tmp = &F; // 传入的Function
     // 判断是否需要开启控制流平坦化
     if (toObfuscate(flag, tmp, "fla")) {
+      if (mix_decision_mode &&
+          !hasExactFunctionMetadata(F, "FLA_annotations", "fla"))
+        return PreservedAnalyses::all();
       // 用于读取指定的函数元数据
       // 步骤1：通过key "FLA_annotations" 获取MDNode（和设置时的key完全一致）
       MDNode *FLAAnnotMD = (*tmp).getMetadata("FLA_annotations");
@@ -36,6 +40,9 @@ PreservedAnalyses FlatteningPass::run(Function& F, FunctionAnalysisManager& AM) 
         if(FLAAnnotStr->getString().str() == "nofla") return PreservedAnalyses::all();
       }
       INIT_CONTEXT(F);
+      seedMixRandomEngine(*llvm::cryptoutils,
+                          (Twine("FLA:") + F.getParent()->getModuleIdentifier() +
+                           ":" + F.getName()).str());
       outs()<<"[Soule] debug. "<< F.getName()<<" \n";
       if (flatten(*tmp)) {
         ++Flattened;
@@ -66,15 +73,21 @@ bool FlatteningPass::flatten(Function &F) {
     // 从vector中去除第一个基本块
     origBB.erase(origBB.begin());
     BasicBlock &entryBB = F.getEntryBlock();
-    // 如果第一个基本块的末尾是条件跳转，单独分离
-    bool bEntryBB_isConditional = false;
-    if(BranchInst *br = dyn_cast<BranchInst>(entryBB.getTerminator())){
-        if(br->isConditional()){
-            BasicBlock *newBB = entryBB.splitBasicBlock(br, "newBB");
-            origBB.insert(origBB.begin(), newBB);
-            bEntryBB_isConditional = true;
-        }
+    // Preserve the actual entry successor. Basic-block layout order is not a
+    // control-flow guarantee: a loop latch can appear before its header.
+    BranchInst *entryBr = dyn_cast<BranchInst>(entryBB.getTerminator());
+    if (!entryBr)
+        return false;
+    BasicBlock *entrySuccessor = nullptr;
+    if(entryBr->isConditional()){
+        BasicBlock *newBB = entryBB.splitBasicBlock(entryBr, "newBB");
+        origBB.insert(origBB.begin(), newBB);
+        entrySuccessor = newBB;
+    } else {
+        entrySuccessor = entryBr->getSuccessor(0);
     }
+    if (std::find(origBB.begin(), origBB.end(), entrySuccessor) == origBB.end())
+        return false;
 
     // 创建分发块和返回块
     BasicBlock *dispatchBB = BasicBlock::Create(*CONTEXT, "dispatchBB", &F, &entryBB);
@@ -87,9 +100,8 @@ bool FlatteningPass::flatten(Function &F) {
     BranchInst *brDispatchBB = BranchInst::Create(dispatchBB, &entryBB);
 
     // 在入口块插入alloca和store指令创建并初始化switch变量，初始值为随机值
-    int randNumCase = rand();
+    int randNumCase = static_cast<int>(cryptoutils->get_uint32_t());
     AllocaInst *swVarPtr = new AllocaInst(TYPE_I32, 0, "swVar.ptr", brDispatchBB);
-    new StoreInst(CONST_I32(randNumCase), swVarPtr, brDispatchBB);
     // 在分发块插入load指令读取switch变量
     LoadInst *swVar = new LoadInst(TYPE_I32, swVarPtr, "swVar", false, dispatchBB);
     // 在分发块插入switch指令实现基本块的调度
@@ -97,11 +109,17 @@ bool FlatteningPass::flatten(Function &F) {
     BranchInst::Create(returnBB, swDefault);
     SwitchInst *swInst = SwitchInst::Create(swVar, swDefault, 0, dispatchBB);
     // 将原基本块插入到返回块之前，并分配case值
+    ConstantInt *initialCase = nullptr;
     for(BasicBlock *BB : origBB){
         BB->moveBefore(returnBB);
-        swInst->addCase(CONST_I32(randNumCase), BB);
-        randNumCase = rand();
+        ConstantInt *caseValue = CONST_I32(randNumCase);
+        swInst->addCase(caseValue, BB);
+        if (BB == entrySuccessor)
+            initialCase = caseValue;
+        randNumCase = static_cast<int>(cryptoutils->get_uint32_t());
     }
+    assert(initialCase && "entry successor must have a dispatcher case");
+    new StoreInst(initialCase, swVarPtr, brDispatchBB);
 
     // 在每个基本块最后添加修改switch变量的指令和跳转到返回块的指令
     for(BasicBlock *BB : origBB){

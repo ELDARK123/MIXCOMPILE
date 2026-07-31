@@ -27,6 +27,9 @@ PreservedAnalyses IndirectGlobalVariablePass::run(Module &M, ModuleAnalysisManag
     if (!toObfuscate(flag, &Fn, "igv")) {
       continue;
     }
+    if (mix_decision_mode &&
+        !hasExactFunctionMetadata(Fn, "IGV_annotations", "igv"))
+      continue;
 
     if (Options && Options->skipFunction(Fn.getName())) {
       continue;
@@ -54,6 +57,10 @@ PreservedAnalyses IndirectGlobalVariablePass::run(Module &M, ModuleAnalysisManag
     }
 
     LLVMContext &Ctx = Fn.getContext();
+
+    seedMixRandomEngine(RandomEngine,
+                        (Twine("IGV:") + M.getModuleIdentifier() + ":" +
+                         Fn.getName()).str());
 
     GVNumbering.clear();
     GlobalVariables.clear();

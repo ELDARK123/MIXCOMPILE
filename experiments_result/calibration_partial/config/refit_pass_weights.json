@@ -1,0 +1,58 @@
+{
+  "SUB": {
+    "SecurityGain": 0.62,
+    "DiversityGain": 0.52,
+    "RuntimeCost": 0.08,
+    "SizeCost": 0.05,
+    "note": "fitted_from_data",
+    "CorrectnessRisk": 0.05
+  },
+  "BCF": {
+    "SecurityGain": 1.0,
+    "DiversityGain": 1.0,
+    "RuntimeCost": 0.51,
+    "SizeCost": 0.29,
+    "note": "fitted_from_data",
+    "CorrectnessRisk": 0.05
+  },
+  "FLA": {
+    "SecurityGain": 0.39,
+    "DiversityGain": 0.33,
+    "RuntimeCost": 0.05,
+    "SizeCost": 0.05,
+    "note": "low_activation",
+    "CorrectnessRisk": 0.28
+  },
+  "SPLIT": {
+    "SecurityGain": 0.4,
+    "DiversityGain": 0.34,
+    "RuntimeCost": 0.05,
+    "SizeCost": 0.05,
+    "note": "fitted_from_data",
+    "CorrectnessRisk": 0.05
+  },
+  "IBR": {
+    "SecurityGain": 0.39,
+    "DiversityGain": 0.33,
+    "RuntimeCost": 0.13,
+    "SizeCost": 0.05,
+    "note": "low_activation",
+    "CorrectnessRisk": 0.36
+  },
+  "ICALL": {
+    "SecurityGain": 0.5,
+    "DiversityGain": 0.42,
+    "RuntimeCost": 0.06,
+    "SizeCost": 0.05,
+    "note": "fitted_from_data",
+    "CorrectnessRisk": 0.07
+  },
+  "IGV": {
+    "SecurityGain": 0.39,
+    "DiversityGain": 0.33,
+    "RuntimeCost": 0.05,
+    "SizeCost": 0.05,
+    "note": "low_activation",
+    "CorrectnessRisk": 0.4
+  }
+}

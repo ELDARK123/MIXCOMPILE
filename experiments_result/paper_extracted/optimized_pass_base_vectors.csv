@@ -1,0 +1,8 @@
+﻿"pass","security_gain","diversity_gain","runtime_cost","size_cost","correctness_risk","source_file"
+"SUB","0.490126","0.199157","0.075497","0.0488","0.10815","formal_evaluation/llvm-test-suite/config/optimized_pass_weights.json"
+"BCF","0.434216","0.871526","0.773944","0.709331","0.254053","formal_evaluation/llvm-test-suite/config/optimized_pass_weights.json"
+"FLA","0.707056","0.488146","0.736028","0.215843","0.365736","formal_evaluation/llvm-test-suite/config/optimized_pass_weights.json"
+"SPLIT","0.306698","0.172056","0.108178","0.09488","0.114597","formal_evaluation/llvm-test-suite/config/optimized_pass_weights.json"
+"IBR","0.572982","0.597764","0.242986","0.236418","0.52039","formal_evaluation/llvm-test-suite/config/optimized_pass_weights.json"
+"ICALL","0.458715","0.157404","0.169846","0.106568","0.376419","formal_evaluation/llvm-test-suite/config/optimized_pass_weights.json"
+"IGV","0.516724","0.362678","0.104081","0.13524","0.53025","formal_evaluation/llvm-test-suite/config/optimized_pass_weights.json"
