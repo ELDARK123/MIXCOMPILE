@@ -1,0 +1,1657 @@
+%-----------------------------------------------------------------------
+% MIXCOMPILE: A Program-Feature-Driven Adaptive Method for Diversified
+%             Compilation Pass Selection
+% Version: v5-slim (2026-10-10), condensed from v5 (2026-10-09)
+%   Streamlined revision:
+%     - duplicated disclosure narratives (E6 / T1 / dc incident) stated
+%       once, in the section that owns the evidence
+%     - "Design Challenges" section merged into the method overview;
+%       the pipeline is now described once instead of three times
+%     - "Summary of Findings" section folded into the Conclusion
+%     - E3/E5/E8/T5 compressed; related-work LLM subsection no longer
+%       duplicates the introduction's attack-side survey
+%     - build-time and decompilation-time figures dropped (captions
+%       restated the tables verbatim)
+%     - templated phrasing and repetitive honesty disclaimers reduced
+% For Springer Nature Journal (sn-jnl article template)
+%-----------------------------------------------------------------------
+
+\documentclass[5p,times,authoryear]{elsarticle}
+
+\usepackage{graphicx}
+\usepackage{multirow}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{amsthm}
+\usepackage{mathrsfs}
+\usepackage[title]{appendix}
+\usepackage{xcolor}
+\usepackage{textcomp}
+\usepackage{booktabs}
+\usepackage{algorithm}
+\usepackage{algorithmicx}
+\usepackage{algpseudocode}
+\usepackage{listings}
+\usepackage{lineno}
+
+\newcommand{\todonote}[1]{\textcolor{red}{[TODO: #1]}}
+
+%% Theorem styles (elsarticle uses amsthm defaults)
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}[theorem]{Proposition}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+\theoremstyle{remark}
+\newtheorem{remark}{Remark}
+
+\modulolinenumbers[5]
+
+\journal{Computers \& Security}
+
+\begin{document}
+\linenumbers
+
+%%% Frontmatter
+\begin{frontmatter}
+
+\title{Program-Feature-Driven Adaptive Diversified Pass Selection}
+
+\author[zzu]{Dingyu Wang}
+\author[ieu]{Junchao Wang\corref{cor1}}
+\ead{wangjunc@ustc.edu.cn}
+\author[fdu]{Fan Zhang\corref{cor2}}
+\ead{ffzhang@fudan.edu.cn}
+\author[hzc]{Guangwei Xie}
+\author[fdu]{Mingqian Sun}
+
+\cortext[cor1]{Corresponding author.}
+\cortext[cor2]{Corresponding author.}
+
+\affiliation[zzu]{organization={School of Cyberspace Security, Zhengzhou University},
+            city={Zhengzhou},
+            postcode={450002},
+            country={China}}
+\affiliation[ieu]{organization={School of Cyberspace Security, Information Engineering University},
+            city={Zhengzhou},
+            postcode={450001},
+            country={China}}
+\affiliation[fdu]{organization={Institute of Big Data, Fudan University},
+            city={Shanghai},
+            postcode={200433},
+            country={China}}
+\affiliation[hzc]{organization={Shanghai Hongzhen Information Technology Co., Ltd.},
+            city={Shanghai},
+            postcode={201112},
+            country={China}}
+
+\begin{abstract}
+Compiler-level software diversification denies adversaries the amortization of a
+one-time reverse-engineering investment across identical deployments, but the
+economics of this defense is deteriorating: large language models (LLMs) collapse
+the marginal cost of binary adaptation, while existing obfuscating compilers apply
+uniform pipelines, offer no quantitative control over the security--performance
+trade-off, and expose no interface that automated compilation agents could invoke.
+We present MIXCOMPILE, an LLVM~17-based framework that makes each deployed binary
+an independent, cost-bounded sampling decision. Its foundation is a
+five-dimensional cost model (security gain, diversity gain, runtime, size,
+correctness risk) that gives LLM-based compilation agents a structured,
+quantitative basis for reasoning about security--performance trade-offs. Its
+architecture decouples selection from execution through LLVM metadata annotations
+and exposes a machine-readable interface---strategy space, per-decision audit log,
+and stable invocation surface---through which an LLM can plan, invoke, and verify
+compilation strategies; on this interface, LLM planning preserves semantics in
+98.9\% of cases, versus 63.2\% for direct LLM source rewriting. Its selection
+mechanism operates at function granularity: single-traversal feature extraction
+shapes each program's strategy by its own structure and makes recompilations
+structurally distinct, targeting the amortization economics of LLM-assisted
+adversaries. On a frozen 44/43/43 program split, the pre-registered weight
+configuration dominates 28 of 30 random-weight candidates, 4 of which silently
+corrupt correctness; all 30 seeds of all 12 security-subset programs pass semantic
+verification, and the resulting 30-variant pools are 100\% unique at the
+\texttt{.text} level. On real workloads, MIXCOMPILE stays within 1--13\% of LLVM
+throughput on llama.cpp, completes the full build in 2.0$\times$ the LLVM build
+time (uniform full obfuscation exceeds a three-hour limit without producing a
+binary), and increases Ghidra decompilation cost to 8.11$\times$ LLVM, with
+function-recovery F1 reduced from 0.903 to 0.708 and classical
+function-localization accuracy reduced to 0.163 (unobfuscated $\approx$1.0).
+\end{abstract}
+
+\begin{keyword}
+software diversity \sep obfuscation pass selection \sep five-dimensional cost model \sep program feature extraction \sep LLM-based compilation \sep LLVM compiler
+\end{keyword}
+
+\end{frontmatter}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Main text
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%=======================================================
+\section{Introduction}
+%=======================================================
+
+Modern software is typically deployed across cyberspace as millions of
+structurally identical binaries. For an adversary this is an economic
+advantage: the cost of understanding one binary is paid once and amortized over
+every deployment of the same build. Compiler-level software diversification
+has been studied for over a decade to break this
+amortization~\cite{bib2,franz2010unibus,homescu2013librando,crane2015readactor}:
+if every deployment is an independent structural draw, the attacker must
+re-adapt per target, and defense value equals the marginal increase in
+adaptation cost. The same argument underlies moving-target and
+endogenous-security architectures in system design~\cite{bib1}.
+
+The attack side of this economics has now changed qualitatively. Automated
+adaptation is not new: just-in-time code-reuse attacks showed in 2013 that a
+single memory disclosure suffices to re-assemble an attack against randomized
+code at runtime~\cite{snow2013jitrop}. What is new is that large language
+models (LLMs) perform the same work at near-zero
+cost~\cite{pearce2022asleep,perry2023users}: they generate functional variants
+that fully evade four state-of-the-art detection tools in the hardware IP
+domain~\cite{gohil2025llmpirate}; autonomous attack agents complete individual
+attacks for under \$15 with 37/40 attempted tasks
+succeeding~\cite{singer2026incalmo}; and obfuscation-aware fine-tuning
+recovers up to 16.9 percentage points of instruction-following accuracy on
+commercial virtualization-based protectors~\cite{wang2026oasif}. A defense
+whose value is measured in attacker adaptation cost must therefore be
+re-examined when adaptation becomes cheap.
+
+Against this background, existing obfuscating compilers leave three problems
+open. First, uniform pipelines of the Obfuscator-LLVM
+family~\cite{bib8,bib9,bib10,bib11,bib12} apply the same pass set to every
+function of every program: there is no selection mechanism and no cost
+accounting, and repeated compilations of the same source produce identical
+binaries, which re-enables the very amortization that diversification is meant
+to break. Second, randomized compilation
+frameworks~\cite{homescu2013librando,crane2015readactor,koo2018ccr,franzen2023randcompile}
+introduce seed-driven variation, but their randomization is cost-blind---no
+component estimates what a transformation will cost before applying it---and
+their threat model targets memory-disclosure and code-reuse attacks rather than
+amortized reverse engineering. Third, learning-based selective
+obfuscation~\cite{bib4,wei2025reinobf} optimizes a single objective, typically
+evasion of a known similarity detector, with at most two cost dimensions
+folded into the reward and no independent semantic verification of the output.
+The newest techniques do not close the gap: LLMs that obfuscate source code
+directly achieve at best an 81\% transformation pass rate and tend to
+\emph{simplify} the code rather than obscure
+it~\cite{detomasi2025simplicity}, and LLM-guided compilation
+workflows~\cite{li2026autopass} operate exclusively on the performance axis
+without an interface for planning or invoking security-directed strategies.
+
+To address these problems, we present MIXCOMPILE, an LLVM~17-based framework
+built on one insight: \emph{make every deployed binary an independent sampling
+decision under an explicit cost budget}, and make that decision computable,
+auditable, and invocable. The framework rests on three coupled components. A
+five-dimensional cost model (security gain, diversity gain, runtime cost, size
+cost, correctness risk) scores each of seven obfuscation passes against the
+feature distribution of the program, turning the security--performance
+trade-off into structured, quantitative data that LLM-based compilation agents
+can reason over instead of prompt-level intuition. A decoupled
+selection--execution architecture emits every decision as an LLVM metadata
+annotation and exposes a machine-readable interface through which external
+callers, including LLM-based compilation
+workflows, can plan, invoke, and verify compilation strategies while the
+constructive safeguards remain inside
+the compiler. A function-granularity selection mechanism extracts control-flow
+and instruction-composition features in a single traversal, so that each
+program's strategy is shaped by its own structure and boundary randomization
+makes recompilations structurally distinct, directly targeting the amortization
+economics of LLM-assisted adversaries.
+
+Formally, the paper asks a narrow, empirically decidable question at the
+compiler level: \emph{can a compiler automatically select, for each program, a
+combination of obfuscation passes that (i) measurably increases the cost of
+automated binary analysis, (ii) keeps runtime, code-size, and correctness risk
+under explicit quantitative control, and (iii) produces mutually distinct
+variants across repeated compilations of the same source, so that an
+adversary's adaptation cannot be amortized across deployments?} The threat
+model is explicit: the adversary is an automated binary-analysis toolchain or
+an LLM-assisted analyst operating on deployed binaries, without knowledge of
+the compilation seed, the weight profile, or the per-program decision log. The
+defense goal is
+to raise the per-target adaptation cost, and we do not claim unbreakability
+against human experts, cryptographic security, or immunity to a sufficiently
+resourced attacker.
+
+The contributions of this paper are threefold.
+\begin{itemize}
+\item \textbf{A five-dimensional, LLM-invocable cost model for obfuscation pass
+  selection}, giving LLM-based compilation agents a structured, quantitative basis
+  for reasoning about security--performance trade-offs instead of prompt-level
+  intuition.
+\item \textbf{A decoupled, modular selection--execution architecture.} Selection
+  decisions are emitted as LLVM metadata and exposed through a machine-readable
+  interface---strategy space, per-decision audit log, and stable invocation
+  surface---through which an LLM can plan, invoke, and verify compilation
+  strategies; new passes are admitted by declaration alone.
+\item \textbf{A function-granularity adaptive selection mechanism for the LLM
+  era.} Single-traversal feature extraction shapes each program's strategy by its
+  own structure and makes recompilations structurally distinct, targeting the
+  amortization economics of LLM-assisted adversaries.
+\end{itemize}
+
+The remainder of this paper is organized as follows. Section~2 introduces
+related work and locates the vacancy in a coordinate system of existing
+mechanisms. Section~3 presents the design, mapping four design challenges
+onto the three components. Section~4 reports the experimental evaluation.
+Section~5 concludes.
+
+%=======================================================
+\section{Related Work}
+%=======================================================
+
+\subsection{Software Diversity and Attack Amortization}
+
+The security value of software diversity rests on a single economic observation: an
+attack engineered against one binary should not transfer for free to another. Unibus
+used diversity through redundancy to survive arbitrary software
+bugs~\cite{franz2010unibus}; the SoK of Larsen et al.~\cite{bib2} systematized
+automated software diversity and identified \emph{amortization} as the attacker's core
+economic advantage. Compiler-level instantiations include Librando's transparent
+randomization of JIT-compiled applications~\cite{homescu2013librando}, Readactor's code
+randomization resilient to memory disclosure~\cite{crane2015readactor},
+compiler-assisted code-reuse disruption~\cite{koo2018ccr}, and randomized per-build
+removal of forensic gadgets from the Linux kernel~\cite{franzen2023randcompile}.
+Reproducible-builds research notes the opposite trade-off, identical binaries aiding
+auditing and supply-chain verification~\cite{fourn2023reproducible}, which sharpens the
+point that diversity is a \emph{deployment} decision rather than a universal default:
+a diversity mechanism earns its cost only when it measurably raises adaptation cost.
+These frameworks randomize \emph{structure} but do not decide \emph{what to
+transform}; no component estimates, before applying a transformation, what it will
+cost in runtime, size, or correctness risk.
+
+\subsection{Obfuscation Compilation and Selective Obfuscation}
+
+Obfuscation theory and taxonomy date to Collberg et al.~\cite{bib6};
+Schrittwieser et al.~\cite{bib7} measured how long obfuscation actually holds against
+modern analysis, and automated deobfuscation is already practical on native
+code~\cite{bib5}. In engineering practice, Obfuscator-LLVM (OLLVM)~\cite{bib8} fixed
+the three-pass canon (instruction substitution, bogus control flow, control-flow
+flattening) applied uniformly, and successors strengthen individual transforms:
+extended instruction replacement~\cite{bib9}, nested-switch and in-degree control-flow
+obfuscation~\cite{bib10}, code rearrangement~\cite{bib11}, and fragment
+fusion~\cite{bib12}. Optimization-space obfuscation~\cite{bib13} and genetic-algorithm
+search over LLVM passes~\cite{bib14} show that the compiler's own machinery can
+obstruct analysis, and evaluation-methodology work~\cite{bib15} warns that
+obfuscation papers often skip resistance measurement. What unifies this line is the
+absence of a selection mechanism: every function receives the same transformation,
+however improved.
+
+Selective obfuscation is emerging. Wang et al.~\cite{bib4} learn obfuscation sequences
+with reinforcement learning against a similarity detector; ReinObf~\cite{wei2025reinobf}
+optimizes lightweight block-level obfuscation against a known ensemble of binary-code
+similarity detectors, with two cost terms folded into its reward. Both optimize a
+single external objective, verify semantics post hoc at most, and produce one sequence
+rather than a variant pool. Industrial compile-time isomerization~\cite{he2024isomerization}
+generates heterogeneous executables for redundant deployment but publishes no
+selection algorithm or cost accounting. At the transform level,
+Polaris~\cite{zhou2026polaris} pushes obfuscation below IR to the machine IR to resist
+decompiler mid-end analyses, at $3.39$--$5.95\times$ size overhead and without
+per-program adaptation, which its authors list as future work. Transform research
+keeps deepening, and selection and cost control remain open. These two concerns are
+orthogonal to transform quality: deeper transforms enlarge the candidate pool that a
+selector must reason about.
+
+\subsection{LLM-Era Defenses}
+
+The arrival of LLMs has begun to reshape the defense side as well, though
+imprecisely. LLM-based obfuscation achieves at best an 81\% transformation
+pass rate on real functions, and the transformed code is consistently
+\emph{simplified} rather than obscured~\cite{detomasi2025simplicity}.
+LLM-generated program diversity improves reliability in N-version settings
+but operates at source level and small scale~\cite{ron2026galapagos}.
+LLM-guided compilation agents~\cite{li2026autopass} demonstrate that an LLM
+can drive pass ordering when the compiler is opened up and provides grounded
+feedback, but only for performance. The compiler-level response to cheap
+adversarial adaptation is missing. This paper fills it with diversified,
+cost-bounded, semantically safe compilation behind a machine-readable
+strategy interface that LLM workflows can plan over, invoke, and verify.
+
+\subsection{Compiler Pass Selection and Cost Modeling}
+
+Compiler testing established that pass combinations form an explorable
+space~\cite{bib16,bib17,bib18,bib19}, and machine-learning pass selection for
+\emph{performance} is mature: reinforcement-learned phase ordering~\cite{bib20},
+coreset-based sequence prediction~\cite{bib21}, and compiler world
+models~\cite{bib22}. Program features predict optimization outcomes~\cite{bib25,bib26},
+and binary-code similarity provides the measurement
+instruments~\cite{bib23,bib24,bib27}. MIXCOMPILE transfers this methodology from the
+performance axis to the security axis, where the objective space is different in kind:
+security and diversity gains are estimates, runtime and size are measurable costs, and
+correctness risk is a constraint that must never be traded away silently. The model
+accordingly treats correctness as a first-class dimension rather than a post-hoc
+test.
+
+\subsection{Position: A Coordinate System and Its Vacancy}
+\label{sec:coordsys}
+
+Table~\ref{tab:coordsys} arranges the mechanisms most relevant to this paper along six
+axes: transformation layer, selection mechanism, explicit cost model, semantic
+guarantee, diversity product, and threat model. The vacancy is structural, not
+rhetorical: no verified framework spans all six axes. Polaris lists adaptive tuning
+as future work~\cite{zhou2026polaris}; ReinObf optimizes a single detector
+objective~\cite{wei2025reinobf}; randomization frameworks are
+cost-blind~\cite{bib2,franzen2023randcompile}; OLLVM applies uniformly~\cite{bib8}.
+MIXCOMPILE occupies the vacancy: it does not propose new transforms (transform quality
+is complementary and orthogonal) but supplies the missing selection, cost, safety, and
+diversity layers on top of a standard pass pool.
+
+\begin{table*}[!t]
+\centering
+\footnotesize
+\caption{Coordinate system of related mechanisms. ``---''~means the axis is absent in
+the published mechanism. MIXCOMPILE row in bold. Polaris overhead figures are from its
+synthetic (Csmith) evaluation~\cite{zhou2026polaris}.}
+\label{tab:coordsys}
+\begin{tabular}{lllllll}
+\toprule
+Approach & Layer & Selection mechanism & Cost model & Semantic guarantee & Diversity product & Threat model \\
+\midrule
+OLLVM~\cite{bib8} & IR & none (uniform) & --- & --- & seed reroll & human analyst \\
+Readactor~\cite{crane2015readactor} & IR/machine & none & layout cost & by construction & layout randomization & memory disclosure \\
+RandCompile~\cite{franzen2023randcompile} & IR & per-build random removal & --- & --- & build-to-build variance & forensic analysis \\
+Wang et al.~\cite{bib4} & IR & RL sequence & 2-dim, in reward & --- & single sequence & known similarity detector \\
+ReinObf~\cite{wei2025reinobf} & IR (block) & RL (PPO+GAT) & 2-dim, in reward & --- & single sequence & known detector ensemble \\
+Polaris~\cite{zhou2026polaris} & MIR & none (fixed set) & --- & claimed & seed reroll & decompiler mid-end \\
+AutoPass~\cite{li2026autopass} & IR & LLM agent & performance only & compiler oracle & --- (performance) & --- (performance) \\
+\textbf{MIXCOMPILE (this paper)} & IR & \textbf{feature-driven, per-function} & \textbf{5-dim explicit} & \textbf{constructive + differential} & \textbf{combinatorial variant pool} & \textbf{amortizing / LLM-assisted} \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+%=======================================================
+\section{MIXCOMPILE Method Design}
+\label{sec:method}
+%=======================================================
+
+The vacancy identified in Section~\ref{sec:coordsys} defines the design target: a
+compiler-level mechanism that selects obfuscation passes per program, under explicit
+multi-dimensional cost control, with semantic safeguards and seed-independent
+combinatorial diversity.
+
+\subsection{Overview and Design Challenges}
+\label{sec:overview}
+
+Given an LLVM IR program, diversified compilation is the task of selecting a set of
+obfuscation transformations for each program such that the resulting binaries behave
+correctly while differing structurally under controlled runtime, size, and correctness
+costs. Four challenges shape the design. First, uniform full activation maximizes
+diversity but incurs unacceptable runtime overhead, code bloat, and inter-policy
+interference, while static fixed passes provide no adaptation at all; the selection of
+which combination fits each program must rest on measurable structural properties and
+explicit cost estimates rather than one global setting. Second, applying passes
+typically requires multiple IR traversals, which inflates compilation time and limits
+applicability to large projects. Third, diversity gains must be weighed against
+runtime, size, and correctness costs, and different deployment scenarios impose
+different priorities, so the multidimensional trade-off must be encoded into a uniform
+selection score while respecting user-specified deployment rules. Fourth, some passes
+modify control flow and data flow in ways that can break program semantics if applied
+carelessly, so the selection model must never enable them where correctness
+constraints are not satisfied.
+
+MIXCOMPILE addresses these challenges with a four-stage pipeline
+(Figure~\ref{fig:pipeline}). An LLVM module enters the pipeline and passes
+through four stages.
+
+(1)~\textbf{Feature collection}. In a single traversal, all basic blocks
+and instructions of each eligible function are visited; CFG structure counts,
+instruction-type statistics, call flags, and inline-assembly flags are accumulated, and
+a def-use safety pre-screen for indirect branching (IBR, one of the seven passes
+below) is performed at the same time. After the traversal,
+the average CFG depth is computed with a single BFS from the entry block, and
+cyclomatic complexity plus the conditional-jump ratio are derived from the collected
+counts. The program is never re-analyzed per pass.
+
+(2)~\textbf{Applicability filtering}. Each function's (or basic block's)
+feature tuple is checked against the structural preconditions of the seven passes.
+Only passes whose minimal structural requirements are satisfied go on to the scoring
+stage.
+
+(3)~\textbf{Cost-aware selection}. Each candidate pass is scored
+by the five-dimensional cost model under the configured deployment profile, with
+budget gates and boundary randomization applied where appropriate
+(Sections~\ref{sec:costmodel}--\ref{sec:boundary}).
+
+(4)~\textbf{Correctness checking and annotation emission}. The candidates are ordered, IBR always first and the rest sorted by descending
+score, then checked one by one against correctness constraints and written out as
+LLVM Metadata annotations. Downstream passes read these annotations to decide whether
+to apply their transformations; selection is thereby decoupled from execution.
+
+MIXCOMPILE supports seven obfuscation strategies across two granularities. At the
+function level: indirect branching (IBR), bogus control flow (BCF), control-flow
+flattening (FLA), basic block splitting (SPLIT), and global variable indirection
+(IGV). At the basic block level: instruction substitution (SUB) and indirect call
+(ICALL). The user changes the sensitivity of the cost model by setting the deployment
+profile (five weights) and the score threshold.
+
+\paragraph{Granularity.}
+Decisions are \emph{implemented} per function and per basic block, features are
+collected at both levels and every unit is scored individually, and the per-function
+pairing is empirically load-bearing: permuting which function carries which features
+changes per-function decisions far beyond seed noise (Section~\ref{sec:e6},
+experiment E6), and programs receive measurably different strategy unions
+(Section~\ref{sec:rq3}, analysis T1).
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=0.8\textwidth]{mixcompile_flow_revised.pdf}
+\caption{Overall MIXCOMPILE pipeline: input LLVM module $\rightarrow$ four stages $\rightarrow$ Metadata-annotated IR module.}
+\label{fig:pipeline}
+\end{figure*}
+
+\subsection{Program Feature Extraction and Quantification}
+
+MIXCOMPILE measures each function's CFG structure, branch density, instruction
+types, and call behavior, and packs these measurements into a feature tuple. The
+tuple is the only input used for building candidate pass sets and for cost
+scoring. This makes decisions traceable: if a pass is turned on or off for a
+particular function, we can point to which structural feature led to that
+choice, and the full decision is recorded in an auditable log
+(Section~\ref{sec:interface}).
+
+\begin{definition}[Program Feature Collector]
+Given an LLVM function $F$, MIXCOMPILE's feature collector produces a function-level feature
+tuple $\Phi_F$ and a set of basic-block-level feature tuples $\{\varphi_B\}_{B\in F}$.
+$\Phi_F$ characterizes the function's overall control-flow complexity, branch density,
+instruction composition, call behavior, presence of inline assembly, and IBR compatibility;
+$\varphi_B$ characterizes each basic block's local instruction scale, replaceable-instruction
+ratio, and call presence.
+\end{definition}
+
+The function-level feature tuple is formally defined as:
+\begin{equation}
+\begin{aligned}
+\Phi_F = \langle & \mathit{NumBBs}, \mathit{NumEdges}, \mathit{NumCondJumps}, \mathit{NumTotalJumps}, \\
+                 & \mathit{CondJumpRatio}, \mathit{CyclomaticComplexity}, \mathit{AvgCFGDepth}, \\
+                 & \mathit{TotalInsts}, \mathit{TotalSubInsts}, \mathit{MaxBBSize}, \mathit{SubRatio}, \\
+                 & \mathit{HasCall}, \mathit{HasInlineAsm}, \mathit{IBRCompatible} \rangle
+\end{aligned}
+\label{eq:func_features}
+\end{equation}
+
+The basic-block-level feature tuple is formally defined as:
+\begin{equation}
+\varphi_B = \langle \mathit{BBSize}, \mathit{SubInsts}, \mathit{SubRatio}, \mathit{HasCall}, \mathit{HasInlineAsm} \rangle
+\label{eq:bb_features}
+\end{equation}
+
+Table~\ref{tab:features} lists the function-level and basic-block-level features together
+with their semantics and the passes they primarily influence.
+
+\begin{table}[!t]
+\centering
+\footnotesize
+\caption{Program feature summary}
+\label{tab:features}
+\begin{tabular*}{\textwidth}{@{\extracolsep\fill}lll@{}}
+\toprule
+Feature Field & Semantics & Primary Passes  \\
+\midrule
+NumBBs & Number of basic blocks in CFG & FLA, BCF  \\
+NumEdges & Number of directed edges in CFG & FLA, BCF  \\
+NumCondJumps & BBs ending with conditional branch & IBR \\
+NumTotalJumps & BBs ending with any branch & IBR \\
+CondJumpRatio & Conditional jump ratio  & IBR  \\
+Cyclomatic Complexity & Cyclomatic complexity $M = E - N + 2$ & BCF \\
+AvgCFGDepth & Mean BFS depth of all reachable BBs & FLA  \\
+TotalInsts & Total IR instructions in function & ---  \\
+TotalSubInsts & Total replaceable instructions in function & SUB \\
+MaxBBSize & Max instruction count in any BB & SPLIT  \\
+SubRatio & Replaceable instruction ratio & SUB \\
+HasCall & Existence of CallInst or InvokeInst & IGV, ICALL \\
+HasInlineAsm & Existence of inline assembly & IGV \\
+IBR Compatible & IBR def-use safety check result & IBR \\
+\bottomrule
+\end{tabular*}
+\end{table}
+
+\subsubsection{Function-Level CFG Structural Features}
+
+From the LLVM IR CFG, MIXCOMPILE pulls out four kinds of structural features: scale
+features (NumBBs, NumEdges), branch-density features (NumCondJumps, NumTotalJumps,
+CondJumpRatio), complexity features (CyclomaticComplexity), and hierarchical features
+(AvgCFGDepth). All are computed directly from the CFG that LLVM already provides; no
+extra data-flow analysis is needed. NumBBs and NumEdges indicate how large the CFG is,
+and a bigger CFG generally leaves more room for several passes to do useful work.
+CyclomaticComplexity measures the number of independent paths through the function and
+is the main factor for deciding whether BCF makes sense: when the complexity is at
+least 3, the function has at least two independent paths, so inserting bogus branches
+can create effective confusion. CondJumpRatio characterizes conditional control-flow
+density and is the core input for IBR decision making, because IBR produces a richer
+distribution of jump targets in functions with dense conditional branches. AvgCFGDepth
+is calculated from a BFS of the entry block over reachable basic blocks; deeply nested
+functions flattened by FLA contrast more strongly with the original nested structure,
+providing stronger anti-analysis effect.
+
+\subsubsection{Basic-Block-Level and Instruction-Level Features}
+
+As MIXCOMPILE walks through the instructions inside each basic block, it collects
+the basic-block-level and instruction-level numbers that later feed SUB and ICALL
+decisions. BBSize is the number of IR instructions in the block and is used for
+scale constraints on both ICALL and SPLIT. For ICALL we only consider basic
+blocks with fewer than 5 instructions, because the overhead of redirecting a call
+is proportionally smaller in a short block. For SPLIT, the function needs at
+least one basic block with 5 or more instructions; otherwise there is nothing
+big enough to be worth splitting.
+
+SubInsts counts how many instructions in the block are replaceable. Five
+arithmetic/logic opcodes qualify: Add, Sub, And, Or, and Xor. These can be swapped out
+for different instruction sequences that compute the same result. SUB can only be
+applied if $\text{SubInsts} > 0$ in the block. SubRatio reflects the spatial density of
+substitutions within a block and modulates the dynamic score of SUB: the higher the
+ratio, the greater the local diversity gain.
+
+HasCall is a flag for the presence of a CallInst or InvokeInst. For ICALL to be
+considered, we need both $\text{HasCall} = \text{true}$ and $\text{BBSize} < 5$.
+HasInlineAsm is a flag for inline assembly, aggregated up to the function level as a
+safety filter for IGV: if a function has inline assembly anywhere, IGV is not applied
+to it. The flag does not affect ICALL selection, since inline assembly matters for
+IGV, not for ICALL. For call instructions the collector checks whether the called
+function contains inline assembly; all these checks take constant time and do not
+change the overall complexity of the traversal.
+
+\subsubsection{IBR Compatibility Feature}
+
+IBRCompatible is not a statistical feature but a Boolean feature checked by a
+lightweight def-use construction. It shifts the correctness constraint of
+control-flow-sensitive transformation into the feature extraction stage, so that the
+subsequent cost model cannot select IBR on unsafe functions. The checks run
+synchronously while traversing the use chain of instructions and apply three rejection
+conditions:
+
+(1)~\textbf{Same-block PHI use.} For each instruction $I$ that defines a value, we
+look at all its uses. If any use is a PHI node in the same basic block as $I$, the
+function is marked incompatible with IBR.
+
+(2)~\textbf{Cross-block use in a multi-predecessor block.} If any use of $I$ is in a
+different basic block, and that block has more than one predecessor, the function is
+rejected for IBR.
+
+(3)~\textbf{Conditional branch on the unique-predecessor chain.} If the use is in a
+block $U_B$ that has exactly one predecessor $P$, we trace backward along this chain
+of single-predecessor blocks until we reach the block $B$ where $I$ was defined. If
+any block along the chain ends with a conditional branch, or has more than one
+predecessor, IBR is rejected.
+
+Together, these checks restrict IBR to functions where def-use relationships have a
+clean, linear structure, so that replacing direct branches with indirect ones cannot
+compromise the program's semantics.
+
+\subsubsection{Feature Extraction Algorithm}
+
+The feature collection is done in a single pass through each function, light enough
+that it does not noticeably slow down compilation. Algorithm~\ref{alg:feature} spells
+out the full procedure.
+
+\begin{algorithm}[!t]
+\footnotesize
+\caption{MIXCOMPILE Feature Collection (FeatureCollection)}
+\label{alg:feature}
+\begin{algorithmic}[1]
+    \Require LLVM function $F$
+    \Ensure Function-level feature tuple $\Phi_F$, basic-block-level feature map $\{\varphi_B\}$
+    \State Initialize $\Phi_F$, all fields to 0 or false
+    \State $\text{IBRCompat} \gets \text{true}$
+    \For{each basic block $B \in F$}
+        \State $\Phi_F.\text{NumBBs} \gets \Phi_F.\text{NumBBs} + 1$
+        \State $\Phi_F.\text{NumEdges} \gets \Phi_F.\text{NumEdges} + \text{SuccCount}(B)$
+        \State Update jump statistics from $\text{Terminator}(B)$:
+        \If{is conditional branch} \State $\Phi_F.\text{NumCondJumps} \gets \Phi_F.\text{NumCondJumps} + 1$ \EndIf
+        \If{is any branch} \State $\Phi_F.\text{NumTotalJumps} \gets \Phi_F.\text{NumTotalJumps} + 1$ \EndIf
+        \State Initialize local feature $\varphi_B$, all fields to 0 or false
+        \For{each instruction $I \in B$}
+            \State $\varphi_B.\text{BBSize} \gets \varphi_B.\text{BBSize} + 1$
+            \If{$\text{IsSubstitutable}(I)$} \State $\varphi_B.\text{SubInsts} \gets \varphi_B.\text{SubInsts} + 1$ \EndIf
+            \If{$I$ is CallInst or InvokeInst}
+                \State $\varphi_B.\text{HasCall} \gets \text{true}$
+                \If{$I$ contains inline assembly} \State $\varphi_B.\text{HasInlineAsm} \gets \text{true}$ \EndIf
+            \EndIf
+            \If{$I$ has uses and $\text{IBRCompat} = \text{true}$}
+                \State $\text{IBRCompat} \gets \text{IBRCompat} \land \text{CheckIBRUseSafety}(I, B)$
+            \EndIf
+        \EndFor
+        \State $\varphi_B.\text{SubRatio} \gets \text{SafeRatio}(\varphi_B.\text{SubInsts}, \varphi_B.\text{BBSize})$
+        \State Accumulate to function-level totals and update $\Phi_F.\text{MaxBBSize}$,
+               $\Phi_F.\text{HasCall}$, $\Phi_F.\text{HasInlineAsm}$
+    \EndFor
+    \State $\Phi_F.\text{CyclomaticComplexity} \gets \max(\text{NumEdges} - \text{NumBBs} + 2, 1)$
+    \State $\Phi_F.\text{CondJumpRatio} \gets \text{SafeRatio}(\text{NumCondJumps}, \text{NumTotalJumps})$
+    \State $\Phi_F.\text{AvgCFGDepth} \gets \text{BFSAverageDepth}(F)$
+    \State $\Phi_F.\text{SubRatio} \gets \text{SafeRatio}(\text{TotalSubInsts}, \text{TotalInsts})$
+    \State $\Phi_F.\text{IBRCompatible} \gets \text{IBRCompat}$
+    \Return $\Phi_F, \{\varphi_B\}$
+\end{algorithmic}
+\end{algorithm}
+
+For each function $F$, MIXCOMPILE completes all feature extraction within a single
+traversal. After traversal, cyclomatic complexity is computed directly as
+$\text{NumEdges} - \text{NumBBs} + 2$, the conditional-jump ratio via
+$\text{SafeRatio}(\text{NumCondJumps}, \text{NumTotalJumps})$, and the average CFG
+depth via a single BFS. The per-function feature-extraction cost is $O(|I| + |E| +
+|U|)$, where $|I|$ is the number of IR instructions, $|E|$ the number of CFG edges,
+and $|U|$ the number of def-use relationships.
+
+\subsection{Cost-Aware Selection Model}
+\label{sec:costmodel}
+
+After feature extraction, MIXCOMPILE estimates the benefit and cost of each applicable
+pass for the current program structure, then reduces the five dimensions to a scalar
+score under a selected deployment profile. The separation matters: the JSON file
+stores the pass-specific base vectors, whereas the profile specifies the
+deployment-level trade-off among security, diversity, runtime, size, and risk.
+
+\subsubsection{Pass Base Cost Vector}
+
+Each pass $P$ is associated with a fixed five-dimensional base cost vector
+$C_P^{\text{base}}$ encoding its intrinsic properties:
+\begin{equation}
+C_P^{\text{base}} = \langle s_P, d_P, r_P, z_P, k_P \rangle ,
+\label{eq:cost_vector}
+\end{equation}
+where $s_P$ and $d_P$ are security and diversity rewards, and $r_P$, $z_P$, and
+$k_P$ are runtime cost, size cost, and correctness risk. These values are base
+quantities; the feature-modulated terms of Section~3.3.3 turn them into
+per-function scores. Table~\ref{tab:optimized_pass_vectors}
+reports the vectors frozen for the formal optimized evaluation.
+
+\begin{table*}[!t]
+\centering
+\footnotesize
+\caption{Frozen optimized pass base vectors.}
+\label{tab:optimized_pass_vectors}
+\begin{tabular}{lccccc}
+\toprule
+Pass & Security gain & Diversity gain & Runtime cost & Size cost & Correctness risk \\
+\midrule
+SUB   & 0.490126 & 0.199157 & 0.075497 & 0.048800 & 0.108150 \\
+BCF   & 0.434216 & 0.871526 & 0.773944 & 0.709331 & 0.254053 \\
+FLA   & 0.707056 & 0.488146 & 0.736028 & 0.215843 & 0.365736 \\
+SPLIT & 0.306698 & 0.172056 & 0.108178 & 0.094880 & 0.114597 \\
+IBR   & 0.572982 & 0.597764 & 0.242986 & 0.236418 & 0.520390 \\
+ICALL & 0.458715 & 0.157404 & 0.169846 & 0.106568 & 0.376419 \\
+IGV   & 0.516724 & 0.362678 & 0.104081 & 0.135240 & 0.530250 \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\subsubsection{Weight Configuration}
+
+The deployment profile is
+\begin{equation}
+W = \langle w_{\mathrm{sec}}, w_{\mathrm{div}}, w_{\mathrm{run}},
+w_{\mathrm{size}}, w_{\mathrm{risk}} \rangle .
+\label{eq:weights}
+\end{equation}
+The reported experiments use the optimized deployment profile
+\begin{equation}
+W_{\mathrm{opt}}=\langle1.10,1.05,0.90,0.25,0.95\rangle .
+\label{eq:optimized_weights}
+\end{equation}
+The profile values are calibrated engineering parameters; Section~4 reports the
+calibration, sensitivity, and ablation evidence behind them.
+
+\subsubsection{Feature-Modulated Dynamic Scoring}
+
+Although a selected profile is fixed for one experiment, MIXCOMPILE's score is
+dynamic. For a candidate pass $P$ and feature tuple $x$ (where $x$ is either $\Phi_F$
+or $\varphi_B$), the composite score works as follows:
+\begin{equation}
+\text{Score}(P, x, W) = w_{\mathrm{sec}} \cdot S_P(x) + w_{\mathrm{div}} \cdot D_P(x) - w_{\mathrm{run}} \cdot R_P(x) - w_{\mathrm{size}} \cdot Z_P(x) - w_{\mathrm{risk}} \cdot K_P(x)
+\label{eq:score}
+\end{equation}
+
+The terms are dynamic values modulated according to the corresponding features, so the
+same pass can produce completely different scores on different characteristics. The
+specific modulation rules are as follows:
+
+\textbf{IBR:} $S_{\text{IBR}}$ increases with CondJumpRatio, as denser conditional
+branching yields richer jump-target diversity; $R_{\text{IBR}}$ likewise increases
+with conditional-jump ratio as more branch points must be indirected.
+
+\textbf{BCF:} BCF uses a workload-aware estimate.  Let $N_{BB}$ be the number of basic
+blocks, $N_I$ the number of instructions, $c$ the cyclomatic complexity, $q$ the configured
+BCF probability in percent, and $L$ the configured loop count.  We compute
+\begin{align}
+f_{\mathrm{BCF}} &= \operatorname{clamp}_{[0,1]}\left(\frac{c-2}{4}\right),
+&p &= \operatorname{clamp}_{[0,1]}(q/100), \\
+E_{\mathrm{sum}} &= \sum_{i=0}^{L-1}(1+3p)^i,
+&E_{BB} &= N_{BB}\,p\,E_{\mathrm{sum}}, \label{eq:bcf_workload}\\
+m_R &= 1+\frac{\log_2(1+18E_{BB})}{10},
+&m_Z &= 1+\frac{\log_2(1+E_{BB}(N_I/N_{BB}+18))}{12}.
+\label{eq:bcf_multipliers}
+\end{align}
+The adjusted BCF dimensions are
+\begin{align}
+S_{\mathrm{BCF}}&=s_{\mathrm{BCF}}f_{\mathrm{BCF}}, &
+D_{\mathrm{BCF}}&=d_{\mathrm{BCF}}f_{\mathrm{BCF}}, \\
+R_{\mathrm{BCF}}&=r_{\mathrm{BCF}}f_{\mathrm{BCF}}m_R, &
+Z_{\mathrm{BCF}}&=z_{\mathrm{BCF}}f_{\mathrm{BCF}}(1+\mathrm{CondJumpRatio})m_Z, \\
+K_{\mathrm{BCF}}&=k_{\mathrm{BCF}}f_{\mathrm{BCF}}. &&
+\end{align}
+Thus BCF cost reflects its configured probability, repeated expansion, original block
+size, and expected added instructions, instead of relying only on a static pass
+vector. BCF is eligible only when $c\geq3$, $N_I\leq2000$, and $E_{BB}\leq500$.  The
+latter two conditions are explicit budget gates that limit long-tail compile-time,
+runtime, and size expansion.
+
+\textbf{FLA:} $S_{\text{FLA}}$ increases with AvgCFGDepth, as flattening produces
+more thorough structural disruption in deeply nested functions;
+$R_{\text{FLA}}$ increases with cyclomatic complexity;
+$Z_{\text{FLA}}$ increases with the number of basic blocks.
+
+\textbf{SPLIT:} $S_{\text{SPLIT}}$ increases with MaxBBSize; $Z_{\text{SPLIT}}$
+increases with maximum basic-block size.
+
+\textbf{SUB:} $S_{\text{SUB}}$ increases with the basic block's SubRatio; runtime and
+size costs increase with substitution ratio and count.
+
+\textbf{ICALL:} Generates benefits and costs only on basic blocks where
+$\text{HasCall} = \text{true}$ and $\text{BBSize} < 5$.
+
+\textbf{IGV:} When $\text{HasInlineAsm} = \text{true}$, correctness risk is set to a
+high value, effectively equivalent to direct exclusion by the applicability predicate.
+IGV is always placed in the boundary state, because the available static features do
+not distinguish strong from weak IGV candidates.
+
+After feature-modulated dynamic scoring, MIXCOMPILE applies a global threshold $\tau$
+as a final filter: only candidates with $\text{Score} > \tau$ enter the candidate set.
+$\tau$ is exposed via the \texttt{--mix-score-threshold} command-line option with a
+default value of 0.0.
+
+\subsection{Controlled Randomization via Boundary Conditions}
+\label{sec:boundary}
+
+Deterministic feature rules ensure the interpretability of decisions, but if all
+boundary samples make the same decision, repeated compilation of the same program may
+still produce highly similar results, re-enabling attack amortization. MIXCOMPILE
+therefore applies a random admission mechanism in the boundary region where a pass is
+applicable but its benefit is uncertain.
+
+\begin{definition}[Boundary Predicate]
+For a pass $P$, $\text{Boundary}(P, x)$ is true if and only if the dominant feature of
+$P$ lies within a predefined boundary interval close to its applicability threshold.
+\end{definition}
+
+The specific boundary intervals are listed in Table~\ref{tab:boundary}.
+
+\begin{table}[!t]
+\centering
+\footnotesize
+\caption{Pass boundary intervals}
+\label{tab:boundary}
+\begin{tabular}{ccc}
+\toprule
+Pass & Boundary Interval & Condition Description \\
+\midrule
+IBR & $0.15 \leq \text{CondJumpRatio} < 0.25$ & Benefit uncertain at low conditional-branch density \\
+BCF & $3 \leq \text{CyclomaticComplexity} < 5$ & Bogus-branch differentiation insufficient at low complexity \\
+FLA & $2.0 \leq \text{AvgCFGDepth} < 3.0$ & Structural change limited at shallow CFG depth \\
+SPLIT & $5 \leq \text{MaxBBSize} < 8$ & Splitting benefit limited for smaller basic blocks \\
+SUB & $\text{SubRatio} < 0.5 \lor \text{SubInsts} < 3$ & Replaceable-instruction density or count insufficient \\
+IGV & --- & Always placed in boundary state after applicability filtering \\
+ICALL & --- & Always placed in boundary state after applicability filtering \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Boundary randomization triggers only when three conditions hold at the same time: the
+pass satisfies all structural preconditions, its net benefit exceeds the threshold, and
+its dominant feature lies in the boundary interval. Only then does MIXCOMPILE call a
+lightweight randomized decision function to decide whether the pass is still included.
+
+$\text{ChooseMachine}()$ is an approximately 50\% binary random back-off; the exact
+probability is not a tuning parameter. When the same source code is compiled
+multiple times, this mechanism means that different compilation runs obtain different
+pass combinations, producing binaries that are structurally diverse. The scope of
+randomization is strictly limited to the boundary region where the feature signal is
+weak, so interpretability is preserved where features carry information and diversity
+is injected where they do not.
+
+The design also admits an information-theoretic reading~\cite{shannon1948mathematical}.
+Whether a boundary-region pass is applied is a binary random variable $X$ with
+$\Pr(X{=}1) \approx 0.5$, so each boundary decision contributes close to the maximum
+one bit of entropy, $H(X) \approx 1$, and the entropy is maximized precisely where
+the feature signal is weakest. An attacker observing a deployed binary therefore
+faces maximum uncertainty about the compilation decisions in exactly the region where
+deterministic inference from program structure fails. Outside the boundary region,
+features carry the information and the decision is deterministic; inside it, the
+entropy of the decision cannot be reduced without the compilation seed, which the
+threat model withholds from the adversary. Diversity is thus injected at the point of
+maximum ignorance rather than uniformly.
+
+\subsection{Correctness Protection}
+
+Applying passes to the same code region can lead to compilation errors. To avoid
+this, MIXCOMPILE applies dedicated correctness checks, described here together with
+the remaining safeguards.
+
+\subsubsection{IBR Def-Use Safety Analysis}
+
+The IBR transformation replaces a direct branch with an indirectly computed target.
+If a subsequent transformation changes the control flow around the branch, def-use
+chains may no longer be dominated, and semantics can break. To prevent this, MIXCOMPILE
+performs the structural def-use safety analysis during the feature extraction phase
+(Algorithm~\ref{alg:ibr_check}), so that the selection model can never enable IBR on a
+function where the analysis fails.
+
+\begin{algorithm}[!t]
+\footnotesize
+\caption{IBR Compatibility Check (CheckIBRCompatibility)}
+\label{alg:ibr_check}
+\begin{algorithmic}[1]
+    \Require Function $F$
+    \Ensure true if IBR can be safely applied, false otherwise
+    \For{each basic block $B \in F$}
+        \For{each instruction $I \in B$}
+            \For{each use $U$ of $I$}
+                \If{$U$ is a PHI node and $\text{Parent}(U) = B$}
+                    \Return false
+                \EndIf
+                \If{$U$ is an instruction in another block $U_B$}
+                    \If{$\text{PredCount}(U_B) > 1$} \Return false \EndIf
+                    \State $P \gets \text{UniquePredecessor}(U_B)$
+                    \If{$\neg \text{CheckPredChain}(P, B)$} \Return false \EndIf
+                \EndIf
+            \EndFor
+        \EndFor
+    \EndFor
+    \Return true
+\end{algorithmic}
+\end{algorithm}
+
+The algorithm checks the control flow of each function, performing CheckPredChain on
+variables whose use site and def site are in different basic blocks. CheckPredChain
+requires the existence of a unique, unconditionally branched predecessor chain from
+the use block back to the definition block. This constraint guarantees that IBR is not
+enabled in def-use regions that rely on multipath confluence or conditional control
+flow, which are the structural patterns where indirect branches are most likely to
+introduce semantic errors.
+
+\subsubsection{Conflict Resolution and Additional Safeguards}
+
+During candidate ranking, IBR is given priority. In particular, an IBR--FLA conflict
+is resolved by retaining IBR and removing FLA.  If both BCF and FLA survive their
+initial eligibility and threshold checks and no IBR--FLA conflict exists, the
+implementation re-estimates the two control-flow scores before retaining one of them.
+This second comparison removes the initial clamps:
+\begin{equation}
+f^{\prime}_{\mathrm{BCF}}=(c-2)/4,\qquad
+f^{\prime}_{\mathrm{FLA}}=\mathrm{AvgCFGDepth}/3,
+\end{equation}
+and the FLA runtime factor becomes $1+c/6$.  The five scaled dimensions are also left
+unclamped in this comparison.  This preserves structural differences among highly
+complex functions that would otherwise collapse to the same value in $[0,1]$.  The
+pass with the greater comparison score is retained; an exact tie is resolved using the
+initial score.  Remaining candidates are processed in descending score order while
+respecting the conflict relation.
+
+In addition to IBR validation, MIXCOMPILE enforces two safeguards. First, IGV must
+not be used on any function that contains inline assembly: global variable indirection
+rewrites variable references and does not preserve the implicit memory-access
+conventions and register-allocation assumptions of handwritten assembly. Second, a
+SPLIT--ICALL conflict is resolved by one-way suppression: when SPLIT has been included
+in the function-level pass set, ICALL candidates for all basic blocks within that
+function are automatically excluded, because basic block splitting may eliminate call
+instructions targeted by ICALL or change basic block boundaries.
+
+\paragraph{Semantic guarantee.}
+The guarantees above are constructive: for well-defined programs, the selected
+transformations preserve semantics by construction, and every formal run
+additionally passes differential verification against the unobfuscated build
+(Section~\ref{sec:correctness}).
+
+\subsection{LLVM Metadata-Based Pass Annotation}
+
+MIXCOMPILE decouples policy selection from policy execution. The PassDecider component
+is a policy selector and performs no code transformation; downstream passes are
+transformation executors that decide whether to run based on annotations. This design
+follows the single-responsibility principle and lets new passes plug in without
+touching the selection core: a new pass declares its base weights, applicability
+predicate, and conflict rules, and neither the core logic nor any existing pass needs
+modification.
+
+At the function level, MIXCOMPILE emits five annotation kinds in the form of LLVM
+function metadata, corresponding to IBR, IGV, FLA, BCF, and SPLIT, each supporting
+positive and negative annotation. At the basic block level, MIXCOMPILE emits two
+annotation kinds, SUB and ICALL, in the form of LLVM basic-block metadata, written only
+as positive annotations when the pass is selected.
+
+Downstream passes query the corresponding annotation through LLVM's metadata API at
+their entry point: if a positive annotation is present, the transformation is
+performed; otherwise the pass skips the function or block. Annotation reading is an
+$O(1)$ string comparison and does not increase the runtime overhead of the passes
+themselves.
+
+Annotation-based design offers two further engineering advantages. First,
+testability: the selection logic can be unit-tested by inspecting annotation
+output without executing a full compilation pipeline. Second, efficiency:
+downstream passes do not need to traverse every function and block to re-derive
+decisions but apply policy directly according to annotations, reducing
+compilation time.
+
+\subsection{Machine-Invocable Strategy Interface}
+\label{sec:interface}
+
+Because selection is decoupled from execution and every decision is logged, the
+strategy space is exposed in a form that external callers can consume. Three interface
+elements are relevant.
+
+\textbf{(1) Restricted strategy space.} The pass base vectors
+(Table~\ref{tab:optimized_pass_vectors}), the deployment profile
+(Eq.~\eqref{eq:weights}), and the threshold $\tau$ together define a finite,
+well-documented space of legal pass combinations. An external caller, whether a
+script, a search procedure, or an LLM-based compilation agent, can enumerate and
+reason about this space without reverse-engineering the compiler.
+
+\textbf{(2) Interpretable compilation feedback.} Every function-level control-flow
+decision emits a \texttt{[MIXCOMPILE][CF\_DECISION]} record containing the function
+name, block and instruction counts, cyclomatic complexity, conditional-jump ratio,
+mean CFG depth, BCF probability and loop count, $E_{BB}$, both BCF budget limits,
+budget eligibility, runtime and size multipliers, the initial BCF/FLA totals, the
+unclamped comparison totals, and the selected pass. Budget rejections and BCF--FLA
+arbitration are therefore auditable after the fact.
+
+\textbf{(3) Stable invocation surface.} The profile is supplied as a JSON file, the
+threshold via \texttt{--mix-score-threshold}, and the randomization seed via
+\texttt{-mix-seed}; the combination (seed, profile, JSON vectors, BCF budgets, target
+binary and optimization level) fully determines the output and constitutes the
+reproduction contract of Section~\ref{sec:setup}.
+
+On this interface, an LLM agent plans pass configurations in the structured
+strategy space, invokes the compiler, and verifies the outcome against the
+per-decision feedback; the E10 experiment (Section~\ref{sec:ongoing}) shows that
+this usage preserves semantics in 98.9\% of cases, versus 63.2\% for direct LLM
+source rewriting under identical verification.
+
+\subsection{Algorithm Workflow and Complexity Analysis}
+
+The MIXCOMPILE main workflow is given in Algorithm~\ref{alg:main}.
+
+\begin{algorithm}[!t]
+\footnotesize
+\caption{MIXCOMPILE Main Workflow}
+\label{alg:main}
+\begin{algorithmic}[1]
+    \Require LLVM module $M$, threshold $\tau$
+    \Ensure Annotated LLVM module
+    \State $W \gets \text{SelectedProfile}()$
+    \For{each function $F \in M$}
+        \If{$\neg \text{Eligible}(F)$} \State \textbf{continue} \EndIf
+        \State $\text{SplitCriticalEdges}(F)$
+        \State $\Phi_F, \{\varphi_B\} \gets \text{CollectFeatures}(F)$
+        \State $\mathcal{S}_F \gets \text{SelectFunctionPasses}(\Phi_F, W, \tau)$
+        \State $\text{AnnotateFunction}(F, \mathcal{S}_F)$
+        \For{each basic block $B \in F$}
+            \State $\mathcal{S}_B \gets \text{SelectBasicBlockPasses}(\varphi_B, W, \tau, \mathcal{S}_F)$
+            \State $\text{AnnotateBasicBlock}(B, \mathcal{S}_B)$
+        \EndFor
+    \EndFor
+    \Return $M$
+\end{algorithmic}
+\end{algorithm}
+
+We look at the computational cost of MIXCOMPILE at two levels.
+\textbf{Per-function level:} feature collection does one traversal over all basic
+blocks and instructions, costing $O(|I| + |E| + |U|)$ where $|I|$ is instructions,
+$|E|$ is CFG edges, and $|U|$ is def-use chains. Scoring computes one weighted sum
+for each of the $|P| = 7$ passes, which is $O(1)$. Sorting the candidates and
+resolving conflicts also takes $O(1)$ since there are at most 7 candidates.
+Basic-block-level selection repeats scoring and boundary checking for at most 2
+passes per basic block, also constant work. Writing the annotations is a constant
+number of metadata strings per function and basic block.
+\textbf{Whole-module level:} adding up over all functions, the total cost grows
+linearly with the size of the IR. MIXCOMPILE requires no separate IR traversal
+per pass: all seven passes' feature needs are covered in a single traversal,
+which keeps compilation time linear and predictable.
+
+%=======================================================
+\section{Experimental Evaluation}
+%=======================================================
+
+This section answers five research questions.
+
+\subsection{Research Questions}
+
+\textbf{RQ1 (Model behavior):} Do the five cost dimensions carry distinct roles, and
+are the frozen weights defensible rather than arbitrary?
+
+\textbf{RQ2 (Where features act):} Do program features carry decision-relevant
+information, and at what granularity, per-function pairing or marginal distribution?
+
+\textbf{RQ3 (Diversity shape):} Are repeated compilations of the same program mutually
+distinct, and do different programs receive different strategies?
+
+\textbf{RQ4 (Deployment cost):} What runtime cost does the optimized profile incur on
+real AI-inference and cryptographic workloads, relative to GCC, LLVM, and full
+obfuscation?
+
+\textbf{RQ5 (Analysis cost):} Does the output measurably increase the cost of
+automated binary analysis?
+
+Two pre-registered LLM-era studies (E9, E10) complement these questions from
+the offense and defense sides: E9 measures what an LLM attacker can actually
+do to the compiled output, and E10 measures what an LLM planner can safely do
+through the strategy interface.
+
+\subsection{Experimental Setup}
+\label{sec:setup}
+
+The mechanism experiments (E1--E7, diversity analyses) run on a frozen program split
+of 44 tuning / 43 validation / 43 test programs (program-level disjoint,
+\texttt{split\_seed=20260903}), drawn from the LLVM test-suite and benchmark
+families; weight selection was pre-registered on the validation split and
+confirmed once on the test split (that is, the weights were fixed on the
+validation split before any test-split measurement, and no configuration was
+changed after the test split was examined). Correctness verification compares obfuscated
+builds against unobfuscated builds under the benchmark test inputs. The workload
+and analysis-cost measurements (llama.cpp, OpenSSL, cross-compiler radiff2, Ghidra
+decompilation time) use the optimized pass-vector configuration with seed 1,
+$\tau=0.0$, and the BCF gates $N_I\leq2000$ and $E_{BB}\leq500$, and passed output
+validation on all 31 binaries of the LLVM test-suite validation set.
+
+All experiments run on a workstation with an Intel Core i9-12900H (x86\_64, 14
+physical cores, up to 5.0\,GHz), 64\,GB RAM, and 64-bit Ubuntu Linux 22.04. Compared
+compilers: GCC~11.4.0, LLVM/Clang~17.0.6, OLLVM (built on LLVM~17 with all available
+passes enabled), and MIXCOMPILE (built on LLVM~17.0.6, PassDecider handling
+selection).
+
+Every formal binary is fully determined by the seed, profile JSON, pass vector
+JSON, BCF budget gates, and target binary/optimization level, and every
+selection decision is recorded in a \texttt{CF\_DECISION} log archived with
+the binaries; recompiling with identical inputs reproduces the decision logs
+and the output binaries exactly. Repeated throughput measurements (llama.cpp,
+OpenSSL) are summarized with the arithmetic mean; heterogeneous, right-skewed
+quantities (radiff2 similarities, decompilation-time ratios) are summarized
+with medians. Within one comparison, the same statistic is applied to every
+compiler. All throughput comparisons are additionally tested with two-sided
+Wilcoxon signed-rank tests paired by repetition (20 measurements per
+configuration) and 95\% bootstrap confidence intervals on the throughput
+ratio (10{,}000 resamples); all reported differences between compilers are
+significant at $p<0.001$.
+
+\subsection{RQ1: Cost-Model Behavior (E1--E5)}
+
+\subsubsection{Weight benchmark against random weights (E1)}
+The five weights are engineering parameters; the question is whether they carry
+information. We compared the pre-registered optimized profile against 30 random legal
+weight configurations (plus fixed baselines) over 43 programs $\times$ 30 seeds,
+scoring every configuration on all five cost dimensions (Table~\ref{tab:e1_weights}).
+
+\begin{table}[!t]
+\centering
+\footnotesize
+\caption{E1: weight benchmark. Random-weight configurations fall into four behavior
+bands; the pre-registered optimized profile is shown for comparison.}
+\label{tab:e1_weights}
+\begin{tabular}{lrrll}
+\toprule
+Configuration & Count & Activations & Exec (median) & Correctness \\
+\midrule
+Random: not activated & 4 & 0 & $\approx$1.0$\times$ & 1.0 \\
+Random: low activation & 4 & 6 & --- & 1.0 \\
+Random: mid band & 18 & 10--24 & 1.003--1.046$\times$ & see note \\
+Random: high activation & 2 & 28--29 & $+$1.2--1.7\% & 1.0 \\
+\textbf{optimized (pre-reg.)} & --- & \textbf{27.0} & \textbf{1.0444$\times$} & \textbf{1.0} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Three findings. \textbf{(1)~Dominance.} The optimized profile dominates 28 of the 30
+random candidates on the pre-registered validation criteria (test-split confirmation:
+correctness 1.0, median exec 1.0444$\times$, median activation 27.0); the two
+undominated candidates (random\_015/016) achieve higher activation at smaller code
+size, so the pre-registered selection occupies an endpoint of the Pareto front.
+\textbf{(2)~Random weights are risky.} Four configurations (random\_008/009/019/029)
+silently corrupt correctness (pass rate 0.986--0.992; these are also the source of the
+53 compiler-internal-error observations in the \texttt{voronoi} program); the cost
+model's value is that it makes this trade-off explicit before compilation.
+\textbf{(3)~The four bands} show the behavior space of unconstrained weights, from
+complete inactivity (score threshold never met) to near-maximal activation with the
+corresponding size bill ($1.18\times$). An equal-weight profile performs comparably
+on some axes but was not the pre-registered selection.
+
+\subsubsection{Dimension roles (E2)}
+Removing each weight dimension in turn (on the validation split) reveals distinct,
+non-redundant roles (Table~\ref{tab:e2_roles}).
+
+\begin{table}[!t]
+\centering
+\footnotesize
+\caption{E2: effect of removing each cost dimension.}
+\label{tab:e2_roles}
+\begin{tabular}{llll}
+\toprule
+Dimension removed & Activations & Exec (median) & Size (median) \\
+\midrule
+security & $-9$; 6 programs $\to$ 0 & --- & --- \\
+runtime & --- & 1.07$\times$ & 1.25$\times$ \\
+size & --- & 1.13$\times$ & 1.70$\times$ \\
+risk & --- & 1.08$\times$ & 1.49$\times$ \\
+diversity & $+1$ & $\approx$ unchanged & $\approx$ unchanged \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Security is the accelerator: without it, most selections collapse to zero. Runtime,
+size, and risk are brakes with different strengths; each removal inflates both cost
+axes, with the size dimension the strongest brake against code bloat. The diversity
+dimension has the smallest marginal effect ($+1$ activation). The five dimensions
+are not interchangeable: none of the four brakes can substitute for another
+without shifting the cost profile.
+
+\subsubsection{Per-pass calibration (E4)}
+The pass base vectors are calibrated, not invented: each pass was enabled alone, and
+its measured cost profile feeds the model coefficients (Table~\ref{tab:e4_perpass});
+the calibration medians, normalized per dimension, are the base vectors of
+Table~\ref{tab:optimized_pass_vectors}.
+
+\begin{table}[!t]
+\centering
+\footnotesize
+\caption{E4: single-pass calibration. Units are the decision targets logged by the
+calibration pipeline (functions or basic blocks per pass); ratios are medians relative
+to the LLVM baseline.}
+\label{tab:e4_perpass}
+\begin{tabular}{lrrl}
+\toprule
+Pass & Eligible units & Activation rate & Exec ratio (median) \\
+\midrule
+SUB & 7362 & 81.1\% & 0.8065$\times$ \\
+BCF & 2060 & 78.3\% & 1.0415$\times$ \\
+FLA & 208 & 17.8\% & 1.0265$\times$ \\
+SPLIT & 5164 & 100\% & 1.0241$\times$ \\
+IBR & 480 & 30.6\% & 1.0203$\times$ \\
+ICALL & 2528 & 65.0\% & 0.7792$\times$ \\
+IGV & 2798 & 74.0\% & 1.0152$\times$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Two annotations. FLA activates rarely under single-pass conditions (17.8\%), so
+its base vector rests on fewer observations than the other passes. SUB and
+ICALL show median exec ratios \emph{below} 1.0; these measurements are
+reported as recorded.
+
+\subsubsection{Stability and interactions (E3, E5)}
+Sixty-one perturbed weight configurations (single-dimension $\pm10\%$ to $\pm30\%$ and
+30 joint perturbations, validation split) reproduce the original strategy with
+consistency 0.888 (single-dimension) and 0.832 (joint) measured as per-program
+pass-set agreement: the decisions are stable in the neighborhood of the frozen
+weights. Four representative pass pairs
+(FLA$\times$BCF, FLA$\times$SPLIT, IBR$\times$IGV, SPLIT$\times$ICALL; 440
+measurement units each) show no super-additive effect, with combined outcomes
+deviating from the sum of individual effects by $-0.8\%$ to $-2.6\%$; per-program
+selection therefore rests on the cost asymmetry demonstrated in E2/E4.
+
+\subsection{RQ2: Where Features Act (E6)}
+\label{sec:e6}
+
+E6 tests whether program features actually drive selection. Four conditions were
+compared on the validation split: \emph{complete} (features + costs, the deployed
+pipeline); \emph{feature-only} (cost vectors flattened); \emph{cost-only} (features
+flattened); and \emph{shuffled-feature} (the function-to-feature assignment is
+randomly permuted, with feature marginals, weights, seeds, and pass pool unchanged,
+$\geq$30 permutations).
+
+The evidence is the paired per-function Jaccard between each ablated condition and
+the complete pipeline (Table~\ref{tab:e6_conditions}, per-function column).
+Permuting which function carries which features moves the Jaccard to 0.549
+($n=15{,}540$ function-level comparisons), well below the same-configuration
+cross-seed floor of 0.708 ($n=225{,}330$): the function--feature pairing, not the
+seed, determines which passes a function receives. Cost-only flattening diverges
+to a similar degree (0.551), while feature-only flattening stays within seed
+noise (0.724): the per-function placement is carried by the features and
+modulated by the costs. The outcome columns separate the conditions as designed,
+with cost-only cheapest on both axes. Figure~\ref{fig:e6_granularity} shows the
+contrast graphically.
+
+\begin{table}[!t]
+\centering
+\footnotesize
+\caption{E6: four-condition ablation. $J_{\mathrm{func}}$: paired per-function
+Jaccard against the complete condition; the same-configuration cross-seed floor
+at this granularity is 0.708.}
+\label{tab:e6_conditions}
+\begin{tabular}{lrrr}
+\toprule
+Condition & Exec & Size & $J_{\mathrm{func}}$ \\
+\midrule
+complete & 1.217$\times$ & 1.487$\times$ & (0.708 cross-seed floor) \\
+feature\_only & 1.352$\times$ & 1.252$\times$ & 0.724 \\
+cost\_only & 1.061$\times$ & 1.000$\times$ & 0.551 \\
+shuffled & 1.163$\times$ & 1.234$\times$ & 0.549 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=0.9\textwidth]{e6_granularity.pdf}
+\caption{E6 paired per-function Jaccard against the complete condition: shuffled
+(0.549) and cost-only (0.551) fall below the same-configuration cross-seed floor
+(dashed line, 0.708), while feature-only (0.724) stays within seed noise. Boxes:
+interquartile range; white diamonds: means; whiskers: most extreme values within
+1.5$\times$IQR.}
+\label{fig:e6_granularity}
+\end{figure*}
+
+Three conclusions follow. (1)~The pipeline is feature-driven at the function
+level: both feature-ablating conditions fall below the seed floor, while
+feature-only stays within it. (2)~Per-function targeted assignment is
+mechanically real: the specific pairing of a function with its own features
+determines which passes it receives. (3)~A security-side measurement of
+targeted versus untargeted placement at matched overhead is the immediate
+follow-up experiment.
+
+\subsection{RQ3: Diversity Shape (E7, T1, T2)}
+\label{sec:rq3}
+
+\subsubsection{Variant-level uniqueness (E7)}
+For each of the 12 security-subset programs, 30 optimized variants (seeds 1--30) were
+compiled. Every program's 30 variants are pairwise distinct at the \texttt{.text}
+level: 12/12 programs, 100\% uniqueness. Structural distance to the unobfuscated build
+(radiff2, per-program median across variants): range 0.154--0.912, median 0.39, mean
+0.45. The dispersion is itself informative: the least-affected program (12-IOtest,
+0.912) and the most-affected (dc, 0.154) differ by roughly $6\times$, and the distance
+does not correlate obviously with security sensitivity (security-sha sits at 0.680,
+toward the ``similar'' side). Opcode 3-gram Jaccard against the unobfuscated build
+ranges 0.548--1.000 (mean 0.76); this metric captures instruction-sequence overlap
+independent of control-flow rewiring, so a radiff2 of 0.39 with an opcode overlap of
+0.76 means the variants reorder familiar instructions rather than replace them
+wholesale. Diversity is real but program-dependent, and we
+report the spread rather than only the median. Table~\ref{tab:e7_diversity}
+summarizes the RQ3 metrics.
+
+\begin{table}[!t]
+\centering
+\footnotesize
+\caption{RQ3 diversity summary (optimized arm).}
+\label{tab:e7_diversity}
+\begin{tabular}{ll}
+\toprule
+Metric & Result \\
+\midrule
+\texttt{.text} uniqueness (30 variants per program) & 12/12 programs, 100\% \\
+radiff2 variant-to-unprotected, per-program median & 0.39 (range 0.154--0.912) \\
+opcode 3-gram Jaccard vs.\ unprotected & mean 0.76 (range 0.548--1.000) \\
+Between- vs.\ within-program strategy distance (T1) & $3.3\times$ (0.442 vs.\ 0.134) \\
+Per-program cross-seed strategy uniqueness (T2) & 0.058 (stable within a program) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{Inter-program strategy dispersion (T1)}
+The strategies, that is, the pass combinations selected per program, differ
+across programs. The distance between programs' modal pass-set unions is 0.442,
+against a within-program cross-seed distance of 0.134: programs receive
+significantly different strategies, at $3.3\times$ the seed-noise dispersion.
+
+The complement is T2: within a program, cross-seed union uniqueness is 0.058, so a
+program's strategy is stable across reseeds. Read together, the strategy is a stable,
+program-specific fingerprint: selection is driven by the program's features rather
+than by the seed. The strategy repertoire is coarse (7--15 distinct unions across
+the program set), a bound set by the pass pool rather than the selector; variant-level
+uniqueness (E7, 100\%) complements this, differentiating repeated deployments of the
+same program.
+
+For the E9 attacker study, a three-arm same-budget pool was additionally compiled:
+\emph{optimized} (feature-driven), \emph{fixed-all-7} (every pass enabled, seed-only
+variation, pre-registered before the runs), and \emph{Random-Pass} (uniformly random
+pass application, multicompiler-style); 12 programs $\times$ 30 seeds $\times$ 2
+additional arms = 720 compilation units, frozen as the attack-target pool. All three
+arms reach 100\% \texttt{.text} uniqueness; Random-Pass loses 7 units on one program
+(\texttt{voronoi}) to internal-compiler-error backoff (353/360 built).
+
+\subsection{Correctness}
+\label{sec:correctness}
+
+All 12 security-subset programs pass semantic verification on all 30 seeds, and
+the deployment measurements passed all 31 validation binaries. An early batch of
+verification runs reported false failures on the \texttt{dc} program, traced to
+concurrent verification instances sharing a scratch state file; after the
+scheduler was fixed to isolate per-instance state, more than 1{,}050 subsequent
+compilation--verification units completed with zero failures.
+
+\subsection{RQ4: Deployment Cost}
+
+\subsubsection{llama.cpp-based evaluation}
+We use pp512 (prompt-processing throughput) and tg128 (token-generation throughput) on
+llama.cpp running Mistral-7B-Instruct-v0.3-Q4\_K\_M-GGUF (4.07\,GB on disk, 7.25\,B
+parameters), CPU-only, six threads, zero GPU layers;
+three warm-ups and 20 measurements per configuration. Table~\ref{tab:llama_means}
+reports the arithmetic means. The
+OLLVM-full build did not produce an executable within the build-time limit
+(10800.14\,s); we classify it as a build timeout, not a correctness failure, and
+report no inferred runtime.
+
+\begin{table}[!t]
+\centering
+\footnotesize
+\caption{Arithmetic-mean llama.cpp throughput over 20 formal measurements (tokens/s).}
+\label{tab:llama_means}
+\begin{tabular}{lrr}
+\toprule
+Variant & pp512 & tg128 \\
+\midrule
+GCC & 31.994 & 11.276 \\
+LLVM & 37.012 & 12.019 \\
+optimized & 32.329 & 11.119 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+For pp512, optimized is 1.0\% faster than GCC (95\% CI of the throughput ratio
+[1.008, 1.014]) but 12.7\% slower than LLVM (CI [0.868, 0.879]). For tg128,
+it is 1.4\% slower than GCC (CI [0.984, 0.988]) and 7.5\% slower than LLVM (CI
+[0.924, 0.927]). All four differences are significant at $p<0.001$ (Wilcoxon
+signed-rank, $n=20$ per configuration). Optimized thus remains close
+to GCC in both scenarios but does not match LLVM.
+
+\paragraph{Build time.}
+Runtime is only half of the deployment cost; we also measure
+full-project compilation time (Table~\ref{tab:build_time}). The complete llama.cpp
+build finishes in 138.2\,s under the optimized profile against 68.5\,s under LLVM
+(2.0$\times$), with balanced at 139.8\,s and GCC at 70.4\,s; the uniformly obfuscated
+OLLVM-full build does not finish at all, reaching 50 of 210 compilation units (23.8\%)
+before the 10{,}800\,s limit and producing no executable. On the LLVM test-suite
+validation set (31 programs), the same ordering holds (optimized 10.5\,s vs.\ LLVM
+6.0\,s), and the OLLVM-full build fails outright after 168.3\,s. The single-traversal
+feature collection and the selection--execution decoupling are what
+keep the factor near two: passes are chosen once per unit and executed from metadata
+annotations, rather than each pass re-deriving its own eligibility.
+
+\begin{table}[!t]
+\centering
+\footnotesize
+\caption{Full-project build time. OLLVM-full on llama.cpp: timeout at
+10{,}800\,s with 50/210 compilation units (23.8\%) completed, no artifact produced;
+OLLVM-full on the test-suite validation set: build failure (exit 1) after 168.3\,s.}
+\label{tab:build_time}
+\begin{tabular}{lrr}
+\toprule
+Toolchain & llama.cpp (s) & test-suite, 31 programs (s) \\
+\midrule
+GCC & 70.4 & 5.4 \\
+LLVM & 68.5 & 6.0 \\
+balanced & 139.8 & 10.3 \\
+optimized & 138.2 & 10.5 \\
+OLLVM-full & $>$10{,}800 (timeout) & 168.3 (fail) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{OpenSSL-based evaluation}
+Optimized MIXCOMPILE, OLLVM-full, GCC, and LLVM are compared on AES-128-CBC,
+ChaCha20-Poly1305, and SHA-512 (static build, \texttt{no-asm}, no modules; three
+warm-ups and 20 one-second measurements per cell; OpenSSL~3.6.1).
+Figure~\ref{fig:openssl} plots throughput across all six block sizes---its
+information beyond Table~\ref{tab:openssl_16384} is the block-size trend---and
+Table~\ref{tab:openssl_16384} reports the 16384-byte means.
+
+\begin{figure*}[!t]
+ \centering
+ \includegraphics[width=0.9\textwidth]{openssl_perf.pdf}
+ \caption{OpenSSL throughput across block sizes (16\,B to 16384\,B) for (a) AES-128-CBC, (b) ChaCha20-Poly1305, and (c) SHA-512. The pattern common to all three algorithms: the fraction of LLVM throughput retained by optimized grows monotonically with block size (AES 0.23$\to$0.58, ChaCha20 0.23$\to$0.76, SHA-512 0.20$\to$0.37), while the advantage over OLLVM-full is largest at small blocks (up to 10.1$\times$) and narrows toward the largest (1.4$\times$); Table~\ref{tab:openssl_16384} reports the 16384-byte means.}
+ \label{fig:openssl}
+ \end{figure*}
+
+\begin{table*}[!t]
+\centering
+\footnotesize
+\caption{OpenSSL arithmetic-mean throughput at 16384-byte blocks (MB/s, 20 measurements).}
+\label{tab:openssl_16384}
+\begin{tabular}{lrrrr}
+\toprule
+Algorithm & GCC & LLVM & optimized & OLLVM-full \\
+\midrule
+AES-128-CBC & 384.7 & 414.0 & 238.7 & 43.8 \\
+ChaCha20-Poly1305 & 506.9 & 512.7 & 387.8 & 83.2 \\
+SHA-512 & 685.0 & 653.0 & 241.9 & 169.4 \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+Across the six block sizes, optimized retains 23.3--57.9\% of LLVM throughput for
+AES-128-CBC, 22.5--75.6\% for ChaCha20-Poly1305, and 20.0--37.2\% for SHA-512. At
+16384 bytes, optimized reaches 57.7\%, 75.6\%, and 37.0\% of LLVM, respectively.
+Optimized is slower than both mainstream compilers on every reported OpenSSL workload,
+and consistently exceeds OLLVM-full at every tested algorithm and block size, with the
+advantage ranging from $1.4\times$ (SHA-512, 16384 bytes) to $10.1\times$ (AES-128-CBC,
+16 bytes). Every one of the 54 pairwise comparisons is significant at $p<0.001$
+(two-sided Wilcoxon signed-rank on 20 repetitions per cell); the 95\% bootstrap CI of
+the optimized-to-LLVM ratio at 16384 bytes is [0.573, 0.581] for AES-128-CBC, [0.754,
+0.759] for ChaCha20-Poly1305, and [0.368, 0.373] for SHA-512. The
+budget gates bound long-tail expansion; the five-dimensional profile is the
+instrument for trading security against throughput.
+
+\subsubsection{Cross-compiler structural difference}
+Complementing the variant-to-unprotected similarity of RQ3, this experiment measures
+\emph{cross-compiler} pairwise radiff2 similarity on the 31 validation
+binaries (unordered pairs among GCC, LLVM, optimized, OLLVM-full; medians over
+correctness-eligible successful comparisons). Figure~\ref{fig:similarity} shows the
+pairwise heatmap and Table~\ref{tab:radiff_formal} the formal medians with coverage
+columns.
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=0.9\textwidth]{similarity_heatmap.pdf}
+\caption{Pairwise radiff2 similarity heatmap. Formal analysis uses the median of correctness-eligible successful comparisons.}
+\label{fig:similarity}
+\end{figure*}
+
+\begin{table*}[!t]
+\centering
+\footnotesize
+\caption{Formal radiff2 results. The median uses correctness-eligible successful comparisons.}
+\label{tab:radiff_formal}
+\begin{tabular}{llrrrr}
+\toprule
+Variant A & Variant B & Planned & Successful & Timeouts & Eligible / Median \\
+\midrule
+GCC & LLVM & 31 & 31 & 0 & 31 / 0.8800 \\
+GCC & optimized & 31 & 29 & 2 & 29 / 0.5620 \\
+GCC & OLLVM-full & 30 & 26 & 4 & 24 / 0.1725 \\
+LLVM & optimized & 31 & 29 & 2 & 29 / 0.5900 \\
+LLVM & OLLVM-full & 30 & 26 & 4 & 24 / 0.1725 \\
+OLLVM-full & optimized & 30 & 21 & 9 & 19 / 0.3140 \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+The unprotected baselines are relatively similar (GCC--LLVM median 0.880). Optimized
+reduces the median to 0.562 against GCC and 0.590 against LLVM, and sits at 0.314
+against OLLVM-full: selective application does not merely reproduce the structure of
+uniform full obfuscation. OLLVM-full pairs have fewer eligible observations and more
+timeouts, so these medians must be read together with the coverage columns.
+
+\subsection{RQ5: Analysis Cost}
+
+\subsubsection{Decompiler-based function recovery}
+A Ghidra pipeline with ground-truth annotations (symbol-carrying LLVM reference build,
+stripped target binaries, function-boundary matching) measures how much of the
+original function structure an automated decompiler recovers. Recovery F1 drops from
+0.903 (LLVM baseline) to 0.708 (optimized; balanced profile 0.712). This is a direct
+capability metric, not a timing proxy: the automated analysis recovers substantially
+less function structure from MIXCOMPILE output than from the unobfuscated build.
+
+\subsubsection{Classical function-localization attack}
+A non-LLM attacker (Ghidra plus a matching script, with full knowledge of compiler
+version, pass pool, weights, and algorithm, everything except the seed, the strongest
+reasonable setting) attempts to locate a target function inside the obfuscated binary.
+Top-1 localization accuracy: 0.163 (optimized; balanced 0.177; unobfuscated
+$\approx$1.0). This run's candidate pool differs from the E9 pool (e.g.,
+\texttt{dc}: 79 candidate functions here vs.\ the frozen $\geq$10-function E9 pool);
+these numbers are prior evidence that obfuscation materially increases localization
+difficulty.
+
+\subsubsection{Decompilation time}
+Ghidra processes five programs under the four variants with three repetitions each
+(per-program medians, then median of per-program ratios to LLVM).
+Table~\ref{tab:ghidra_ratios} reports the ratios relative to LLVM (per-variant
+medians: GCC 0.147\,s, LLVM 0.218\,s, OLLVM-full 0.800\,s, optimized 4.739\,s).
+
+\begin{table}[!t]
+\centering
+\footnotesize
+\caption{Median per-program Ghidra decompilation-time ratio relative to LLVM.}
+\label{tab:ghidra_ratios}
+\begin{tabular}{lr}
+\toprule
+Variant & Median ratio \\
+\midrule
+GCC & 0.677$\times$ \\
+optimized & 8.109$\times$ \\
+OLLVM-full & 3.626$\times$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Optimized increases the median per-program decompilation time to 8.109$\times$ LLVM,
+versus 3.626$\times$ for OLLVM-full. Together with the recovery-F1 and localization
+reductions above, the supported conclusion is that automated analysis of MIXCOMPILE
+output is both slower and less accurate.
+
+\subsection{Pre-Registered LLM-Era Studies: E9 and E10 Results}
+\label{sec:ongoing}
+
+Both pre-registered studies have completed under their frozen protocols. All
+numbers below are final measurements; nothing is extrapolated.
+
+\textbf{E9 (LLM-attacker arm, completed).} An LLM attacker, one frontier API model
+operated in an agent harness plus a local open-weights pilot
+(Qwen2.5-Coder-14B-Instruct), receives Ghidra-decompiled pseudocode of the frozen
+three-arm pool (Section~\ref{sec:rq3}: A1~= fixed-all-7, A2~= optimized, plus the
+unobfuscated baseline) and attempts function matching, semantic recovery, and
+pass-configuration probing, across capability levels from zero-shot to
+deployment-level cross-program practice (two-fold cross-validation). The
+pre-registered primary endpoint was the adaptation transfer rate $\rho$: how much of
+the attacker's practiced-on-other-programs improvement survives on feature-adaptive
+variants versus fixed-strategy variants, a within-arm relative quantity immune to
+differing obfuscation strength across arms. Four findings.
+\textbf{(1)~Recognition no longer separates obfuscated from clean binaries at the
+frontier tier:} the frontier attacker matches target functions at 94.4--99.2\% top-1
+across arms and capability levels, against 100\% on the unobfuscated baseline
+(Figure~\ref{fig:e9_layers}a,b). Protection is strongly attacker-capability
+dependent: the local 14B pilot reaches only 14.2--23.3\% top-1 by arm (optimized
+15.8\%), in the range of the classical localization attack (0.163).
+\textbf{(2)~The surviving protection is a comprehension tax:} on the paired
+semantic-recovery task ($n=39$), mean cosine to ground truth falls from 0.127
+(unobfuscated) to 0.078 under fixed-all-7 ($-38.5\%$) and to 0.090 under optimized
+($-28.2\%$) (Figure~\ref{fig:e9_layers}c). Obfuscation moves attacker cost from
+recognition to understanding, and the optimized arm retains less of this residual
+protection than the fully fixed arm. \textbf{(3)~$\rho$ is undefined:}
+deployment-level practice yields no reliable gain on either arm, so the
+pre-registered clause for this case applies; this attack tier does not distinguish
+fixed from diversified deployment. \textbf{(4)~The pass configuration does not leak:}
+configuration probing returns exact-match 0/60, with 26.7\% ``no-configuration''
+answers.
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=0.95\textwidth]{e9_layers.pdf}
+\caption{E9: the two attack layers. Arms: A0 = unobfuscated baseline, A1 =
+fixed-all-7, A2 = optimized. (a)~Frontier-attacker recognition (top-1 matching):
+dots are measured cells (zero-shot and few-shot capability levels plus the
+supplementary lift-to-attack cells), vertical lines span the min--max range, and the
+dashed line marks the unobfuscated baseline (100\%).
+(b)~Local 14B pilot recognition by arm ($n=12$ per arm); black diamonds mark the
+classical localization attack's per-configuration mean.
+(c)~Paired semantic-recovery cosine to ground truth ($n=39$ paired functions):
+obfuscation taxes comprehension, with fixed-all-7 at $-38.5\%$ and optimized at
+$-28.2\%$ relative to the unobfuscated arm.}
+\label{fig:e9_layers}
+\end{figure*}
+
+\textbf{E10 (LLM-guided compilation, completed).} Five arms on the same selection
+task: frozen built-in selection, non-LLM search at equal budget (two sub-variants,
+90/90), LLM planning without five-dimensional feedback, LLM planning with
+five-dimensional feedback (invoking the interface of Section~\ref{sec:interface}),
+and direct LLM source rewriting as a premise-testing arm. Two findings.
+\textbf{(1)~The substrate, not the LLM, carries semantic safety:} the two LLM
+planning arms jointly preserve semantics in 89/90 cases (98.9\%), their plans
+executing through the compiler's constructive safeguards, while direct LLM source
+rewriting preserves 43/68 (63.2\%) under the same strict verification and produces 62
+non-compiling outputs besides.
+\textbf{(2)~The built-in selector and LLM planners are equivalent:} the LLM planning
+arms land within 1.1 percentage points of the non-LLM search arms on semantic
+preservation (98.9\% vs.\ 100\%), inside the pre-registered equivalence domain
+($|\Delta|\leq5$ percentage points), and the built binaries' runtime cost is governed
+by the substrate rather than the planner (median ratios vs.\ the unobfuscated build:
+planning-with-feedback 1.006, planning-without 1.000, rule-search 0.998,
+direct-rewriting 1.002).
+
+%=======================================================
+\section{Conclusion}
+%=======================================================
+
+MIXCOMPILE turns diversified compilation into an explicit, auditable, and invocable
+sampling decision: a five-dimensional cost model gives LLM-based compilation agents
+a structured basis for reasoning about security--performance trade-offs, metadata
+annotations decouple selection from execution behind a machine-readable interface
+through which an LLM can plan, invoke, and verify compilation strategies, and
+function-granularity feature extraction shapes each program's strategy by its own
+structure so that recompilations remain structurally distinct. The experimental
+evidence supports five statements.
+
+First, the selection-and-cost layer that the transform literature leaves as future
+work is implementable and informative: the pre-registered weights dominate 28/30
+random candidates, each cost dimension has a distinct role, and random weights
+silently corrupt correctness in 4/30 cases, which makes the cost model a safety
+mechanism rather than decoration. Second, the mechanism's granularity is measured,
+not assumed: the function--feature pairing drives per-function decisions, with
+permutation moving paired Jaccard to 0.549 against a 0.708 cross-seed floor. Third,
+diversity is real at both levels: 100\% variant uniqueness with program-dependent
+structural distance, and between-program strategy dispersion at $3.3\times$ the
+within-program seed noise, with each program's strategy stable across seeds. Fourth,
+deployment cost is workload-dependent and explicitly traded: near-GCC on llama.cpp
+(1--13\% below LLVM), 20.0--75.6\% of LLVM throughput on OpenSSL while consistently
+outperforming full obfuscation, and a 2.0$\times$ build-time factor where uniform
+full obfuscation does not finish at all. Fifth, the output measurably taxes
+automated analysis: recovery F1 0.903$\to$0.708, localization top-1 0.163 vs.\
+$\approx$1.0 unobfuscated, decompilation time 8.109$\times$ LLVM, and a frontier
+LLM pays a 28.2\% comprehension tax where it no longer pays a recognition cost.
+
+The evidence supports deployment when the deployed fleet is large (amortization
+matters), when the workload tolerates the profiled overhead (llama.cpp-class
+workloads: single-digit percent; OpenSSL-class: substantial, priced by the
+five-dimensional profile), and when verification against the unobfuscated build is
+part of the pipeline (the reproduction contract makes this cheap). It does not
+support deployment where near-baseline throughput is non-negotiable or where
+programs are known to carry undefined behavior (outside the constructive
+guarantee).
+
+MIXCOMPILE raises the per-target adaptation cost of automated and LLM-assisted
+adversaries and turns each deployment into an independent draw: a defense whose
+value lies in the economics it imposes on the attacker, at the moment when
+LLMs are driving that economics in the attacker's favor. Security-side
+validation of per-function targeting (complete vs.\ shuffled at matched overhead),
+MIR-level pass pool expansion, cost-model weight learning, and deeper integration
+of LLM agents with the machine-readable strategy interface are the natural
+extensions.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Back matter
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section*{Acknowledgements}
+
+This work is supported by the Science and Technology Project of State Grid Corporation of China (Research on Key Technologies of the Autonomous and Controllable Power Dedicated Network Security Protection Basic Platform, $52130025002S-473-ZN$).
+
+\section*{Declarations}
+
+\textbf{Data and code availability.} The MIXCOMPILE framework source code (the
+PassDecider selection engine and all seven obfuscation passes), the frozen
+configuration files (deployment-profile and pass-vector JSON, the benchmark split
+definition), and the scripts and raw measurement data underlying all reported
+experiments (llama.cpp and OpenSSL throughput repetitions, radiff2 and Ghidra
+decompilation results, the E1--E8 mechanism-campaign records, and the E9/E10
+LLM-era study records) are available at
+https://github.com/ELDARK123/MIXCOMPILE.git.
+
+%%% Bibliography
+\bibliographystyle{elsarticle-num}
+\bibliography{sn-bibliography}
+
+\end{document}
+
+
