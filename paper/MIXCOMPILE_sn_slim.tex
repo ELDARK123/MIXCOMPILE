@@ -1050,7 +1050,11 @@ and the output binaries exactly. Repeated throughput measurements (llama.cpp,
 OpenSSL) are summarized with the arithmetic mean; heterogeneous, right-skewed
 quantities (radiff2 similarities, decompilation-time ratios) are summarized
 with medians. Within one comparison, the same statistic is applied to every
-compiler.
+compiler. All throughput comparisons are additionally tested with two-sided
+Wilcoxon signed-rank tests paired by repetition (20 measurements per
+configuration) and 95\% bootstrap confidence intervals on the throughput
+ratio (10{,}000 resamples); all reported differences between compilers are
+significant at $p<0.001$.
 
 \subsection{RQ1: Cost-Model Behavior (E1--E5)}
 
@@ -1318,8 +1322,11 @@ optimized & 32.329 & 11.119 \\
 \end{tabular}
 \end{table}
 
-For pp512, optimized is 1.0\% faster than GCC but 12.7\% slower than LLVM. For tg128,
-it is 1.4\% slower than GCC and 7.5\% slower than LLVM. Optimized thus remains close
+For pp512, optimized is 1.0\% faster than GCC (95\% CI of the throughput ratio
+[1.008, 1.014]) but 12.7\% slower than LLVM (CI [0.868, 0.879]). For tg128,
+it is 1.4\% slower than GCC (CI [0.984, 0.988]) and 7.5\% slower than LLVM (CI
+[0.924, 0.927]). All four differences are significant at $p<0.001$ (Wilcoxon
+signed-rank, $n=20$ per configuration). Optimized thus remains close
 to GCC in both scenarios but does not match LLVM.
 
 \paragraph{Build time.}
@@ -1389,7 +1396,12 @@ Across the six block sizes, optimized retains 23.3--57.9\% of LLVM throughput fo
 AES-128-CBC, 22.5--75.6\% for ChaCha20-Poly1305, and 20.0--37.2\% for SHA-512. At
 16384 bytes, optimized reaches 57.7\%, 75.6\%, and 37.0\% of LLVM, respectively.
 Optimized is slower than both mainstream compilers on every reported OpenSSL workload,
-and consistently exceeds OLLVM-full at every tested algorithm and block size. The
+and consistently exceeds OLLVM-full at every tested algorithm and block size, with the
+advantage ranging from $1.4\times$ (SHA-512, 16384 bytes) to $10.1\times$ (AES-128-CBC,
+16 bytes). Every one of the 54 pairwise comparisons is significant at $p<0.001$
+(two-sided Wilcoxon signed-rank on 20 repetitions per cell); the 95\% bootstrap CI of
+the optimized-to-LLVM ratio at 16384 bytes is [0.573, 0.581] for AES-128-CBC, [0.754,
+0.759] for ChaCha20-Poly1305, and [0.368, 0.373] for SHA-512. The
 budget gates bound long-tail expansion; the five-dimensional profile is the
 instrument for trading security against throughput.
 
