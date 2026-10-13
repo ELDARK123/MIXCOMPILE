@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.4
+  },
+  "BCF": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.5
+  },
+  "FLA": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.55,
+   "SizeCost": 0.65,
+   "CorrectnessRisk": 0.5
+  },
+  "SPLIT": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.35
+  },
+  "IBR": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.55,
+   "CorrectnessRisk": 0.45
+  },
+  "ICALL": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.55,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.5
+  },
+  "IGV": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.45,
+   "CorrectnessRisk": 0.4
+  }
+ },
+ "rationale": "Round 0 built and ran correctly with no ICE, so the baseline table was too conservative; this round raises SecurityGain and DiversityGain across all seven passes to push coverage over more of the 23 small functions (make_list, make_wanted, make_play are the main targets for FLA/SPLIT/BCF since their larger bodies give flattening and splitting room to obscure control flow cheaply per byte). SUB and ICALL get high weights because arithmetic substitution and indirect-call conversion add strong static-analysis friction at low size cost, which suits a 6KB text segment where size headroom is limited. RuntimeCost and SizeCost are kept moderate rather than low because chomp/queens are recursive search workloads where BCF/FLA overhead compounds in hot loops \u2014 capping these at 0.5-0.6 lets the selector apply heavy passes to cold functions while sparing the hottest recursion. CorrectnessRisk stays at or below 0.5 everywhere: the previous round showed the toolchain handles these passes on this program, but IGV's global-variable rewriting and FLA's restructuring still warrant mid-range risk weights so pathological functions fall back safely rather than forcing an ICE.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__McGill__chomp",
+  "run_id": "e10D_glm_agent_chomp_1_96443",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T14:21:01Z"
+ }
+}

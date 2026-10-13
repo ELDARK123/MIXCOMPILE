@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.2
+  },
+  "BCF": {
+   "SecurityGain": 0.3,
+   "DiversityGain": 0.3,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.2
+  },
+  "FLA": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.4,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.3
+  },
+  "SPLIT": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.2
+  },
+  "ICALL": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  },
+  "IGV": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.1
+  }
+ },
+ "rationale": "This sample is a floating-point compute benchmark dominated by the hot FFT routine fourn called from main's timing loop, with only 3 functions and ~1.5 KB of text, so per-iteration overhead matters far more than size. SUB is weighted highest because arithmetic-substitution diversity is cheap, composes well with FP-heavy code, and directly obscures the numeric idioms a reverse engineer relies on; IGV and SPLIT follow as low-cost data/control diversification with negligible correctness risk. BCF and FLA get very low weights, especially on RuntimeCost, since opaque predicates and a per-iteration flattening dispatcher would tax the hot loops heavily and risk perturbing FP-sensitive control flow, and with only three functions there is little control-flow complexity for them to hide anyway. IBR stays moderate (few branches, so bounded overhead with real RE value), while ICALL is kept low because the few call sites are inside the hot loop and indirect-call overhead would be paid on every fourn invocation. All CorrectnessRisk weights are kept low so the selector is not deterred from applying safe passes, preserving FP semantics end to end.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Misc__ffbench",
+  "run_id": "e10C_glm_agent_ffbench_0_97498",
+  "arm": "C",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T14:39:27Z"
+ }
+}

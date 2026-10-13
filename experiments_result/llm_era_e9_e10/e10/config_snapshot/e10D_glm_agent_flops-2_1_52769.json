@@ -1,0 +1,47 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.2
+  },
+  "SPLIT": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  },
+  "IGV": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.3
+  }
+ },
+ "rationale": "Round 0 built and ran correctly, so this candidate keeps the safe passes and pushes obfuscation up moderately while respecting that flops-2 is a tight floating-point loop where runtime overhead is the dominant risk: SUB is emphasized first (cheap, high security/diversity on arithmetic-heavy code, minimal correctness risk), SPLIT is kept high since it adds control-flow diversity at near-zero cost and helps break up the single large main for the other passes, and BCF is raised to a moderate level to add opaque predicates but capped by an elevated RuntimeCost weight so the hot FP loop is not smothered; IBR and IGV sit at mid weights to add indirect branching/global indirection diversity without compounding dispatch overhead. FLA and ICALL are omitted entirely: with only one substantial function, flattening converts a clean numeric loop into a dispatcher-dominated state machine whose runtime penalty on a flops benchmark is severe while its added reverse-engineering value over BCF+SPLIT is marginal, and indirect-call transformation has almost no call sites to work with here, so it would add risk and size for negligible diversity.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Misc__flops-2",
+  "run_id": "e10D_glm_agent_flops-2_1_52769",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T02:13:29Z"
+ }
+}

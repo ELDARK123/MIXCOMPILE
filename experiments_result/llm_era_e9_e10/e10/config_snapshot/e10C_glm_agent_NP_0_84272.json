@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.9,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.3
+  },
+  "BCF": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.6
+  },
+  "FLA": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.8,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.7
+  },
+  "SPLIT": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  },
+  "IBR": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.4
+  },
+  "ICALL": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.5
+  },
+  "IGV": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.6
+  }
+ },
+ "rationale": "The static profile is empty (no source files, line counts, or function lists), so this table encodes conservative, pass-intrinsic priors for a small C++ benchmark rather than feature-specific tuning. Cheap, near-riskless transformations are favored broadly: SUB gets the highest SecurityGain weight with low cost-sensitivity so arithmetic substitution applies to nearly every function, and SPLIT plus IBR get high DiversityGain weights with low RuntimeCost/SizeCost sensitivity to build layered control-flow diversity at minimal overhead. Expensive passes are gated by their dominant cost dimension: BCF carries high RuntimeCost and SizeCost weights so bogus control flow is only selected for functions whose features indicate low execution frequency or small bodies, and FLA gets the highest RuntimeCost and CorrectnessRisk weights (0.8/0.7) since flattening both dominates runtime and interacts poorly with C++ control constructs, restricting it to functions where those signals are favorable. ICALL and IGV sit in the middle: solid security weights for hiding call targets and global state, but IGV's CorrectnessRisk is elevated (0.6) to account for C++ static initialization and global object lifetime hazards. No pass is omitted entirely, preserving the option of full-stack obfuscation on functions whose features justify it, while the cost and risk weights keep aggregate runtime and size overhead acceptable for the program as a whole.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__Prolangs-C++__NP",
+  "run_id": "e10C_glm_agent_NP_0_84272",
+  "arm": "C",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T10:58:11Z"
+ }
+}

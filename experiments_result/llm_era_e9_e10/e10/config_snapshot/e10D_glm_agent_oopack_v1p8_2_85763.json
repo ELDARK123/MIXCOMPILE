@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.2
+  },
+  "BCF": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  },
+  "FLA": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.2
+  },
+  "SPLIT": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.3
+  },
+  "IBR": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.2
+  },
+  "ICALL": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.3
+  },
+  "IGV": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.3
+  }
+ },
+ "rationale": "oopack_v1p8 is a small C++ benchmark dominated by tight, hot numeric loops (matrix multiplication, complex arithmetic, iterator traversal) and object-oriented dispatch, with an empty static profile so the table must be conservative. SUB and IBR get high SecurityGain/DiversityGain weights because they cheaply obscure arithmetic and control-flow edges with minimal impact on loop-heavy code; ICALL is weighted highest on SecurityGain since C++-heavy code benefits greatly from virtualizing call targets, and its modest cost is tolerable; FLA and BCF receive moderate weights because flattening and bogus control flow carry real runtime/size penalties in the hot inner loops that dominate this benchmark's execution time, so they should apply selectively rather than broadly; IGV is cheap and effective for hiding the program's small global state, so it stays enabled with balanced weights; SPLIT is enabled mainly as a diversity multiplier that improves the effectiveness of FLA and BCF, with slightly raised CorrectnessRisk weight reflecting care around basic-block splitting in optimized C++ code. All CorrectnessRisk weights are kept low-to-moderate to bias selection away from fragile transformations, preserving correctness while keeping aggregate runtime and size overhead acceptable.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Misc-C++__oopack_v1p8",
+  "run_id": "e10D_glm_agent_oopack_v1p8_2_85763",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T11:23:21Z"
+ }
+}

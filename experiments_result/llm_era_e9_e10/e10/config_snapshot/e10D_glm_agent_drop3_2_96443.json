@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.15
+  },
+  "FLA": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.55,
+   "CorrectnessRisk": 0.2
+  },
+  "SPLIT": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.15,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.05
+  },
+  "IBR": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.3
+  },
+  "ICALL": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.35
+  },
+  "IGV": {
+   "SecurityGain": 0.45,
+   "DiversityGain": 0.4,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.25
+  }
+ },
+ "rationale": "Round 1 built and ran correctly with no ICE fallback, so this candidate raises obfuscation pressure on the strongest, lowest-risk passes: SUB gets the highest SecurityGain since instruction substitution is reliable and cheap for a tiny bit-manipulation kernel like drop3, complemented by strong BCF and FLA weights to obscure the bit-filtering control flow in drop_0xx and main; SPLIT stays moderately high because it is nearly free and synergizes with FLA by creating more basic blocks to flatten; IBR and ICALL are held at mid weights \u2014 they add meaningful indirection resistance on a 3-function program but carry higher correctness risk, and with only two real functions to protect the marginal gain does not justify aggressive settings; IGV is kept at the lowest weight since drop3 has little global state to encrypt and its dispatcher overhead would tax the hot bit-processing loop. RuntimeCost and SizeCost weights are kept below their security counterparts across all passes so the feature-driven selector still favors transforming functions whose features favor security/diversity, while CorrectnessRisk values remain conservative to preserve the round-1 clean build; overall this shifts the balance from 'compile safely' toward 'maximize resistance within proven-safe bounds'.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__BitBench__drop3",
+  "run_id": "e10D_glm_agent_drop3_2_96443",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T14:21:01Z"
+ }
+}

@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.15,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.05
+  },
+  "BCF": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.55,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.2
+  },
+  "FLA": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.25
+  },
+  "SPLIT": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.15,
+   "CorrectnessRisk": 0.05
+  },
+  "IBR": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "ICALL": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.15
+  },
+  "IGV": {
+   "SecurityGain": 0.65,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.15,
+   "CorrectnessRisk": 0.1
+  }
+ },
+ "rationale": "Round 1 built and passed cleanly, so this table raises aggression on control-flow hiding while protecting the hot recursive core (Towers/Move/tower) via moderately elevated RuntimeCost on BCF and FLA, letting the feature-driven selector steer the most invasive passes toward cold functions (Init, Oscar-era helpers, Queens/Quicksort wrappers). SUB stays near-free and high-gain since arithmetic mixing is the cheapest per-instruction resistance for a 1471-byte text footprint; IBR is kept cheap-cost/high-gain to interleave blocks cheaply without inflating the binary. ICALL carries a mid RuntimeCost because indirect dispatch hurts small recursive callers, but its security payoff for defeating static call-graph recovery justifies selective application. IGV gets the highest DiversityGain since it is a compile-time-only transform that diversifies global layout at zero runtime price \u2014 ideal for such a tiny program. CorrectnessRisk is kept low everywhere (max 0.25 on FLA) since the prior round showed no ICE or miscompilation, allowing the selector to apply FLA broadly; SPLIT remains a low-cost diversity booster applied wherever basic blocks are large enough. Overall: strong obfuscation, bounded overhead on the recursive hot path, correctness preserved.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Stanford__Towers",
+  "run_id": "e10D_glm_agent_Towers_2_55673",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T03:01:24Z"
+ }
+}

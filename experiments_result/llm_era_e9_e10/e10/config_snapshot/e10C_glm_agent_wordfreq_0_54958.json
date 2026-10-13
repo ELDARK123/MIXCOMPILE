@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.15,
+   "SizeCost": 0.1,
+   "CorrectnessRisk": 0.05
+  },
+  "BCF": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.8,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.15
+  },
+  "FLA": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.2
+  },
+  "SPLIT": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.15
+  },
+  "ICALL": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.55,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.45
+  },
+  "IGV": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  }
+ },
+ "rationale": "This is a tiny, STL-heavy C++ benchmark (3.6KB text, 13 functions, dominant `main` with a std::map/std::set word-count loop plus introsort/heapsort template instantiations), so the priority is cheap, low-risk transformations that break static analysis of the one large hot function without ballooning a 3.6KB binary or slowing integer/string loops. SUB and FLA get the highest SecurityGain weights because instruction substitution is nearly free and flattening `main`'s dispatch loop (which contains the Rb_tree traversal) yields the most resistance per unit of overhead; SPLIT is cheap and synergizes with FLA by creating more basic blocks to flatten, so it stays enabled with moderate weight. BCF's RuntimeCost weight is kept high (0.8) to suppress it on hot loops like the word-count and sort paths, where bogus control flow multiplies branch traffic for little gain beyond what FLA already provides. IBR is allowed at moderate weight since it diversifies branch targets with acceptable cost in this branchy code. ICALL's DiversityGain is high (it strongly obscures the virtual/template call structure typical of Shootout C++), but its CorrectnessRisk weight is raised to 0.45 because indirecting calls around libstdc++-instantiated templates (Rb_tree, introsort, heap adjust) risks ABI and exception-handling breakage, so the selector should only apply it to self-contained helper functions. IGV is favored because the program has 24 source files collapsed into few functions with cross-file calls, making inter-procedural variable hiding cheap and effective, while overall SizeCost weights stay low-to-moderate given the binary has ample relative headroom but must not approach reference-binary bloat thresholds.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Shootout-C++__wordfreq",
+  "run_id": "e10C_glm_agent_wordfreq_0_54958",
+  "arm": "C",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T02:49:44Z"
+ }
+}

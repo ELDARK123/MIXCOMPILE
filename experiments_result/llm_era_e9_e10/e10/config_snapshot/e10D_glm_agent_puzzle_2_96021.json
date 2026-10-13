@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.9,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.9,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.05
+  },
+  "FLA": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.15
+  },
+  "SPLIT": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.85,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.3
+  },
+  "IBR": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.1
+  },
+  "ICALL": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.15
+  },
+  "IGV": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.1
+  }
+ },
+ "rationale": "Round 1 built and ran correctly, so this candidate escalates obfuscation strength while keeping the cost-targeting weights low enough that the hot numeric kernels (fannkuch, spectral-norm, n-body loops) are not smothered by the most expensive transformations. SUB and FLA are weighted highest for security/diversity because this program is arithmetic- and control-flow-dense small functions where instruction substitution and flattening give the most static-analysis resistance per byte; BCF and IBR are kept strong for control-flow confusion but with restrained RuntimeCost/SizeCost weights (0.3) since the binary is tiny (1977 text bytes) and size is cheap while runtime must stay acceptable. SPLIT is kept as an enabler for FLA/BCF with moderate cost weights so it fires broadly without dominating selection. ICALL and IGV are included at moderate weights \u2014 only 8 functions and few globals means their coverage is limited, but they add call-graph and data-reference indirection that diversifies the reversal surface. CorrectnessRisk weights stay low across the board since round 1 showed no ICE or miscompile, leaving headroom to push aggressiveness further in the next round if overhead measurements allow.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__BenchmarkGame__puzzle",
+  "run_id": "e10D_glm_agent_puzzle_2_96021",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T14:14:11Z"
+ }
+}

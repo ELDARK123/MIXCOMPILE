@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.2
+  },
+  "BCF": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.3
+  },
+  "FLA": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.3
+  },
+  "SPLIT": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  },
+  "IBR": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.2
+  },
+  "ICALL": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.3
+  },
+  "IGV": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.3
+  }
+ },
+ "rationale": "This spellcheck sample is a tiny C++ program (2215 text bytes, 11 functions, only five above ~200 bytes) dominated by string processing, hash/red-black-tree lookups, and I/O-heavy loops, so the strategy is to maximize per-function analysis resistance with cheap, low-risk passes while throttling anything that bloats a binary this small. SUB and BCF get the highest SecurityGain weights because arithmetic substitution and bogus control flow yield the strongest static-analysis resistance on the string/lookup kernels, with BCF's RuntimeCost weight kept low (0.3) so it is deterred from the hot dictionary-lookup and file-reading loops where its overhead would dominate; FLA is moderately favored since the process/spellcheck control flow is loop-rich and flattening pays off there, but again with modest cost weights. IBR is given a strong DiversityGain weight (0.7) because basic-block reordering is nearly free at this code size and adds layout-level diversity cheaply. ICALL is moderately weighted to obscure the C++ member and stdlib call sites, but capped for CorrectnessRisk since indirecting calls through function pointers in template-heavy std::map/string code carries some semantic risk. IGV is middle-weighted because the program has limited global state (mostly std containers on the spell_checker object), so its payoff is modest. SPLIT is kept but deliberately low across SecurityGain and SizeCost because with the largest function under 700 bytes, splitting adds section-level overhead without meaningfully raising analysis effort, and it should only fire on the few largest functions (spell_checker ctor, Rb_tree helpers, process). Across all passes, low-to-moderate RuntimeCost and SizeCost weights ensure cost-sensitive features in hot loops suppress transformation, keeping the shootout-style runtime acceptable and the already-small binary from inflating, while uniformly low CorrectnessRisk weights (0.2-0.3) bias selection away from fragile code regions to preserve correctness.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Shootout-C++__spellcheck",
+  "run_id": "e10C_glm_agent_spellcheck_0_54853",
+  "arm": "C",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T02:48:10Z"
+ }
+}

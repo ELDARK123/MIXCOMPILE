@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.9
+  },
+  "BCF": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.7
+  },
+  "FLA": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.7
+  },
+  "SPLIT": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.8,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.9
+  },
+  "IBR": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.6
+  },
+  "ICALL": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.6
+  },
+  "IGV": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.7
+  }
+ },
+ "rationale": "five11 is a tiny (1259 text bytes, 12 functions) bitstream-decoder benchmark whose hot path is the five11/read_x_bits/read_11_bits decode loop dominated by cheap arithmetic and shift operations, so SUB and SPLIT get high RuntimeCost/SizeCost weights since they add negligible per-iteration cost and compose well on arithmetic-heavy code, and FLA gets the highest SecurityGain with a moderate RuntimeCost weight (0.4) because flattening the decoder's control flow yields the biggest analysis hurdle while its dispatch overhead is tolerable in a loop this small; BCF is kept but with the lowest RuntimeCost (0.2) and SizeCost (0.3) weights since bogus predicates and cloned blocks are the most expensive pass and would disproportionately inflate a 1259-byte text section if applied to hot functions, restricting it to larger or colder functions; IBR and ICALL get middling weights \u2014 indirect branches/calls diversify the already-flattened control flow but this program has few call sites, limiting ICALL's payoff; IGV gets moderate weights as there are few globals to virtualize; all CorrectnessRisk weights stay >=0.6 (SUB/SPLIT at 0.9) because these transformations are semantics-preserving on straight-line bit manipulation and the small function count makes miscompilation risk low.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__BitBench__five11",
+  "run_id": "e10C_glm_agent_five11_0_48534",
+  "arm": "C",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T01:02:49Z"
+ }
+}

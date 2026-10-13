@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.15,
+   "CorrectnessRisk": 0.05
+  },
+  "BCF": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.1
+  },
+  "FLA": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.65,
+   "CorrectnessRisk": 0.2
+  },
+  "SPLIT": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.15,
+   "CorrectnessRisk": 0.05
+  },
+  "IBR": {
+   "SecurityGain": 0.65,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.25
+  },
+  "ICALL": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  },
+  "IGV": {
+   "SecurityGain": 0.35,
+   "DiversityGain": 0.4,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.3
+  }
+ },
+ "rationale": "This benchmark is dominated by small, template-instantiated, hot-loop functions (test_constant*, stepanov_vector, loop_unroll) plus one large main (~7.3KB), so the table favors cheap, composable transforms and throttles anything that multiplies per-iteration cost. SUB and SPLIT get high security/diversity weights with near-zero cost/risk weights because instruction substitution and block splitting are nearly free and add broad static diversity across all 295 functions. FLA carries the highest SecurityGain (0.8) since flattening main and the larger test_constant instantiations yields the strongest structural resistance, but its RuntimeCost (0.7) and SizeCost (0.65) weights are kept high so the selector naturally confines it to functions whose features tolerate the overhead, sparing the tight Stepanov-style loops. BCF is a solid mid-tier contributor (SecurityGain 0.75) with moderate cost weights, pairing well with FLA on main while remaining usable on medium functions. ICALL and IBR get meaningful diversity weights (0.6-0.7) because this C++ benchmark is call-heavy (function objects, templates), making indirect call/branch rewriting effective against static call-graph recovery, with runtime weights ~0.45-0.5 reflecting their per-call indirection cost. IGV is weakest here: the program's defining property is constant folding, so most 'globals' are compile-time constants already inlined or in read-only sections, giving global-variable encryption little security payoff (0.35) while adding per-access runtime cost (0.6) and correctness risk (0.3) if const-propagation interacts badly; it is retained at low weight rather than disabled so that any few mutable globals in the benchmark harness can still be covered when features strongly favor it. All CorrectnessRisk weights stay at or below 0.3, biasing the selector away from stacking risky transforms on the template-heavy code paths where miscompilation risk concentrates.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Adobe-C++__simple_types_constant_folding",
+  "run_id": "e10C_glm_agent_simple_types_constant_folding_0_50548",
+  "arm": "C",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T01:36:24Z"
+ }
+}

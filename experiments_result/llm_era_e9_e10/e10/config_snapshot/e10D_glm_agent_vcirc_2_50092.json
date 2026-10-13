@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.9,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.2
+  },
+  "FLA": {
+   "SecurityGain": 0.9,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.2
+  },
+  "SPLIT": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  },
+  "ICALL": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.3
+  },
+  "IGV": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.2
+  }
+ },
+ "rationale": "Round 1 built and ran correctly with no ICE fallback, so the table is pushed toward full coverage: BCF and FLA get the highest SecurityGain (0.9) since this binary is tiny (209 bytes of text, largest function 70 bytes) and can absorb flattening/bogus-control-flow bloat with negligible absolute runtime impact on a virtual-circle toy workload; FLA's DiversityGain is raised to 0.8 because flattening the handful of small methods (Expand, MoveTo, Hide, Show) maximally disrupts CFG-matching against the reference binary. SPLIT and IGV stay high on DiversityGain at low cost weights to compound control-flow diversification across all 13 functions, including the trivial getters where cheap splits still change signatures. SUB and ICALL add arithmetic and call-site indirection to obscure the simple Point/Circle geometry math and virtual-ish dispatch, with ICALL's CorrectnessRisk kept moderate (0.3) since indirect calls through function pointers are the most fragile transform in C++ code with member calls. IBR is weighted for block-level randomization to break basic-block ordering comparison against the seed1 reference. All CorrectnessRisk weights remain low-to-moderate so the selector still applies passes to the largest functions where they are safest, preserving the round-1 correctness result while substantially raising transformation coverage.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__Prolangs-C++__vcirc",
+  "run_id": "e10D_glm_agent_vcirc_2_50092",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T01:28:35Z"
+ }
+}

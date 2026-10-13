@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.2,
+   "DiversityGain": 0.3,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.8,
+   "CorrectnessRisk": 0.3
+  },
+  "FLA": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.2
+  },
+  "SPLIT": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.3
+  },
+  "ICALL": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.2
+  },
+  "IGV": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.3
+  }
+ },
+ "rationale": "This program is very small (600 bytes of text, 47 mostly tiny functions with the largest at only 170 bytes), so size-inflating passes must be restrained: BCF gets low security/diversity weight and high cost weights (0.7/0.8) because bogus control flow adds bulk and runtime with little analytical resistance per byte, which is unacceptable at this scale; FLA is kept at moderate weight (0.5/0.6) so it applies selectively to the few larger, loop-heavy functions (e.g., pop_around::cycle, simulation_unit::mov) where control-flow flattening actually resists recovery, while its cost weights (0.5/0.6) discourage flattening the many trivial functions. Cheap, low-risk transformations are favored instead: SPLIT (costs 0.1/0.2) fragments basic blocks to improve downstream pass effectiveness, SUB (RuntimeCost/SizeCost 0.2/0.3) adds instruction-level diversity cheaply, ICALL (0.7 security, 0.2 costs) converts direct calls to indirect ones, which is inexpensive and strongly hampers static call-graph recovery across the many C++ member-function call sites, and IGV (0.5/0.5, low costs) hides global state access in a program like a simulator that reads grid/screen globals. IBR gets the highest security/diversity weights (0.7/0.7) because indirect branching composes well with flattening and splitting to defeat the control-flow recovery a reverse engineer would attempt on a small, easy-to-navigate binary, with its moderate runtime cost weight (0.4) reflecting that a simulation benchmark can tolerate modest branch overhead. CorrectnessRisk weights are kept low (0.1-0.3) everywhere since none of these passes threaten the C++ semantics here beyond ordinary care with indirect dispatch (IBR/IGV/ICALL slightly higher), and all seven passes remain enabled so per-function features can drive selection.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__Prolangs-C++__simul",
+  "run_id": "e10C_glm_agent_simul_0_94695",
+  "arm": "C",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T13:52:07Z"
+ }
+}

@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.85
+  },
+  "BCF": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.35
+  },
+  "FLA": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.4
+  },
+  "SPLIT": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.75,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.85
+  },
+  "IBR": {
+   "SecurityGain": 0.65,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.45,
+   "CorrectnessRisk": 0.45
+  },
+  "ICALL": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.4,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.55
+  },
+  "IGV": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.45
+  }
+ },
+ "rationale": "This is a tiny (9-line, 14-function) TSVC benchmark whose code is dominated by a 39.7KB init routine full of loop-heavy array code plus one hot search loop (s332), so size headroom and loop runtime are the binding constraints. SUB and SPLIT get high permissiveness weights (RuntimeCost/SizeCost/Risk 0.70-0.85) because they add strong static-analysis friction with near-zero cost and are safe on hot loops; IGV is moderately favored since the program's large global arrays make global indirection effective, and its per-access overhead is acceptable. FLA keeps the highest SecurityGain (0.75) as the strongest single deterrent, but its RuntimeCost weight is capped at 0.30 so the dispatcher-overhead dimension suppresses it on the hot search loop rather than on cold setup code; BCF is similarly security-valuable (0.70) but its SizeCost weight is held low (0.20) because bogus-control-flow cloning would balloon the already-dominant init body past an acceptable size budget. IBR is allowed only moderately (RuntimeCost 0.30) to spare the tight search loop from indirect-branch misprediction, and ICALL is kept near-disabled (all weights <=0.60, SecurityGain 0.40) because a program this small offers almost no call-graph surface to hide, so its indirection cost buys little. CorrectnessRisk weights are set high only for the provably semantics-preserving cheap passes, keeping the riskier control-flow transforms (FLA, IBR, BCF) selective rather than blanket-applied.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__TSVC__Searching-flt",
+  "run_id": "e10C_glm_agent_Searching-flt_0_50287",
+  "arm": "C",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T01:32:00Z"
+ }
+}

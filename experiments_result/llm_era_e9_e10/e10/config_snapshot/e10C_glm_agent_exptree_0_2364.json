@@ -1,0 +1,54 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.85
+  },
+  "BCF": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.8,
+   "SizeCost": 0.8,
+   "CorrectnessRisk": 0.75
+  },
+  "FLA": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.75,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.7
+  },
+  "SPLIT": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.85
+  },
+  "IBR": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.65,
+   "CorrectnessRisk": 0.7
+  },
+  "ICALL": {
+   "SecurityGain": 0.65,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.8
+  }
+ },
+ "rationale": "exptree is a tiny (14 functions, ~2.6 KB text) but recursion- and search-heavy benchmark (recSearch, doSearch, queens-style backtracking), so the weight table favors low-cost, correctness-safe passes that apply broadly while penalizing expensive transforms on hot recursive paths. SUB and SPLIT get high weights with the highest CorrectnessRisk sensitivity because they are cheap, semantics-preserving workhorses suited to many small functions; FLA is weighted highest for SecurityGain since the two largest functions (recSearch, getInput) have enough basic blocks for flattening to pay off, but a high RuntimeCost weight keeps it off tight recursive kernels. BCF carries the highest RuntimeCost/SizeCost weights because bogus-control-flow bloat is most damaging in a program this small and hot; IBR and ICALL get strong SecurityGain/DiversityGain weights since indirect branch/call dispatch adds real static-analysis resistance at moderate cost, with CorrectnessRisk held high to restrict them to functions where indirecting is provably safe. IGV is omitted entirely: with only 14 functions forming a recursive, cross-file call graph, interprocedural virtualization risks correctness and code-size blowup for little marginal security over IBR+ICALL.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__McGill__exptree",
+  "run_id": "e10C_glm_agent_exptree_0_2364",
+  "arm": "C",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T16:00:06Z"
+ }
+}

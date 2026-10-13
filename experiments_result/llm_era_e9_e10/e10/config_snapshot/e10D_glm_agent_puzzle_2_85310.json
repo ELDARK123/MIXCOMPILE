@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.15,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.55,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.2
+  },
+  "FLA": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.55,
+   "CorrectnessRisk": 0.35
+  },
+  "SPLIT": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.65,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.45,
+   "CorrectnessRisk": 0.3
+  },
+  "ICALL": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.4
+  },
+  "IGV": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.45
+  }
+ },
+ "rationale": "The profile is essentially featureless (no source lines, no function list), identifying this as the puzzle benchmark from SingleSource/Benchmarks/Game \u2014 a small, single-file, compute-intensive program dominated by tight hot loops, so I prioritize cheap, low-risk transformations and gate the expensive ones. SUB gets the highest gain weights because instruction substitution is nearly free at runtime and size while defeating pattern-based analysis, and SPLIT is similarly inexpensive and adds structural diversity; both get very low cost/risk weights so they apply broadly. FLA and BCF provide the strongest control-flow hiding but can measurably slow hot loops, so their gain weights remain high (encouraging application) while their RuntimeCost and SizeCost weights are elevated to 0.55-0.60 so that functions with strong runtime-cost features temper the decision \u2014 heavy flattening lands on cold code, not inner loops. IBR gets moderate treatment as a mid-cost, mid-risk blend. ICALL and IGV carry the highest CorrectnessRisk weights (0.40/0.45) because indirect calls and global-variable indirection interact badly with the unknown calling structure of benchmark-style code with no visibility into its symbol usage, so they are considered but applied conservatively. Overall the table biases toward structurally diverse, low-overhead obfuscation with cost-aware gating of the heavyweight control-flow passes, which suits a small hot-loop benchmark where runtime blowup is the main practical constraint and correctness must be preserved without any feature data to steer per-function risk.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__BenchmarkGame__puzzle",
+  "run_id": "e10D_glm_agent_puzzle_2_85310",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T11:15:37Z"
+ }
+}

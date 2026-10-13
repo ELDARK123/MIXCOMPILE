@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.9,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  },
+  "BCF": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.3
+  },
+  "FLA": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.4
+  },
+  "SPLIT": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.3
+  },
+  "ICALL": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.4
+  },
+  "IGV": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.6
+  }
+ },
+ "rationale": "Round 0 built and ran correctly with no ICE, so this round pushes obfuscation intensity upward while keeping cost guardrails. SUB gets the highest SecurityGain and low cost weights since arithmetic substitution is cheap, correct, and adds strong static-analysis resistance across this small numeric/trig-heavy benchmark (trig.c, convert.c). SPLIT is prioritized because it is nearly free and enlarges basic-block pools that make FLA/BCF/IBR more effective on the larger functions (CalcObjectChildren, CalcObject, MakeSphere). FLA and IBR get strong security/diversity weights to flatten and break control flow in the bigger functions, with moderate RuntimeCost/SizeCost weights reflecting acceptable-but-not-unbounded overhead on a ~8.8KB text segment. BCF is kept slightly more restrained on RuntimeCost since bogus control flow multiplies path counts on hot loops. ICALL is favored moderately to obscure indirect-call targets in the object-manipulation code, with a higher CorrectnessRisk weight since mis-applied indirect calls are the likeliest semantic hazard. IGV is included with the lowest security weights and the highest CorrectnessRisk weight, keeping interprocedural variable changes conservative on this 41-function program to protect correctness.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__McCat__08-main",
+  "run_id": "e10D_glm_agent_08-main_1_93284",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T13:28:28Z"
+ }
+}

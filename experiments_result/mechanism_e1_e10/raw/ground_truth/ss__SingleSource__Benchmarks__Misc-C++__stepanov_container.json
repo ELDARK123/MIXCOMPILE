@@ -1,0 +1,201 @@
+{
+  "sample_id": "ss__SingleSource__Benchmarks__Misc-C++__stepanov_container",
+  "rule": "k-th .text function (sorted by entry) of llvm reference pairs with k-th recovered function of target; offsets relative to first entry",
+  "functions": [
+    {
+      "name": "_GLOBAL__sub_I_stepanov_container.cpp",
+      "addr": 4576,
+      "size": 94
+    },
+    {
+      "name": "_start",
+      "addr": 4672,
+      "size": 38
+    },
+    {
+      "name": "_Z3runPFvPdS_iES_S_i",
+      "addr": 4912,
+      "size": 63
+    },
+    {
+      "name": "_Z10array_testPdS_i",
+      "addr": 4976,
+      "size": 232
+    },
+    {
+      "name": "_Z19vector_pointer_testPdS_i",
+      "addr": 5216,
+      "size": 275
+    },
+    {
+      "name": "_Z20vector_iterator_testPdS_i",
+      "addr": 5504,
+      "size": 275
+    },
+    {
+      "name": "_Z10deque_testPdS_i",
+      "addr": 5792,
+      "size": 1023
+    },
+    {
+      "name": "_Z9list_testPdS_i",
+      "addr": 6816,
+      "size": 376
+    },
+    {
+      "name": "_Z8set_testPdS_i",
+      "addr": 7200,
+      "size": 49
+    },
+    {
+      "name": "_Z13multiset_testPdS_i",
+      "addr": 7264,
+      "size": 263
+    },
+    {
+      "name": "_Z10initializePdS_",
+      "addr": 7536,
+      "size": 50
+    },
+    {
+      "name": "_Z6logtwod",
+      "addr": 7600,
+      "size": 16
+    },
+    {
+      "name": "_Z15number_of_testsi",
+      "addr": 7616,
+      "size": 55
+    },
+    {
+      "name": "_Z9run_testsi",
+      "addr": 7680,
+      "size": 696
+    },
+    {
+      "name": "main",
+      "addr": 8384,
+      "size": 15
+    },
+    {
+      "name": "_ZNSt6vectorIdSaIdEED2Ev",
+      "addr": 8400,
+      "size": 13
+    },
+    {
+      "name": "_ZNSt5dequeIdSaIdEED2Ev",
+      "addr": 8416,
+      "size": 85
+    },
+    {
+      "name": "_ZNSt7__cxx114listIdSaIdEE4sortEv",
+      "addr": 8512,
+      "size": 919
+    },
+    {
+      "name": "_ZNSt3setIdSt4lessIdESaIdEEC2IPdEET_S6_",
+      "addr": 9440,
+      "size": 331
+    },
+    {
+      "name": "__clang_call_terminate",
+      "addr": 9776,
+      "size": 11
+    },
+    {
+      "name": "_ZNSt8_Rb_treeIddSt9_IdentityIdESt4lessIdESaIdEED2Ev",
+      "addr": 9792,
+      "size": 20
+    },
+    {
+      "name": "_ZNSt8_Rb_treeIddSt9_IdentityIdESt4lessIdESaIdEE8_M_eraseEPSt13_Rb_tree_nodeIdE",
+      "addr": 9824,
+      "size": 54
+    },
+    {
+      "name": "_ZSt16__introsort_loopIPdlN9__gnu_cxx5__ops15_Iter_less_iterEEvT_S4_T0_T1_",
+      "addr": 9888,
+      "size": 909
+    },
+    {
+      "name": "_ZSt22__final_insertion_sortIPdN9__gnu_cxx5__ops15_Iter_less_iterEEvT_S4_T0_",
+      "addr": 10800,
+      "size": 420
+    },
+    {
+      "name": "_ZSt16__introsort_loopIN9__gnu_cxx17__normal_iteratorIPdSt6vectorIdSaIdEEEElNS0_5__ops15_Iter_less_iterEEvT_S9_T0_T1_",
+      "addr": 11232,
+      "size": 909
+    },
+    {
+      "name": "_ZSt22__final_insertion_sortIN9__gnu_cxx17__normal_iteratorIPdSt6vectorIdSaIdEEEENS0_5__ops15_Iter_less_iterEEvT_S9_T0_",
+      "addr": 12144,
+      "size": 420
+    },
+    {
+      "name": "_ZNSt11_Deque_baseIdSaIdEE17_M_initialize_mapEm",
+      "addr": 12576,
+      "size": 225
+    },
+    {
+      "name": "_ZNSt11_Deque_baseIdSaIdEE15_M_create_nodesEPPdS3_",
+      "addr": 12816,
+      "size": 126
+    },
+    {
+      "name": "_ZSt16__introsort_loopISt15_Deque_iteratorIdRdPdElN9__gnu_cxx5__ops15_Iter_less_iterEEvT_S7_T0_T1_",
+      "addr": 12944,
+      "size": 440
+    },
+    {
+      "name": "_ZSt22__final_insertion_sortISt15_Deque_iteratorIdRdPdEN9__gnu_cxx5__ops15_Iter_less_iterEEvT_S7_T0_",
+      "addr": 13392,
+      "size": 647
+    },
+    {
+      "name": "_ZSt14__partial_sortISt15_Deque_iteratorIdRdPdEN9__gnu_cxx5__ops15_Iter_less_iterEEvT_S7_S7_T0_",
+      "addr": 14048,
+      "size": 438
+    },
+    {
+      "name": "_ZSt27__unguarded_partition_pivotISt15_Deque_iteratorIdRdPdEN9__gnu_cxx5__ops15_Iter_less_iterEET_S7_S7_T0_",
+      "addr": 14496,
+      "size": 811
+    },
+    {
+      "name": "_ZSt13__heap_selectISt15_Deque_iteratorIdRdPdEN9__gnu_cxx5__ops15_Iter_less_iterEEvT_S7_S7_T0_",
+      "addr": 15312,
+      "size": 563
+    },
+    {
+      "name": "_ZSt13__adjust_heapISt15_Deque_iteratorIdRdPdEldN9__gnu_cxx5__ops15_Iter_less_iterEEvT_T0_S8_T1_T2_",
+      "addr": 15888,
+      "size": 673
+    },
+    {
+      "name": "_ZSt11__push_heapISt15_Deque_iteratorIdRdPdEldN9__gnu_cxx5__ops14_Iter_less_valEEvT_T0_S8_T1_RT2_",
+      "addr": 16576,
+      "size": 325
+    },
+    {
+      "name": "_ZSt16__insertion_sortISt15_Deque_iteratorIdRdPdEN9__gnu_cxx5__ops15_Iter_less_iterEEvT_S7_T0_",
+      "addr": 16912,
+      "size": 616
+    },
+    {
+      "name": "_ZSt24__copy_move_backward_ditILb1EdRdPdSt15_Deque_iteratorIdS0_S1_EET3_S2_IT0_T1_T2_ES8_S4_",
+      "addr": 17536,
+      "size": 1139
+    },
+    {
+      "name": "_ZNSt8_Rb_treeIddSt9_IdentityIdESt4lessIdESaIdEE16_M_insert_equal_IRdNS5_11_Alloc_nodeEEESt17_Rb_tree_iteratorIdESt23_Rb_tree_const_iteratorIdEOT_RT0_",
+      "addr": 18688,
+      "size": 243
+    },
+    {
+      "name": "_ZNSt8_Rb_treeIddSt9_IdentityIdESt4lessIdESaIdEE28_M_get_insert_hint_equal_posESt23_Rb_tree_const_iteratorIdERKd",
+      "addr": 18944,
+      "size": 304
+    }
+  ]
+}

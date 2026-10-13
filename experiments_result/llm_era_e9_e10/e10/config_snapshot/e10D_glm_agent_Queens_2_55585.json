@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  },
+  "FLA": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  },
+  "SPLIT": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  },
+  "ICALL": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.3
+  },
+  "IGV": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.2
+  }
+ },
+ "rationale": "Round 1 built and ran correctly with no ICE fallback, so this candidate escalates obfuscation aggressiveness across all seven passes while keeping cost weights moderate. The profile is dominated by small, control-flow-heavy recursive functions (Try, Queens, Perm, Towers, Quicksort), so control-flow-centric passes get the highest Security/Diversity weights: FLA flattens the dense back-edge loops typical of backtracking search, BCF wraps their hot edges with opaque predicates, IBR randomizes branch targets to frustrate pattern matching on the recurring recursion prologues, and ICALL hides the small program's many direct calls (including the recursive self-calls in Try and Queens) behind indirect dispatch, which is high-value static-analysis denial at low size cost on a 768-byte text. SUB and IGV provide cheap arithmetic and global-variable concealment with minimal runtime impact, and SPLIT is emphasized mainly for DiversityGain since splitting tiny functions multiplies apparent structure at negligible cost. RuntimeCost/SizeCost weights stay in the 0.1-0.4 band because the benchmark's total footprint is tiny and its recursive kernels tolerate constant-factor slowdowns, while CorrectnessRisk weights remain low (0.1-0.3) to avoid deterring application after a clean round 1, with ICALL slightly higher since indirect-call rewriting of recursive code carries the most subtle semantic risk.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Stanford__Queens",
+  "run_id": "e10D_glm_agent_Queens_2_55585",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T03:00:08Z"
+ }
+}

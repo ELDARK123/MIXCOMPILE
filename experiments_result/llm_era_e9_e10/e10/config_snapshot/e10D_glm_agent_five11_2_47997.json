@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.05,
+   "SizeCost": 0.1,
+   "CorrectnessRisk": 0.05
+  },
+  "BCF": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.55,
+   "SizeCost": 0.45,
+   "CorrectnessRisk": 0.15
+  },
+  "FLA": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.2
+  },
+  "SPLIT": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.65,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.15
+  },
+  "ICALL": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.25
+  },
+  "IGV": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.15,
+   "CorrectnessRisk": 0.2
+  }
+ },
+ "rationale": "Round 1 built and ran cleanly with no ICE, so this round raises obfuscation pressure across all seven passes while keeping cost weights calibrated to five11's profile: it is a tiny (1259 text bytes) bit-manipulation benchmark whose hot loops (read_x_bits, read_11_bits) are sensitive to per-iteration overhead, so BCF and IBR get the highest RuntimeCost weights (0.55/0.45) to limit their firing in tight loops, while FLA is favored slightly over BCF as it flattens control flow with lower steady-state overhead. SUB stays strongest overall \u2014 arithmetic substitution is nearly free here since the code is dominated by shifts/masks that substitute well, and its low cost weights let it apply broadly. SPLIT and IGV are cheap structural/graph transformations well suited to the 12 small functions, so their cost weights stay low to let them apply. ICALL keeps a moderate CorrectnessRisk weight (0.25) since indirect-call lowering on the small helper-heavy call graph is where residual correctness risk concentrates, even though round 1 was clean.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__BitBench__five11",
+  "run_id": "e10D_glm_agent_five11_2_47997",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T00:53:39Z"
+ }
+}

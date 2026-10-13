@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.9,
+   "DiversityGain": 0.85,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.05
+  },
+  "BCF": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.15
+  },
+  "FLA": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.45,
+   "CorrectnessRisk": 0.2
+  },
+  "SPLIT": {
+   "SecurityGain": 0.65,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.15,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.05
+  },
+  "IBR": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.1
+  },
+  "ICALL": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  },
+  "IGV": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.15,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  }
+ },
+ "rationale": "Round 1 built and ran correctly, so this round pushes obfuscation strength up while respecting the program's profile: llubenchmark is a tiny (191 lines, 4 functions) pointer-chasing benchmark whose hot loop is memory-latency-bound, so arithmetic (SUB) and control-flow (BCF, FLA, IBR) transforms add near-noise runtime cost on top of cache-miss-dominated list traversal \u2014 hence high SecurityGain/DiversityGain with only moderate RuntimeCost weights. SUB is weighted most aggressively since instruction substitution is essentially free and most reliably breaks pattern-based recovery of the traversal loop. FLA and BCF flatten and pad main's control flow (the 1147-byte hot function) to hide loop structure, with CorrectnessRisk kept low-moderate given round 1's clean result. SPLIT and IGV are raised as cheap size-tolerant diversifiers that fragment basic blocks and obscure global value naming in this minuscule binary where structure is otherwise trivially readable. ICALL is held at moderate weight: with only 4 functions, indirection mostly protects the tiny allocate/_start helpers and adds real call overhead, so it is applied selectively rather than maximally.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__llubenchmark",
+  "run_id": "e10D_glm_agent_llubenchmark_2_95178",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T13:59:58Z"
+ }
+}

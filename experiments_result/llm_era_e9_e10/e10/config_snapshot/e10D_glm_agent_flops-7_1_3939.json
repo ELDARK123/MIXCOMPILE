@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.05
+  },
+  "BCF": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.05
+  },
+  "FLA": {
+   "SecurityGain": 0.9,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.1
+  },
+  "SPLIT": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.05
+  },
+  "IBR": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "ICALL": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.25,
+   "SizeCost": 0.15,
+   "CorrectnessRisk": 0.1
+  },
+  "IGV": {
+   "SecurityGain": 0.65,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.15
+  }
+ },
+ "rationale": "Round 0 built and validated, so this tiny two-function FP benchmark tolerates a more aggressive table. flops-7 is dominated by a single hot FP loop in main, so I keep RuntimeCost weights moderate (0.1-0.45) rather than maximal: arithmetic substitution (SUB, 0.8 security) is nearly free on scalar FP code and gives strong symbolic resistance; FLA stays the top-weighted structural pass (0.9 security) since flattening the single large loop body is the biggest win against static analysis, but its runtime weight is capped to avoid compounding dispatch overhead with BCF; BCF is kept slightly lighter (0.7/0.35 runtime) because bogus predicates multiply inside the hot loop. IBR, ICALL, and IGV get high diversity weights to randomize layout, indirect-call targets, and global variable access, which matters because a 471-byte binary has almost no other structure to hide behind. SPLIT is cheap and improves the effectiveness of FLA/BCF, so it stays enabled with low cost weights. CorrectnessRisk stays low across the board since round 0 showed no build or execution issues and the codebase is pure numeric C with no UB-prone constructs like longjmp or inline asm.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Misc__flops-7",
+  "run_id": "e10D_glm_agent_flops-7_1_3939",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T16:25:59Z"
+ }
+}

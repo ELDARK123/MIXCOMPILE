@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.15
+  },
+  "BCF": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.55,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.25
+  },
+  "FLA": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.2
+  },
+  "SPLIT": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.65,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.2
+  },
+  "ICALL": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.35
+  },
+  "IGV": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.15,
+   "CorrectnessRisk": 0.3
+  }
+ },
+ "rationale": "Round 0 built and passed, so headroom exists to raise obfuscation on this 37-function, 2.3 KB C++ program whose hot spots are the Array/SpArray constructor-destructor pairs. SUB is weighted highest: arithmetic substitution is cheap in both size and time and this code is constructor-driven with plenty of integer index/size math to transform. FLA stays strong since the largest functions (Array ctor 217 B, Insert 208 B) are control-flow-rich enough to flatten profitably, but its RuntimeCost weight is moderate because Insert is on the program's hot path. BCF is kept mid-range with elevated SizeCost because bogus edges inflate a tiny 2.3 KB text segment quickly; modest application still adds decoy paths without doubling the binary. SPLIT gets high DiversityGain and near-zero costs as the safest way to break up the duplicated C1/C2 and D1/D2 bodies, hindering clone-based pattern matching. IBR is moderate \u2014 useful displacement on basic-block boundaries but with real per-block dispatch cost. ICALL keeps a decent DiversityGain to convert direct calls (e.g., Insert->Array helpers) into indirect ones, tempered by the highest CorrectnessRisk of the set given vtable-heavy C++ code where indirect-call rewriting must not touch virtual dispatch. IGV is included lightly for global/constant concealment with low costs but a caution flag, since over-encoding globals in a tiny benchmark risks init-order issues.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__Prolangs-C++__objects",
+  "run_id": "e10D_glm_agent_objects_1_97952",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T14:46:04Z"
+ }
+}

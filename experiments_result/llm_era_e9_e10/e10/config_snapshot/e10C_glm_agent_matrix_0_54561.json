@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.25,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.05
+  },
+  "BCF": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.75,
+   "SizeCost": 0.8,
+   "CorrectnessRisk": 0.15
+  },
+  "FLA": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.85,
+   "SizeCost": 0.8,
+   "CorrectnessRisk": 0.25
+  },
+  "SPLIT": {
+   "SecurityGain": 0.45,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.15
+  },
+  "ICALL": {
+   "SecurityGain": 0.65,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.2
+  },
+  "IGV": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.55,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.2
+  }
+ },
+ "rationale": "This is a tiny (2903 text bytes, 7 functions, dominated by main/mkmatrix/mmult) Shootout matrix benchmark whose interesting logic sits in tight integer loops (mmult triple loop, matrix init/free), so the controlling concern is protecting a very small hot region without inflating a 3 KB binary or slowing the loops: control-flow bloat passes get the highest cost weights (FLA RuntimeCost/SizeCost 0.85/0.8, BCF 0.75/0.8) so they are applied sparingly \u2014 ideally only to cold wrapper functions like main's setup/teardown paths \u2014 while SUB gets a low RuntimeCost/SizeCost (0.25/0.2) and high SecurityGain (0.7) because instruction substitution obscures the arithmetic of mmult at near-zero overhead and is essentially always safe; ICALL is favored (SecurityGain 0.65, moderate costs) since indirect-calling mkmatrix/mmult/zeromatrix hides the small program's very static call graph, and IBR (0.6 security) cheaply breaks basic-block contiguity inside main without the blowup of FLA; SPLIT is kept moderate (0.45/0.5) because the functions are already tiny and splitting yields limited gain but costs little; IGV gets mid-range weights \u2014 useful for flattening the visible data-flow of the mmult loop but with genuine runtime and correctness exposure in tightly-scheduled loops. All correctness risks are kept low-to-moderate given the code is straight-line numeric C++ with no exception-heavy or complex control-flow constructs that would make any pass hazardous.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Shootout-C++__matrix",
+  "run_id": "e10C_glm_agent_matrix_0_54561",
+  "arm": "C",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T02:43:00Z"
+ }
+}

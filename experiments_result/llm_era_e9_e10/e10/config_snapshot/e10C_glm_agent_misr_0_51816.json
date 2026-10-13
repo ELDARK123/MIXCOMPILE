@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.2
+  },
+  "FLA": {
+   "SecurityGain": 0.9,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.3
+  },
+  "SPLIT": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.3
+  },
+  "ICALL": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.3
+  },
+  "IGV": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  }
+ },
+ "rationale": "This is a tiny, recursion- and game-search-heavy benchmark (chomp, queens, exptree, misr) with only 6 functions and ~1.8 KB of text, so size overhead is nearly free while runtime overhead must stay modest because the hot code is concentrated in 'simulate' and 'main'. SUB is applied aggressively since arithmetic substitution is nearly free in both time and space and destroys instruction-level patterns; FLA gets the highest security weight because control-flow flattening yields the biggest reverse-engineering resistance on the large control-flow-dense functions, with moderate runtime/size cost weights so it concentrates on the big functions rather than trivial ones like kill_list; BCF provides complementary bogus-edge diversity at moderate cost and is kept enabled but not dominant; SPLIT stays low across the board as a cheap, low-yield helper; IBR and ICALL add call/branch indirection diversity useful in a small static binary, held at moderate cost weights to protect the hot recursion in queens/exptree/misr; IGV is kept mild because the program has few globals and its benefit is limited. All correctness risks are kept low since the passes applied (SUB, FLA, BCF, SPLIT) are well-validated, and ICALL/IBR risk weights stay moderate to avoid perturbing the benchmark's recursive call structure.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__McGill__misr",
+  "run_id": "e10C_glm_agent_misr_0_51816",
+  "arm": "C",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T01:57:24Z"
+ }
+}

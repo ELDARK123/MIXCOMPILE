@@ -1,0 +1,233 @@
+run_id,level,e9_arm,sample_id,function,symbol,prompt_sha256,model,parse_status,top1_hit,rank,tokens_in,tokens_out,response_raw,latency_s,status
+disasm_glm_agent_dc_11263,L0,A2,ms__MultiSource__Benchmarks__NPB-serial__dc,fn_SharedSortAggregate,SharedSortAggregate,8919ee1bafc0b36f,glm_agent,ok,1,1,46790,9397,"## Step-by-step reasoning
+
+**Step 1 — Characterize the target.** `SharedSortAggregate` (protected binary) has:
+- Prologue: `pushq %rbp; movq %rsp,%rbp;` saves r15/r14/r13/r12/rbx, `subq $0x88, %rsp`, saves the 1st arg (`%rdi` → `%r12`).
+- **BCF/IGV pattern**: repeated opaque predicates via an indirect global (`movq 0x87ad0(%rip),%rax` + `movabsq $0x8DC7FC05E7B8C13E` + `movl (%rax,%rbx)` + `x·(x-1)` parity test + `cmpl $9` loop) — i.e., IGV + BCF.
+- **Two dynamic stack allocas** of 0x70 bytes (`movq %rsp,%r15; addq $-0x70,%r15; movq %r15,%rsp` twice).
+- No visible plain calls in the head; large stack frame.
+
+**Step 2 — Exact match.** **F066** is literally `<SharedSortAggregate>` at the same address `0x2c2a0` with byte-identical disassembly — trivially rank 1.
+
+**Step 3 — Structural group matching.** I rank candidates by (a) frame shape (rbp-based frame + 5 callee-saved regs), (b) presence of the same IGV+BCF opaque-predicate pattern, (c) dynamic allocas, (d) argument handling (`%rdi` → `%r12`).
+
+- **Group A (closest)**: rbp frame + checksumBhi-style IGV/BCF: **F013 MultiWayMerge** (identical prologue incl. `%rdi→%r12`, `subq $0x98` vs `$0x88`, same `nopw` padding — near-identical shape), **F033 MultiFileProcJobs** (rbp frame, `%rdi→%r12`, checksumBhi BCF), **F070 GenerateADC** (rbp frame, checksumBhi BCF, *two* dynamic allocas like the target), **F064 ViewSizesVerification** (rbp frame, checksumBhi BCF, allocas 0x400/0x40), **F060 ComputeMemoryFittedView**, **F067 PartitionCube**, **F038 DC**, **F040 WriteViewToDisk**.
+- **Group B**: rbp frame but the *static-globals* BCF variant (`x.N`/`y.N` instead of indirect checksumBhi pointers): **F009 RunFormation** (notably has a dynamic alloca of *exactly 0x70*), **F047**, **F025**, **F030**, **F015**, **F065**.
+- **Group C**: static-globals BCF without the rbp frame: **F026 vszsort** (semantically sort-related), **F004**, **F034**, **F041**, **F063**.
+- **Group D**: checksumBhi/adcgen IGV+BCF but different frames: **F017 onessort**, **F002**, **F005**, **F011**, **F020**, **F031**, **F044**, **F046**, **F049**, **F053**, **F061**, **F069**, **F023**, **F036**, **F043**, **F039**.
+- **Group E**: only indirect branches (IBR), no BCF: **F003**, **F014**, **F050**.
+- **Group F (unobfuscated / clean)**: no protection at all, so least similar despite possible semantic relation. Ordered by residual resemblance (recursion/aggregate/IO shape first, tiny leaf helpers last): F024, F007, F029, F055, F042, F001, F008, F068, F019, F027, F032, F058, F012, F016, F054, F071, F048, F028, F018, F021, F035, F037, F059, F062, F022, F052, F006, F045, F051, F056, F057, F010, F072, F073.
+
+**Step 4 — Verification.** All 73 candidates appear exactly once; F066 anchors rank 1, groups ordered by decreasing overlap of prologue, BCF mechanism, and alloca pattern with the target.
+
+{""ranking"": [""F066"", ""F013"", ""F033"", ""F070"", ""F064"", ""F060"", ""F067"", ""F038"", ""F040"", ""F009"", ""F047"", ""F025"", ""F030"", ""F015"", ""F065"", ""F026"", ""F004"", ""F034"",",175.6,ok
+disasm_glm_agent_AMGmk_11439,L0,A2,ms__MultiSource__Benchmarks__ASC_Sequoia__AMGmk,fn_hypre_CSRMatrixMatvec_FF,hypre_CSRMatrixMatvec_FF,6e079c9bca1763f1,glm_agent,ok,1,1,28265,1795,"## Step-by-step reasoning
+
+**Step 1 — Identify the target.** The protected function is `hypre_CSRMatrixMatvec_FF` at 0x21040. Scanning the candidate list, **F028** is *literally the same symbol at the same address* (`hypre_CSRMatrixMatvec_FF` @ 0x21040) with a byte-identical instruction prefix (pushes of rbp/r15/r14/r13/r12/rbx, `movl %r9d,-0x3c(%rsp)`, `movq %rcx,-0x38(%rsp)`, the same `movabsq $0x667497dc1566e9f1` opaque-predicate key and the same RIP-relative globals at 0x49180/0x49188). This is the ground-truth match.
+
+**Step 2 — Structural fingerprint of the target.** Beyond the exact match, its distinctive features are:
+- Prologue: 6 callee-saved pushes, then spilled incoming args (`r9d`→`-0x3c(rsp)`, `rcx`→`-0x38(rsp)`), consistent with the `hypre_CSRMatrixMatvec` family signature `(A, ..., double, ..., int)`.
+- Field loads `(%rdi)`, `0x8(%rdi)`, `0x10(%rdi)` → the CSR matrix `i`/`j`/`a` pointers — exactly the pattern in F003.
+- IGV/BCF obfuscation pattern: `movq global(%rip),%rax` + `movabsq` constant + `movl (%rax,%reg),%eax`; `leal -0x1; imull; testb $1` opaque predicate; paired `cmpl $0x9,(%rax,%reg)` / `jg` spin loop.
+- The related sibling `hypre_CSRMatrixMatvec` (F003) shows the *same* prologue, `movapd %xmm0,%xmm5` (double scalar arg), same field loads, same obfuscation idiom with a different key constant — strongest non-identical match.
+
+**Step 3 — Rank remaining candidates** by (a) semantic/structural kinship to Matvec_FF and (b) density of the same obfuscation idiom:
+- **F016** `hypre_CSRMatrixMatvecT`: transpose twin of the same routine — 6 pushes, `sub $0x98`, `movapd %xmm0,%xmm5`, same BCF idiom with static `x.3`/`y.4`.
+- **F040** `hypre_CSRMatrixUnion`: 6 pushes + spill-heavy arg setup, touches offsets 0x18/0x1c/0x8/0x10 of CSRMatrix, same obfuscation idiom.
+- **F001** `hypre_SeqVectorPrint`, **F038** `hypre_CSRMatrixSetRownnz`, **F042** `hypre_CSRMatrixRead`, **F005** `hypre_CSRMatrixClone`, **F037** `hypre_SeqVectorCloneDeep`, **F026** `hypre_CSRMatrixPrint`, **F009** `hypre_BoomerAMGSeqRelax`, **F035** `GenerateSeqLaplacian`: all share the 6-push frame and full BCF/IGV pattern but differ in body semantics.
+- **F015/F039/F034/F024/F027/F022/F004/F032/F011/F021**: same idiom, simpler/smaller frames.
+- **F030/F043/F020**: allocation wrappers, partial idiom.
+- **F041/F002/F010**: partially obfuscated, mostly clean bodies.
+- **F012/F018/F033/F036/F028-adjacent creators**: clean bodies, no obfuscation.
+- **F029/F023/F013/F006/F019**: trivial setters/queries — least similar.
+
+Final ranking (F028 exact match first; Matvec family next; then descending frame/idiom similarity down to trivial unobfuscated setters):
+
+{""ranking"": [""F028"", ""F003"", ""F016"", ""F040"", ""F001"", ""F038"", ""F042"", ""F005"", ""F037"", ""F026"", ""F009"", ""F035"", ""F015"", ""F039"", ""F034"", ""F024"", ""F027"", ""F022"", ""F032"", ""F011"", ""F021"", ""F030"", ""F043"", ""F020"", ""F041"", ""F002"", ""F010"", ""F012"", ""F018"", ""F033"", ""F036"", ""F031"", ""F014"", ""F006"", ""F017"", ""F007"", ""F008"", ""F029"", ""F023"",",16.8,ok
+disasm_glm_agent_Searching-dbl_11456,L0,A2,ms__MultiSource__Benchmarks__TSVC__Searching-dbl,fn_init,init,bdf4e4e26c6113ab,glm_agent,ok,1,1,9704,2329,"## Step-by-step reasoning
+
+**Target function `init` (0x9120) key features:**
+1. Prologue: `push rbp/r15/r14/r13/r12/rbx` (6 pushes) + `sub $0x18, %rsp`, saves `%rdi` into `%rbx`.
+2. Body: a long chain of `leaq <string>; call strcmp; test; je <far target>` — a string-dispatch dispatcher jumping to widely separated blocks (targets up to +0xd54 and beyond), so the function is very large (>3.5 KB).
+3. No floating point, no `movabsq` constants in the visible body; control flow is a straight comparison cascade, not a flattened dispatcher.
+
+**Candidate analysis:**
+
+- **F005** — literally `<init>` at the same address 0x9120 with byte-identical instructions in the shown window. Exact match.
+- **F011 `s331`** — prologue `push rbp/r15/r14/r13/r12/rbx + push rax`, and it *calls the target* (`callq 0x9120 <init>`) right after loading a string address. Large function, same file, direct structural/call relationship to `init`. Strongest non-identical match.
+- **F004 `s332`** — prologue is a near-exact copy of the target's: 6 pushes + `sub $0x18, %rsp` (stores an arg to `0x10(%rsp)` like the target stores `%rdi`). Body uses the same opaque-predicate idiom (`leal -1; imull; testb $1`) seen across this binary. No calls visible, though.
+- **F007 `set`** — 5-push prologue (`r15/r14/r13/r12/rbx`, no rbp), and like the target it makes external calls (`posix_memalign@plt`). Call-containing, medium size.
+- **F012 `sum1d`** — exact 6-push prologue match, but the body is dominated by `movabsq` constants and bitwise precomputation with no calls — stylistically far from `init`'s strcmp cascade.
+- **F003 `check`** — smaller prologue (3 pushes) plus `movabsq` constants, opaque-predicate loop and an FP accumulate loop. Partially similar frame, different body character.
+- **F009 `set2d`** — 3-push prologue (`rbp/r14/rbx`) with the same opaque-predicate preamble; no calls, medium size.
+- **F001 `set1ds`** — no stack frame at all; `movabsq` + opaque-predicate loop idiom only. Weak prologue similarity.
+- **F010 `set1d`** — essentially the same shape as F001 (no prologue, `movabsq`, opaque loops); a coin-flip with F001, ranked just below.
+- **F008 `max`** — 4-instruction leaf (`cmovgl`), nothing in common with a large dispatching function.
+- **F002 `min`** — same as F008, a 3-instruction leaf.
+- **F006 `dummy`** — `xorl %eax; ret`, the most trivial possible function; least similar.
+
+{""ranking"": [""F005"", ""F011"", ""F004"", ""F007"", ""F012"", ""F003"", ""F009"", ""F001"", ""F010"", ""F008"", ""F002"", ""F006""]}",52.6,ok
+disasm_glm_agent_linpack-pc_11509,L0,A2,ss__SingleSource__Benchmarks__Linpack__linpack-pc,fn_dmxpy,dmxpy,e20648b48dd9a36b,glm_agent,ok,1,1,8672,2119,"# Step-by-step reasoning
+
+## 1. Identify the target
+
+The target `dmxpy` (Linpack) has signature `dmxpy(n1, y[], n2, lda, x[], a[])` — 6 arguments:
+- `edi` → n1 (saved to `r14d`), `rsi` → y (spilled at `-0x78`), `edx` → n2 (`r13d`), `ecx` → lda (`r12d`), `r8` → x (spilled at `-0x68`), `r9` → a.
+- Prologue: 6 callee-saved pushes + large `sub $0x368` stack frame (enlarged by obfuscation).
+- Body hallmark: `y[j] += a[...] * x[...]` chains of unrolled axpy loops (float ops via `movss/mulss/addss`).
+- Obfuscation traces: opaque-predicate dispatcher using a global pointer (`0x25170`/`0x25178`) with `testb $1` on `(x-1)*x` — classic BCF/SUB/ICALL-style artifacts. Real control logic peeks through: `and $0x80000001` (n2 parity check at 0x10f57), the global-driven loop predicate, etc.
+
+## 2. Match candidates
+
+- **F001 (`dmxpy`)** — Same function, unobfuscated. Identical 6-push prologue, spill layout (`ecx`→stack, `edx`→`r13d`, `edi`→stack), the exact `andl $0x80000001` parity idiom from the target (0x10f5a), the `movq/notq/testb $0x1` loop-entry idiom (0x37a4-0x37aa), and float `movss/mulss/addss` inner loops. Stack size differs only because of the obfuscator's frame (`0x368` vs `0x178`). This is a certain match.
+
+- **F002 (`daxpy`)** — `dmxpy` is literally a sequence of inlined daxpy operations. Shares the `testb $0x1, %al` even/odd unroll, `movss/mulss/addss/movss` store loop, argument-style early guards. Closest non-identical candidate.
+
+- **F005 (`dgesl`)** — Same heavy prologue (6 pushes + spills), nested float loops calling axpy-shaped code (`imull` index math, `movss/subss/addss`). Structurally similar but a larger, more complex kernel.
+
+- **F007 (`dscal`)** — Simple `mulss`-only loop with the same unrolling scaffold (`and $-0x8`, shuffle broadcast). Shares loop skeleton but no addss/accumulate pattern.
+
+- **F006 (`ddot`)** — Float multiply-accumulate loop (`mulss/addss` accumulation), similar guards, but reduction (no stores in loop) vs. dmxpy's axpy stores.
+
+- **F009 (`dgefa`)** — Same 6-push prologue and stack spills, but the visible core is integer index/elimination bookkeeping; less float-loop overlap.
+
+- **F012 (`matgen`)** — 6-push prologue but integer PRNG arithmetic (`imull $0xc35`), only incidental float stores. Weak similarity.
+
+- **F011 (`idamax`)** — Float comparison loop (`andps`, `ucomiss`-style); different semantics, small body.
+
+- **F004 (`epslon`)** — Two float ops + ret; tiny, no loop/prologue overlap.
+
+- **F010 (`second`)** — Trivial call/convert/div wrapper, no similarity beyond float usage.
+
+- **F008 (`what_date`)** — Bare `retq`, no overlap.
+
+- **F003 (`print_time`)** — Bare `retq`, no overlap.
+
+## 3. Ranking basis summary
+
+Exact match first (prologue, idioms, argument handling all align), then by shared kernel pattern (axpy-style float loops → daxpy, dgesl, dscal, ddot), then structural-only matches (dgefa, matgen, idamax), then trivial leaf functions.
+
+{""ranking"": [""F001"", ""F002"", ""F005"", ""F007"", ""F006"", ""F009"", ""F012"", ""F011",49.7,ok
+disasm_glm_agent_Pathfinder_11559,L0,A2,ms__MultiSource__Benchmarks__DOE-ProxyApps-C__Pathfinder,fn_parseFile,parseFile,22bf15ce72671963,glm_agent,ok,1,1,50082,10527,"## Step 1: Analyze the target function
+
+The target `parseFile` at `0x1ea00` shows clear signs of MIXCOMPILE obfuscation:
+
+- **BCF (bogus control flow)**: The dominant pattern `movl (%r12),%eax; leal -0x1(%rax),%ecx; imull %eax,%ecx; testb $0x1,%cl` is the classic opaque predicate `x*(x-1) mod 2` (always even), gated on global `x.56` (`0x6ba28`) and `y.57` (`0x6ba44`). The loops like `cmpl $0x9,(%rbx); jg back` are bogus-loop clones of basic blocks. Almost the entire visible body is BCF junk, so matching must lean on prologue, calling convention, and residual structure.
+- **Prologue**: `push rbp, r15, r14, r13, r12, rbx; sub $0x28, %rsp` — 6 callee-saved registers in that exact order, then `movq %rdi, %r15` (saves arg1) and `testq %r15, %r15; je <exit>` (null-check of arg1).
+
+## Step 2: Match against candidates
+
+**F019 (`parseFile`, 0x2920)** is the obvious top match: identical function name, identical 6-register save order (`rbp,r15,r14,r13,r12,rbx`), same `movq %rdi,%r15` + `testq %rdi,%rdi; je <fail>` shape, and it calls `fopen`, `Graph_new`, `strdup`, `CharVector_new` — exactly the file-parsing/graph-building behavior a `parseFile` should have. The stack delta differs (`$0x18` vs `$0x28`) and the body is unrecognizable, but that's expected from BCF/FLA adding spill slots and dispatch blocks.
+
+**Next tier** — same full 6-push prologue with `subq` stack allocation, ordered by stack-size closeness and semantic affinity:
+- `F041` (`parseConfigFile`): the closest sibling semantically — also takes a filename, calls `fopen` with the *same* string constant `0x838b`, reads lines; 6 pushes, large `subq`.
+- `F068` (`buildGraphFromPaths`) and `F067` (`SearchDiagram_build`): exact `subq $0x28` stack size; F068 even calls `Graph_new` like `parseFile` does.
+- `F013`, `F060`, `F082`, `F091`, `F055`: 6 pushes + `subq $0x18` (the original `parseFile`'s own stack size).
+- `F022`/`F070` (leg searches), `F078` (`runInteractively`, which calls `parseFile`), `F031`: larger stacks.
+- `F010`, `F044`, `F040`, `F033`, `F036`, `F065`, `F071`, `F064`, `F083`, `F085`, `F093`: 6 pushes but `push %rax` instead of `subq`; `F024` has the same prologue but a null-check *before* the pushes.
+
+**Mid tier** — partial prologues: 4-push group (`F005`, `F009`, `F015`, `F021`, `F046`, `F057`, `F073`, `F053`), 5-push `F014` (no rbp), 3-push groups (`F028`, `F029`, `F039`, `F052`, `F054`, `F030`, `F081`, `F087`, `F090`, `F001`, `F079`, `F048`), then 2-push+ constructors/deallocators (`F003`, `F004`, `F059`, `F018`, `F088`, `F042`, `F086`, `F006`, `F069`, `F062`, `F026`, `F043`, `F038`, `F016`, `F061`), single-push dealloc helpers (`F011`, `F017`, `F032`, `F047`, `F058`, `F075`, `F027`, `F074`, `F066`, `F072`, `F063`, `F034`, `F056`, `F094`).
+
+**Bottom tier** — leaf functions with no callee-saved spills and trivial stubs: vector find/pop helpers (`F002`, `F007`, `F051`, `F008`, `F077`, `F023`, `F092`), tiny wrappers (`F012`, `F020`, `F037`, `F045`, `F076`, `F084`, `F095`, `F080`, `F089`, ",74.1,ok
+disasm_glm_agent_Puzzle_11633,L0,A2,ss__SingleSource__Benchmarks__Stanford__Puzzle,fn_Trial,Trial,a49a71646b7f3097,glm_agent,ok,1,1,6418,1624,"## Reasoning
+
+**Step 1 — Identify the target.** The target is `Trial` at 0x9130 in the Puzzle benchmark. Its signature features:
+- Prologue: push rbp/r15/r14/r13/r12/rbx, `subq $0x58, %rsp`
+- Accesses globals `x.8` (0x2e2a0), `y.9` (0x2e290), `kount` (0x1e134)
+- The recurring BCF opaque predicate: `movl (%reg),%eax; leal -1(%rax),%ecx; imull %eax,%ecx; testb $1,%cl` (x·(x−1) is always even → branch always resolves one way)
+- A `while (y < 10)` loop (`cmpl $0xa, (%r12); setl`) and a `kount` increment (`leal 0x1(%rax)`)
+
+**Step 2 — F001:** Same symbol `<Trial>`, same address 0x9130, and the disassembly is byte-for-byte identical (prologue, RIP-relative global loads, opaque-predicate blocks, `y < 10` loop, `kount` increment). This is an exact match.
+
+**Step 3 — F002 (`Place`):** Identical prologue; loads `x` (0x2e288) and `y` (0x2e294) exactly like the target; same opaque-predicate blocks on `x`; same `cmpl $0x9, (%rdx)` comparisons on `y` and the same retry-loop shape (`jg` back). Structurally the closest relative of `Trial` after the exact match.
+
+**Step 4 — F004 (`Puzzle`):** Same prologue and stack discipline, same opaque-predicate pattern on a global (`x.10`/`y.11`, local copies of x/y), same `y > 9` style checks — but it also references `puzzl`, uses `movaps`, and is a larger driver function, so slightly less similar than F002.
+
+**Step 5 — F006 (`Remove`):** Shares the prologue and the same opaque-predicate idiom and `> 9` comparison, but its global accesses go through IGV-style indirection (`movabsq` magic offset + base pointer), which differentiates its code texture from the target's direct RIP-relative loads.
+
+**Step 6 — F003 (`Fit`):** Completely different shape: no callee-saved prologue, a simple pointer/index loop over `p` and `puzzl`, no opaque predicates, no global x/y/kount traffic.
+
+**Step 7 — F005 (`Rand`) and F007 (`Initrand`):** Tiny leaf functions with no prologue, no opaque predicates. `Rand` at least has load/modify/store of a global and real arithmetic (LMC-style update), while `Initrand` is a two-instruction constant store — the least similar of all.
+
+{""ranking"": [""F001"", ""F002"", ""F004"", ""F006"", ""F003"", ""F005"", ""F007""]}",35.8,ok
+disasm_glm_agent_security-sha_11669,L0,A2,ms__MultiSource__Benchmarks__MiBench__security-sha,fn_sha_stream,sha_stream,c9980ba7c0d7b441,glm_agent,ok,1,1,7616,2394,"## Step-by-step reasoning
+
+**Step 1 — Identify the target's characteristics.**
+The target `sha_stream` (0x21f0) has:
+- Prologue: `push rbp; mov rsp,rbp; push r15/r14/r13/r12/rbx; sub $0x38`
+- Heavy **BCF opaque-predicate** pattern: load a global pointer via GOT (`0x7060`/`0x7068`), `movl (%rax,%rbx)` with a fixed 64-bit index `0x3e83bbfd9b7142dd`, then `leal -0x1; imull; testb $0x1` — a classic `x*(x-1) % 2` opaque predicate, with `cmpl $9` fallback loops.
+- A 0x2000 stack allocation (buffer) and `movaps` from `0x5010` + `movups` store.
+
+**Step 2 — F007 is byte-for-byte the target.** F007 is `<sha_stream>` at the identical address 0x21f0 with identical instructions (same prologue, same opaque-predicate chain, same RIP-relative references). Similarity = 100%.
+
+**Step 3 — F004 (`sha_transform`) shares the obfuscation fingerprint.** It uses the exact same BCF opaque-predicate idiom (`leal -0x1; imull; testb $0x1; cmpl $9` over global arrays `x`/`y`), and its prologue (`push rbp; push r15; push r14; push r13; push r12; push rbx; sub`) matches the target's register-saving sequence exactly. Same LLVM toolchain and same pass configuration.
+
+**Step 4 — F001 (`sha_final`) is also obfuscated.** It shows a flattened/dispatched control flow (state variable in `0x8(%rsp)` compared against magic constants like `0xEEB68024`, `0x1B49E26D`), plus BCF-style constants. Obfuscated and structurally heavy like the target, but its dispatcher style (FLA) differs from the straight-line BCF visible in the target, and its prologue (`rbp, r14, rbx`) is a smaller subset.
+
+**Step 5 — F005 (`sha_update`) is moderately similar.** Similar callee-saved register usage (r15/r14/r12/rbx), SIMD block copies with `movups`, calls into the same module — but no BCF/FLA obfuscation and a different prologue shape.
+
+**Step 6 — F006 (`sha_init`) shares one strong constant.** The target at 0x22aa loads `movaps` from `0x5010` — the exact same SHA initialization constant block F006 stores via `movaps 0x3e79(%rip)` (sha_stream apparently embeds/inlines this init). However, F006 is tiny, unobfuscated, and structurally trivial, so overall similarity is limited.
+
+**Step 7 — F002 (`byte_reverse`) and F003 (`sha_print`) are least similar.** F002 is pure SIMD byte-permutation with no stack frame, no calls, no obfuscation, and no shared constants. F003 is a 5-instruction printf wrapper — minimal code, nothing in common except the shared file.
+
+Final ordering: F007 (identical) → F004 (same BCF pattern + prologue) → F001 (same obfuscation family) → F005 (same module, moderate overlap) → F006 (shared init constant, but trivial) → F002 (SIMD, unobfuscated) → F003 (minimal wrapper).
+
+{""ranking"": [""F007"", ""F004"", ""F001"", ""F005"", ""F006"", ""F002"", ""F003""]}",52.1,ok
+,L0,A2,ss__SingleSource__Benchmarks__Stanford__FloatMM,,Mm,,,,,,,,,,error:pool_too_small
+disasm_glm_agent_voronoi_11721,L0,A2,ms__MultiSource__Benchmarks__Olden__voronoi,fn_build_delaunay,build_delaunay,054a7a62f84c5ebb,glm_agent,ok,1,1,24173,5686,"## Step-by-step reasoning
+
+**Step 1 — Identify the target's obfuscation signature.**
+The target `build_delaunay` shows:
+- Prologue: `push rbp, r15, r14, r13, r12, rbx` + `sub $0x18, %rsp`, args saved to `rsi→rbp`, `rdi→r15`.
+- **BCF**: repeated opaque-predicate loops — load a counter via IGV, compute `(x-1)*x`, `testb $1`, with a bogus branch comparing a second IGV-loaded value against `$0x9` and looping back (`jg` back-edge), separated by `nopw/nopl` padding.
+- **IGV**: all global accesses go through rip-relative pointer-table loads (`fileout+0xac`, `fileout+0xb4`) plus a `movabsq` constant base (`0xF52917DAA9C6FB28`).
+
+**Step 2 — Exact match.**
+**F041** is byte-for-byte the same function (same address `0x3220`, same name, identical instructions) — rank 1.
+
+**Step 3 — Same BCF+IGV fingerprint.**
+Four candidates share the identical opaque-predicate/IGV idiom:
+- **F013** (`do_merge`): identical 6-push prologue order (rbp,r15,r14,r13,r12,rbx, no frame pointer), same BCF loop structure — closest structural relative.
+- **F010** (`zero_seen`): same BCF/IGV pattern, but 5-push prologue (no rbp), args saved `rsi→r14`, `rdi→rbx`.
+- **F020** (`output_voronoi_diagram`): same BCF/IGV pattern and full callee-save set, but uses an rbp frame pointer and larger frame.
+- **F040** (`dealwithargs`): same BCF/IGV pattern, but only 5 pushes (rbp,r15,r14,rbx,+scratch rax).
+
+**Step 4 — FLA-obfuscated large functions.**
+**F011** (`connect_left`), **F017** (`connect_right`), **F035** (`circle_center`), **F015** (`get_low`) use state-machine flattening (magic state constants, dispatch chains) — a different pass mix than the target's BCF, but still large heavily-obfuscated bodies with similar push-heavy prologues. F011's prologue (rbp,r15,r14,r12,rbx + sub) is the closest of these.
+
+**Step 5 — IBR/ICALL dispatch functions.**
+**F022** (`get_points`, IBR trampoline + recursive divide loop), **F019** (`push_ring`) and **F043** (`push_nonzero_ring`) (near-twins; F019 additionally uses the IGV idiom) use indirect-branch dispatch through rip-relative tables — shares the table+constant+jmp idiom.
+
+**Step 6 — Small IGV/ICALL users.**
+**F006** (`build_delaunay_triangulation` — semantically related, a pure ICALL trampoline using the same `movabsq + rip-table + jmpq *` idiom), **F030** (`delete_all_edges`) and **F038** (`free_edge`) use the IGV pointer-table indirection but are tiny.
+
+**Step 7 — Remaining unprotected helpers.**
+IBR wrappers with calls/strings (**F005**, **F009**, **F026**, **F033**), then printing/alloc functions (**F021**, **F031**, **F014**, **F016**, **F028**, **F003**, **F044**, **F007**), quad-edge list manipulators (**F004**, **F034**, **F039**, **F029**, **F001**, **F012**) — plain, no shared obfuscation texture.
+
+**Step 8 — Dissimilar tails.**
+Vector2 SIMD helpers (**F008**, **F018**, **F027**, **F032**, **F036**, **F037**, **F042**) and pure integer RNG arithmetic (**F002**, **F023**, **F025**, **F024**) share neither prologue, control flow, nor obfuscation",110.6,ok
+disasm_glm_agent_12-IOtest_11832,L0,A2,ms__MultiSource__Benchmarks__McCat__12-IOtest,fn_initarray,initarray,640ce85df283f284,glm_agent,ok,1,1,10379,2594,"## Analysis
+
+**Target function**: `initarray` at 0x11b0 in the protected binary — a flattened state-machine loop (dispatcher on a state variable at `-0x14(%rsp)` with constants `0x855BBB12`/`0x6542E2F5`/`0x5E23D133`) that iterates `rsi` from 0 to `0x28F492` in steps of 2, and for each iteration computes a magic-constant division (`imulq 0x80808081; shrq $0x27`) on `i` and `i|1`, storing two bytes through an obfuscated global pointer (`movq 0x2e20(%rip)` → `movq (%r8,%rcx)` with `rcx=0x545342F5F76108E7`).
+
+**Step-by-step reasoning:**
+
+1. **F010 is an exact match.** It is `initarray` at the same address 0x11b0, with byte-identical instructions for every instruction shown (same state constants, same magic division constants, same IGV pointer access `0x4048`/`rcx=0x545342F5F76108E7`). The obfuscation tool apparently left this function effectively unchanged, so F010 is the ground-truth match.
+
+2. **F014 (`loop`)** shares the exact same obfuscation idiom: flattened dispatcher with a stack-slot state variable (`0x82E89592`/`0xD405A158`/`0x438AEC3D`), `cmovel`-based state transition, and a `nopw` padding block between blocks — structurally the closest relative after the exact match.
+
+3. **F001 (`setac`)** writes into the same global array through the identical obfuscated-pointer idiom (`movq rip-rel` → `movq (%rax,%rcx)` store) and, notably, contains the same loop-bound constant `0x28F492` (as a modulus). Strong tie to the target's purpose (array initialization/size).
+
+4. **F012 (`getac`)** and **F020 (`array`)** use the same IGV/IBR pointer-obfuscation pattern to read from the same global array (F020 even references the `testarray` symbol directly). F012 mirrors the target's pointer-load idiom most literally.
+
+5. **Step functions (F002, F016, F017, F018, F021)** read the array via `getac`/`array`, transform bytes, and write back via `setac` — they operate on the same data the target initializes, with similar memory-access flow, but no flattening or magic-division.
+
+6. **Init callbacks (F005, F009, F011, F019, F022)** are small ""initialize one byte"" functions using obfuscated indirect calls — thematically similar (initialization) but structurally trivial. F019/F011/F009 use the pointer+index obfuscation; F005/F022 use a simpler add-based form.
+
+7. **Test drivers (F007, F003, F006)** call `initarray` directly (F007 first) but are otherwise printf orchestration, structurally unrelated.
+
+8. **Tiny arithmetic helpers (F008 `mult`, F015 `add`, F013 `min`, F004 `max`)** share nothing with the target — single-instruction bodies, no obfuscation, no array access.
+
+{""ranking"": [""F010"", ""F014"", ""F001"", ""F012"", ""F020"", ""F002"", ""F017"", ""F018"", ""F021"", ""F016"", ""F009"", ""F019"", ""F011"", ""F005"", ""F022"", ""F007"", ""F003"", ""F006"", ""F008"", ""F015"", ""F013"", ""F004""]}",56.1,ok
+,L0,A2,ss__SingleSource__Benchmarks__Misc-C++__stepanov_container,,,,,,,,,,,,error:no_shared_sym
+,L0,A2,ss__SingleSource__Benchmarks__Adobe-C++__stepanov_abstraction,,,,,,,,,,,,error:no_shared_sym

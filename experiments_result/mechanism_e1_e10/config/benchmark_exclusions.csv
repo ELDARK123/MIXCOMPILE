@@ -1,0 +1,162 @@
+sample_id,source,gate,observed_value,threshold,exclusion_reason,command_log
+ss__SingleSource__Benchmarks__Dhrystone__fldry,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ss__SingleSource__Benchmarks__Polybench__utilities__template-for-new-benchmark,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ss__SingleSource__Benchmarks__Polybench__medley__reg_detect__reg_detect,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ss__SingleSource__Benchmarks__Polybench__medley__floyd-warshall__floyd-warshall,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ss__SingleSource__Benchmarks__Polybench__stencils__jacobi-1d-imper__jacobi-1d-imper,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ss__SingleSource__Benchmarks__Polybench__stencils__seidel-2d__seidel-2d,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ss__SingleSource__Benchmarks__Polybench__stencils__fdtd-apml__fdtd-apml,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ss__SingleSource__Benchmarks__Polybench__stencils__fdtd-2d__fdtd-2d,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ss__SingleSource__Benchmarks__Polybench__stencils__adi__adi,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ss__SingleSource__Benchmarks__Polybench__stencils__jacobi-2d-imper__jacobi-2d-imper,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ss__SingleSource__Benchmarks__Polybench__datamining__covariance__covariance,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ss__SingleSource__Benchmarks__Polybench__datamining__correlation__correlation,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ss__SingleSource__Benchmarks__Polybench__linear-algebra__solvers__durbin__durbin,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ss__SingleSource__Benchmarks__Polybench__linear-algebra__solvers__gramschmidt__gramschmidt,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ss__SingleSource__Benchmarks__Polybench__linear-algebra__solvers__lu__lu,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ss__SingleSource__Benchmarks__Polybench__linear-algebra__solvers__dynprog__dynprog,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ss__SingleSource__Benchmarks__Polybench__linear-algebra__solvers__ludcmp__ludcmp,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ss__SingleSource__Benchmarks__Polybench__linear-algebra__kernels__trisolv__trisolv,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ss__SingleSource__Benchmarks__Polybench__linear-algebra__kernels__gemm__gemm,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ss__SingleSource__Benchmarks__Polybench__linear-algebra__kernels__symm__symm,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ss__SingleSource__Benchmarks__Polybench__linear-algebra__kernels__atax__atax,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ss__SingleSource__Benchmarks__Polybench__linear-algebra__kernels__bicg__bicg,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ss__SingleSource__Benchmarks__Polybench__linear-algebra__kernels__syrk__syrk,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ss__SingleSource__Benchmarks__Polybench__linear-algebra__kernels__cholesky__cholesky,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ss__SingleSource__Benchmarks__Polybench__linear-algebra__kernels__mvt__mvt,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ss__SingleSource__Benchmarks__Polybench__linear-algebra__kernels__syr2k__syr2k,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ss__SingleSource__Benchmarks__Polybench__linear-algebra__kernels__doitgen__doitgen,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ss__SingleSource__Benchmarks__Polybench__linear-algebra__kernels__2mm__2mm,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ss__SingleSource__Benchmarks__Polybench__linear-algebra__kernels__trmm__trmm,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ss__SingleSource__Benchmarks__Polybench__linear-algebra__kernels__gesummv__gesummv,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ss__SingleSource__Benchmarks__Polybench__linear-algebra__kernels__gemver__gemver,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ss__SingleSource__Benchmarks__Polybench__linear-algebra__kernels__3mm__3mm,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ss__SingleSource__Benchmarks__Misc__ReedSolomon,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ss__SingleSource__Benchmarks__Misc__flops,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ss__SingleSource__Benchmarks__Misc__perlin,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ss__SingleSource__Benchmarks__SmallPT__smallpt,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__sim,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__ASC_Sequoia__IRSmk,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__DOE-ProxyApps-C__miniAMR,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__DOE-ProxyApps-C__RSBench,llvm-test-suite,G3,[],,G3 run_timeout,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__MiBench__office-stringsearch,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__MiBench__automotive-bitcount,llvm-test-suite,G3,"['exit codes: [255, 255, 255, 255, 255]']",,G3 semantic_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__MiBench__security-rijndael,llvm-test-suite,G3,"['exit codes: [255, 255, 255, 255, 255]']",,G3 semantic_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__MiBench__network-patricia,llvm-test-suite,G3,"['exit codes: [255, 255, 255, 255, 255]']",,G3 semantic_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__MiBench__telecomm-gsm,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__MiBench__telecomm-FFT,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__MiBench__network-dijkstra,llvm-test-suite,G3,"['exit codes: [-11, -11, -11, -11, -11]']",,G3 semantic_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__DOE-ProxyApps-C__SimpleMOC,llvm-test-suite,G3,[],,G3 run_timeout,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__MiBench__telecomm-CRC32,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__MiBench__consumer-typeset,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__MiBench__automotive-susan,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__MiBench__consumer-lame,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__MiBench__office-ispell,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__nbench,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__Bullet,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__Prolangs-C__plot2fig,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__MiBench__consumer-jpeg,llvm-test-suite,G3,"['exit codes: [1, 1, 1, 1, 1]']",,G3 semantic_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__Prolangs-C__archie-client,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__Prolangs-C__agrep,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__DOE-ProxyApps-C__XSBench,llvm-test-suite,G3,[],,G3 run_timeout,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__Prolangs-C__cdecl,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__Prolangs-C__gnugo,llvm-test-suite,G3,"['exit codes: [1, 1, 1, 1, 1]']",,G3 semantic_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__Prolangs-C__unix-smail,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__Prolangs-C__fixoutput,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__Prolangs-C__compiler,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__Prolangs-C__unix-tbl,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__Prolangs-C__football,llvm-test-suite,G3,"['exit codes: [1, 1, 1, 1, 1]']",,G3 semantic_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__Prolangs-C__assembler,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__Prolangs-C__loader,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__FreeBench__neural,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__Prolangs-C__bison,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__FreeBench__fourinarow,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__FreeBench__mason,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__FreeBench__distray,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__FreeBench__analyzer,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__Prolangs-C__simulator,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__mediabench__adpcm__rawcaudio,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__FreeBench__pifft,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__mediabench__adpcm__rawdaudio,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__FreeBench__pcompress2,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__mediabench__g721__g721encode,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__mediabench__gsm__toast,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__OptimizerEval,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__PAQ8p,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__mediabench__jpeg__jpeg-6a,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__Olden__treeadd,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__Olden__perimeter,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__Olden__tsp,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__Olden__em3d,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__Olden__bh,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__Prolangs-C__TimberWolfMC,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__Prolangs-C++__employ,llvm-test-suite,G3,"['exit codes: [1, 1, 1, 1, 1]']",,G3 semantic_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__tramp3d-v4,llvm-test-suite,G3,"['exit codes: [1, 1, 1, 1, 1]']",,G3 semantic_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__Prolangs-C++__city,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__DOE-ProxyApps-C++__HPCCG,llvm-test-suite,G3,"['exit codes: [1, 1, 1, 1, 1]']",,G3 semantic_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__DOE-ProxyApps-C++__miniFE,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__BitBench__uuencode,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__BitBench__uudecode,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__Fhourstones,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__DOE-ProxyApps-C++__PENNANT,llvm-test-suite,G3,"['exit codes: [1, 1, 1, 1, 1]']",,G3 semantic_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__DOE-ProxyApps-C++__HACCKernels,llvm-test-suite,G3,[],,G3 nondeterministic_output,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__DOE-ProxyApps-C++__CLAMR,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__TSVC__Expansion-dbl,llvm-test-suite,G3,[],,G3 run_timeout,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__TSVC__LinearDependence-flt,llvm-test-suite,G3,[],,G3 run_timeout,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__TSVC__ControlLoops-flt,llvm-test-suite,G3,[],,G3 run_timeout,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__TSVC__LoopRestructuring-dbl,llvm-test-suite,G3,[],,G3 run_timeout,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__TSVC__CrossingThresholds-flt,llvm-test-suite,G3,[],,G3 run_timeout,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__TSVC__Reductions-flt,llvm-test-suite,G3,[],,G3 run_timeout,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__TSVC__GlobalDataFlow-dbl,llvm-test-suite,G3,[],,G3 run_timeout,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__TSVC__Reductions-dbl,llvm-test-suite,G3,[],,G3 run_timeout,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__TSVC__ControlLoops-dbl,llvm-test-suite,G3,[],,G3 run_timeout,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__TSVC__LoopRerolling-dbl,llvm-test-suite,G3,[],,G3 run_timeout,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__TSVC__LoopRestructuring-flt,llvm-test-suite,G3,[],,G3 run_timeout,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__TSVC__Expansion-flt,llvm-test-suite,G3,[],,G3 run_timeout,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__TSVC__GlobalDataFlow-flt,llvm-test-suite,G3,[],,G3 run_timeout,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__TSVC__LoopRerolling-flt,llvm-test-suite,G3,[],,G3 run_timeout,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__TSVC__LinearDependence-dbl,llvm-test-suite,G3,[],,G3 run_timeout,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__TSVC__ControlFlow-flt,llvm-test-suite,G3,[],,G3 run_timeout,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__McCat__09-vor,llvm-test-suite,G3,"['exit codes: [1, 1, 1, 1, 1]']",,G3 semantic_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__McCat__15-trie,llvm-test-suite,G3,"['exit codes: [1, 1, 1, 1, 1]']",,G3 semantic_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__McCat__17-bintr,llvm-test-suite,G3,[],,G3 nondeterministic_output,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__McCat__18-imp,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__McCat__04-bisect,llvm-test-suite,G3,[],,G3 nondeterministic_output,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__TSVC__ControlFlow-dbl,llvm-test-suite,G3,[],,G3 run_timeout,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__MallocBench__espresso,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__MallocBench__gawk,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__MallocBench__perl,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__MallocBench__gs,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__MallocBench__p2c,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__MallocBench__cfrac,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__Rodinia__srad,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__Rodinia__backprop,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__Rodinia__pathfinder,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__Rodinia__hotspot,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__MallocBench__make,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__Ptrdist__ft,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__ASCI_Purple__SMG2000,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__Ptrdist__anagram,llvm-test-suite,G3,"['exit codes: [1, 1, 1, 1, 1]']",,G3 semantic_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__Ptrdist__yacr2,llvm-test-suite,G3,"['exit codes: [1, 1, 1, 1, 1]']",,G3 semantic_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__Ptrdist__ks,llvm-test-suite,G3,"['exit codes: [1, 1, 1, 1, 1]']",,G3 semantic_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__Ptrdist__bc,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__Trimaran__enc-pc1,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__Trimaran__netbench-url,llvm-test-suite,G3,"['exit codes: [1, 1, 1, 1, 1]']",,G3 semantic_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__VersaBench__ecbdes,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__VersaBench__8b10b,llvm-test-suite,G3,"['exit codes: [255, 255, 255, 255, 255]']",,G3 semantic_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__VersaBench__dbms,llvm-test-suite,G3,"['exit codes: [255, 255, 255, 255, 255]']",,G3 semantic_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__VersaBench__beamformer,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__VersaBench__bmm,llvm-test-suite,G3,"['exit codes: [1, 1, 1, 1, 1]']",,G3 semantic_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__TSVC__CrossingThresholds-dbl,llvm-test-suite,G3,[],,G3 run_timeout,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__mafft,llvm-test-suite,G2,['rc1=1 rc2=1'],,G2 build_failed,/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/admission_20260903T051357Z/logs
+ms__MultiSource__Benchmarks__DOE-ProxyApps-C__miniGMG,llvm-test-suite,G7,20.6503,10.0,performance_outlier (user-approved amendment 2026-09-03),admission_20260903T051357Z
+ms__MultiSource__Benchmarks__TSVC__Equivalencing-flt,llvm-test-suite,G7,19.0525,10.0,performance_outlier (user-approved amendment 2026-09-03),admission_20260903T051357Z
+ms__MultiSource__Benchmarks__TSVC__IndirectAddressing-dbl,llvm-test-suite,G7,28.4833,10.0,performance_outlier (user-approved amendment 2026-09-03),admission_20260903T051357Z
+ms__MultiSource__Benchmarks__TSVC__IndirectAddressing-flt,llvm-test-suite,G7,25.0098,10.0,performance_outlier (user-approved amendment 2026-09-03),admission_20260903T051357Z
+ms__MultiSource__Benchmarks__TSVC__NodeSplitting-dbl,llvm-test-suite,G7,44.6881,10.0,performance_outlier (user-approved amendment 2026-09-03),admission_20260903T051357Z
+ms__MultiSource__Benchmarks__TSVC__Recurrences-dbl,llvm-test-suite,G7,26.6819,10.0,performance_outlier (user-approved amendment 2026-09-03),admission_20260903T051357Z
+ms__MultiSource__Benchmarks__TSVC__Recurrences-flt,llvm-test-suite,G7,28.587,10.0,performance_outlier (user-approved amendment 2026-09-03),admission_20260903T051357Z
+ms__MultiSource__Benchmarks__TSVC__StatementReordering-dbl,llvm-test-suite,G7,23.6079,10.0,performance_outlier (user-approved amendment 2026-09-03),admission_20260903T051357Z
+ms__MultiSource__Benchmarks__TSVC__StatementReordering-flt,llvm-test-suite,G7,17.9589,10.0,performance_outlier (user-approved amendment 2026-09-03),admission_20260903T051357Z
+ms__MultiSource__Benchmarks__TSVC__Symbolics-dbl,llvm-test-suite,G7,25.7113,10.0,performance_outlier (user-approved amendment 2026-09-03),admission_20260903T051357Z
+ms__MultiSource__Benchmarks__TSVC__Symbolics-flt,llvm-test-suite,G7,16.1009,10.0,performance_outlier (user-approved amendment 2026-09-03),admission_20260903T051357Z

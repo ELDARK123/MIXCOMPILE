@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.15
+  },
+  "BCF": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.3
+  },
+  "FLA": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.55,
+   "SizeCost": 0.45,
+   "CorrectnessRisk": 0.4
+  },
+  "SPLIT": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.2
+  },
+  "IBR": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.45,
+   "CorrectnessRisk": 0.3
+  },
+  "ICALL": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.3
+  },
+  "IGV": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.3
+  }
+ },
+ "rationale": "Round 1 built cleanly and ran correctly, so this candidate pushes obfuscation strength up while bounding overhead on this tiny, hot, recursion-dominated binary (Ack is the only real code; text is 333 bytes). SUB gets the highest SecurityGain since instruction substitution is nearly free in runtime and size and directly obscures the arithmetic core of Ackermann. BCF and IBR are raised to add opaque predicates and indirect branching that disrupt static control-flow recovery of the recursive call structure, with cost weights kept moderate because the benchmark loops over many Ackermann evaluations. FLA stays elevated but slightly below BCF \u2014 flattening main and Ack gives strong structural hiding yet carries the largest runtime penalty on a call-heavy recursion, so its RuntimeCost/CorrectnessRisk weights temper selection. SPLIT adds cheap basic-block fragmentation that composes well with FLA/BCF. ICALL and IGV are kept lower: the program has almost no indirect-call opportunities or globals to protect, so their marginal security yield is small relative to added dispatch overhead; they remain enabled purely for diversity.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Shootout-C++__ackermann",
+  "run_id": "e10D_glm_agent_ackermann_2_54395",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T02:40:38Z"
+ }
+}

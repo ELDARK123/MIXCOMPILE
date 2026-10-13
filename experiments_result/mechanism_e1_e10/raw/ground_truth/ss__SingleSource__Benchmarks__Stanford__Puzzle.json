@@ -1,0 +1,51 @@
+{
+  "sample_id": "ss__SingleSource__Benchmarks__Stanford__Puzzle",
+  "rule": "k-th .text function (sorted by entry) of llvm reference pairs with k-th recovered function of target; offsets relative to first entry",
+  "functions": [
+    {
+      "name": "_start",
+      "addr": 4208,
+      "size": 38
+    },
+    {
+      "name": "Initrand",
+      "addr": 4448,
+      "size": 12
+    },
+    {
+      "name": "Rand",
+      "addr": 4464,
+      "size": 26
+    },
+    {
+      "name": "Fit",
+      "addr": 4496,
+      "size": 97
+    },
+    {
+      "name": "Place",
+      "addr": 4608,
+      "size": 485
+    },
+    {
+      "name": "Remove",
+      "addr": 5104,
+      "size": 444
+    },
+    {
+      "name": "Trial",
+      "addr": 5552,
+      "size": 1073
+    },
+    {
+      "name": "Puzzle",
+      "addr": 6640,
+      "size": 1653
+    },
+    {
+      "name": "main",
+      "addr": 8304,
+      "size": 29
+    }
+  ]
+}

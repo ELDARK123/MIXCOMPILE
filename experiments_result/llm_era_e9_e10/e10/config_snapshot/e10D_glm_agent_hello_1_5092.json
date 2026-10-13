@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.9,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  },
+  "FLA": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.3
+  },
+  "SPLIT": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  },
+  "ICALL": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.3
+  },
+  "IGV": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.2
+  }
+ },
+ "rationale": "Round 0 built and ran correctly with no ICE, so this round pushes all seven passes harder: this target is a trivial 55-byte hello-world whose code executes once, so runtime and size costs carry almost no real penalty and their weights stay low (0.1-0.4), while SecurityGain and DiversityGain are raised to 0.6-0.9 across the board to maximize transformation coverage. BCF and IBR get the highest security weights since control-flow confusion and branch insertion are most disruptive to static/dynamic analysis of even tiny functions; ICALL and IGV add indirect-call and global-variable indirection that defeat naive pattern matching in a binary this small; FLA keeps a moderate CorrectnessRisk weight (0.3) because flattening plus BCF on the same function is the main place correctness bugs tend to appear, and ICALL similarly stays at 0.3 since indirecting calls near libc boundaries (printf) is the riskiest rewrite here. SPLIT stays enabled at modest security weight purely as a diversity amplifier that makes the other passes' restructuring less uniform.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Shootout__hello",
+  "run_id": "e10D_glm_agent_hello_1_5092",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T16:45:12Z"
+ }
+}

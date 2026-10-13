@@ -1,0 +1,253 @@
+{
+  "split_seed": 20260903,
+  "generated_utc": "2026-09-03T07:04:09Z",
+  "admissibility_note": "admissible if weight schema valid and compile/correctness hard constraints pass at E1 execution; inadmissible kept and marked",
+  "candidates": [
+    {
+      "name": "optimized",
+      "file": "/home/vincent/Desktop/experiments-MIXCOMPILE/result/config/optimized_pass_weights.json",
+      "rule": "historical 2026-07-21 cybersecurity freeze",
+      "rng_seed": null,
+      "sha256": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4"
+    },
+    {
+      "name": "balanced",
+      "file": "/home/vincent/Desktop/experiments-MIXCOMPILE/result/config/baseline_pass_weights.json",
+      "rule": "historical 2026-07-17 balanced baseline",
+      "rng_seed": null,
+      "sha256": "8f94ee3880b6786d2cced9d4f783770b019c2c9a8b431bbf266131bef04cf7f0"
+    },
+    {
+      "name": "expert_optimized_20260604",
+      "file": "/home/vincent/Desktop/experiments-MIXCOMPILE/result/config/candidates/expert_optimized_20260604.json",
+      "rule": "historical final-experiment optimized fit",
+      "rng_seed": null,
+      "sha256": "d3c6a203df97ffab49fd4d5ca268d6e303cdbaa055a8cd339c0446c606a958f7"
+    },
+    {
+      "name": "expert_balanced_20260604",
+      "file": "/home/vincent/Desktop/experiments-MIXCOMPILE/result/config/candidates/expert_balanced_20260604.json",
+      "rule": "historical final-experiment balanced",
+      "rng_seed": null,
+      "sha256": "dcf5502440d891b29ea7255272e80d1a1bbf7602ce8e03e97d22c9ea7b775e57"
+    },
+    {
+      "name": "equal_weights.json",
+      "file": "/home/vincent/Desktop/experiments-MIXCOMPILE/result/config/weight_candidates/equal_weights.json",
+      "rule": "all pass-dimension weights = 1.0",
+      "rng_seed": null,
+      "sha256": "ce96f546a611a52d24881bf80c60e0e09f41638892946e34b2cbd817c5558893"
+    },
+    {
+      "name": "random_001.json",
+      "file": "/home/vincent/Desktop/experiments-MIXCOMPILE/result/config/weight_candidates/random_001.json",
+      "rule": "per-pass per-dim U[0.05,1.0] (amended 2026-09-05: compiler fatals on values >1.0 'weights must be finite values in [0,1]'), rounded 6dp; rng=random.Random('20260903-random-<i>')",
+      "rng_seed": "20260903-random-001",
+      "sha256": "cf2d87c2402d9f2aa3d8fbb858926bd8617af11da9186fcba59cb77a9d834a54"
+    },
+    {
+      "name": "random_002.json",
+      "file": "/home/vincent/Desktop/experiments-MIXCOMPILE/result/config/weight_candidates/random_002.json",
+      "rule": "per-pass per-dim U[0.05,1.0] (amended 2026-09-05: compiler fatals on values >1.0 'weights must be finite values in [0,1]'), rounded 6dp; rng=random.Random('20260903-random-<i>')",
+      "rng_seed": "20260903-random-002",
+      "sha256": "ed509b2ea30118dfb8da6f437f7560294a1ceae92e42e2f0b92eb1da0fc07f35"
+    },
+    {
+      "name": "random_003.json",
+      "file": "/home/vincent/Desktop/experiments-MIXCOMPILE/result/config/weight_candidates/random_003.json",
+      "rule": "per-pass per-dim U[0.05,1.0] (amended 2026-09-05: compiler fatals on values >1.0 'weights must be finite values in [0,1]'), rounded 6dp; rng=random.Random('20260903-random-<i>')",
+      "rng_seed": "20260903-random-003",
+      "sha256": "a97a32f09859b118bb10a30cdb39baec52b072066b794902d167af24369b01dc"
+    },
+    {
+      "name": "random_004.json",
+      "file": "/home/vincent/Desktop/experiments-MIXCOMPILE/result/config/weight_candidates/random_004.json",
+      "rule": "per-pass per-dim U[0.05,1.0] (amended 2026-09-05: compiler fatals on values >1.0 'weights must be finite values in [0,1]'), rounded 6dp; rng=random.Random('20260903-random-<i>')",
+      "rng_seed": "20260903-random-004",
+      "sha256": "aaf1255d5d6ca533c2c0518d10a70ebcc28f40f9f6534719d854c72cc9bdd247"
+    },
+    {
+      "name": "random_005.json",
+      "file": "/home/vincent/Desktop/experiments-MIXCOMPILE/result/config/weight_candidates/random_005.json",
+      "rule": "per-pass per-dim U[0.05,1.0] (amended 2026-09-05: compiler fatals on values >1.0 'weights must be finite values in [0,1]'), rounded 6dp; rng=random.Random('20260903-random-<i>')",
+      "rng_seed": "20260903-random-005",
+      "sha256": "888a8b233d2fc51eb68470aa6daf689c1fea70affd9d9d850afc0720d6a1ce96"
+    },
+    {
+      "name": "random_006.json",
+      "file": "/home/vincent/Desktop/experiments-MIXCOMPILE/result/config/weight_candidates/random_006.json",
+      "rule": "per-pass per-dim U[0.05,1.0] (amended 2026-09-05: compiler fatals on values >1.0 'weights must be finite values in [0,1]'), rounded 6dp; rng=random.Random('20260903-random-<i>')",
+      "rng_seed": "20260903-random-006",
+      "sha256": "651c1c1738f6bb50b1c2bedc02df675e03c0e81fd8fbeda38a5d120435a713ef"
+    },
+    {
+      "name": "random_007.json",
+      "file": "/home/vincent/Desktop/experiments-MIXCOMPILE/result/config/weight_candidates/random_007.json",
+      "rule": "per-pass per-dim U[0.05,1.0] (amended 2026-09-05: compiler fatals on values >1.0 'weights must be finite values in [0,1]'), rounded 6dp; rng=random.Random('20260903-random-<i>')",
+      "rng_seed": "20260903-random-007",
+      "sha256": "621db6fca9ce01ccd9e175e708f8d4278b4b9a802a8f03fc40c782739a1c53d8"
+    },
+    {
+      "name": "random_008.json",
+      "file": "/home/vincent/Desktop/experiments-MIXCOMPILE/result/config/weight_candidates/random_008.json",
+      "rule": "per-pass per-dim U[0.05,1.0] (amended 2026-09-05: compiler fatals on values >1.0 'weights must be finite values in [0,1]'), rounded 6dp; rng=random.Random('20260903-random-<i>')",
+      "rng_seed": "20260903-random-008",
+      "sha256": "fe88e60adb1c9455d5fc889e31789a9e83958b21c6634b4a7b1322ebd0d61624"
+    },
+    {
+      "name": "random_009.json",
+      "file": "/home/vincent/Desktop/experiments-MIXCOMPILE/result/config/weight_candidates/random_009.json",
+      "rule": "per-pass per-dim U[0.05,1.0] (amended 2026-09-05: compiler fatals on values >1.0 'weights must be finite values in [0,1]'), rounded 6dp; rng=random.Random('20260903-random-<i>')",
+      "rng_seed": "20260903-random-009",
+      "sha256": "0be8d66a141b2acc2806d7e52107655e3d12d8c2c3ff1622acc467bf00f4a1d7"
+    },
+    {
+      "name": "random_010.json",
+      "file": "/home/vincent/Desktop/experiments-MIXCOMPILE/result/config/weight_candidates/random_010.json",
+      "rule": "per-pass per-dim U[0.05,1.0] (amended 2026-09-05: compiler fatals on values >1.0 'weights must be finite values in [0,1]'), rounded 6dp; rng=random.Random('20260903-random-<i>')",
+      "rng_seed": "20260903-random-010",
+      "sha256": "98e8d94bc231fc22efcd3fefc6ccca2e09187fd2d4f1021b04b6fce613f463e5"
+    },
+    {
+      "name": "random_011.json",
+      "file": "/home/vincent/Desktop/experiments-MIXCOMPILE/result/config/weight_candidates/random_011.json",
+      "rule": "per-pass per-dim U[0.05,1.0] (amended 2026-09-05: compiler fatals on values >1.0 'weights must be finite values in [0,1]'), rounded 6dp; rng=random.Random('20260903-random-<i>')",
+      "rng_seed": "20260903-random-011",
+      "sha256": "05302ba694451423bb87328ed34266d7ade18ab3c18a1055968c8dd531d87d88"
+    },
+    {
+      "name": "random_012.json",
+      "file": "/home/vincent/Desktop/experiments-MIXCOMPILE/result/config/weight_candidates/random_012.json",
+      "rule": "per-pass per-dim U[0.05,1.0] (amended 2026-09-05: compiler fatals on values >1.0 'weights must be finite values in [0,1]'), rounded 6dp; rng=random.Random('20260903-random-<i>')",
+      "rng_seed": "20260903-random-012",
+      "sha256": "a212d438064deac1d81e5802d7b244b7f44d774839a86104b4d3c91aa34b6044"
+    },
+    {
+      "name": "random_013.json",
+      "file": "/home/vincent/Desktop/experiments-MIXCOMPILE/result/config/weight_candidates/random_013.json",
+      "rule": "per-pass per-dim U[0.05,1.0] (amended 2026-09-05: compiler fatals on values >1.0 'weights must be finite values in [0,1]'), rounded 6dp; rng=random.Random('20260903-random-<i>')",
+      "rng_seed": "20260903-random-013",
+      "sha256": "5ca4b94f2ec45a3ad7cc4b34fca2878f4fb35b423addaa7997b59fb08490ff04"
+    },
+    {
+      "name": "random_014.json",
+      "file": "/home/vincent/Desktop/experiments-MIXCOMPILE/result/config/weight_candidates/random_014.json",
+      "rule": "per-pass per-dim U[0.05,1.0] (amended 2026-09-05: compiler fatals on values >1.0 'weights must be finite values in [0,1]'), rounded 6dp; rng=random.Random('20260903-random-<i>')",
+      "rng_seed": "20260903-random-014",
+      "sha256": "1d05788fbeba91741385cf6329faed15120f44ee0732a89c3f7f0ff9fdfc2882"
+    },
+    {
+      "name": "random_015.json",
+      "file": "/home/vincent/Desktop/experiments-MIXCOMPILE/result/config/weight_candidates/random_015.json",
+      "rule": "per-pass per-dim U[0.05,1.0] (amended 2026-09-05: compiler fatals on values >1.0 'weights must be finite values in [0,1]'), rounded 6dp; rng=random.Random('20260903-random-<i>')",
+      "rng_seed": "20260903-random-015",
+      "sha256": "ef685a10df4f4a99d0c50edd0d6d57c0ea144b11b02d5b069de8365b4937a7cd"
+    },
+    {
+      "name": "random_016.json",
+      "file": "/home/vincent/Desktop/experiments-MIXCOMPILE/result/config/weight_candidates/random_016.json",
+      "rule": "per-pass per-dim U[0.05,1.0] (amended 2026-09-05: compiler fatals on values >1.0 'weights must be finite values in [0,1]'), rounded 6dp; rng=random.Random('20260903-random-<i>')",
+      "rng_seed": "20260903-random-016",
+      "sha256": "6dbad307beaea671a4a6a57b6efd59cf6063c2b0e703279f21617a820cc2ef22"
+    },
+    {
+      "name": "random_017.json",
+      "file": "/home/vincent/Desktop/experiments-MIXCOMPILE/result/config/weight_candidates/random_017.json",
+      "rule": "per-pass per-dim U[0.05,1.0] (amended 2026-09-05: compiler fatals on values >1.0 'weights must be finite values in [0,1]'), rounded 6dp; rng=random.Random('20260903-random-<i>')",
+      "rng_seed": "20260903-random-017",
+      "sha256": "4c65d9d72975f8eacc10fe355cf75e96789547e184ca2229ae8e74487567aba5"
+    },
+    {
+      "name": "random_018.json",
+      "file": "/home/vincent/Desktop/experiments-MIXCOMPILE/result/config/weight_candidates/random_018.json",
+      "rule": "per-pass per-dim U[0.05,1.0] (amended 2026-09-05: compiler fatals on values >1.0 'weights must be finite values in [0,1]'), rounded 6dp; rng=random.Random('20260903-random-<i>')",
+      "rng_seed": "20260903-random-018",
+      "sha256": "59874eb03794fe997ed55eead236637e861e8afc7887c0ccd897e5fe93f03bda"
+    },
+    {
+      "name": "random_019.json",
+      "file": "/home/vincent/Desktop/experiments-MIXCOMPILE/result/config/weight_candidates/random_019.json",
+      "rule": "per-pass per-dim U[0.05,1.0] (amended 2026-09-05: compiler fatals on values >1.0 'weights must be finite values in [0,1]'), rounded 6dp; rng=random.Random('20260903-random-<i>')",
+      "rng_seed": "20260903-random-019",
+      "sha256": "84316551c077e1718dbc0ed835cd5a597c71e66ad31755cde1fba89c9dc5e623"
+    },
+    {
+      "name": "random_020.json",
+      "file": "/home/vincent/Desktop/experiments-MIXCOMPILE/result/config/weight_candidates/random_020.json",
+      "rule": "per-pass per-dim U[0.05,1.0] (amended 2026-09-05: compiler fatals on values >1.0 'weights must be finite values in [0,1]'), rounded 6dp; rng=random.Random('20260903-random-<i>')",
+      "rng_seed": "20260903-random-020",
+      "sha256": "d7d8d0af50c8119b22fdca4dde757968baad2644a07781bd842a81d2c48397db"
+    },
+    {
+      "name": "random_021.json",
+      "file": "/home/vincent/Desktop/experiments-MIXCOMPILE/result/config/weight_candidates/random_021.json",
+      "rule": "per-pass per-dim U[0.05,1.0] (amended 2026-09-05: compiler fatals on values >1.0 'weights must be finite values in [0,1]'), rounded 6dp; rng=random.Random('20260903-random-<i>')",
+      "rng_seed": "20260903-random-021",
+      "sha256": "faba6449f4033f3f3837f2020241dda1d9b40cf65caf55c0275e7f930313a475"
+    },
+    {
+      "name": "random_022.json",
+      "file": "/home/vincent/Desktop/experiments-MIXCOMPILE/result/config/weight_candidates/random_022.json",
+      "rule": "per-pass per-dim U[0.05,1.0] (amended 2026-09-05: compiler fatals on values >1.0 'weights must be finite values in [0,1]'), rounded 6dp; rng=random.Random('20260903-random-<i>')",
+      "rng_seed": "20260903-random-022",
+      "sha256": "333b34d501db79f1ba6c7b8c81ff1197019242d450b40b3e911b5db5479e120e"
+    },
+    {
+      "name": "random_023.json",
+      "file": "/home/vincent/Desktop/experiments-MIXCOMPILE/result/config/weight_candidates/random_023.json",
+      "rule": "per-pass per-dim U[0.05,1.0] (amended 2026-09-05: compiler fatals on values >1.0 'weights must be finite values in [0,1]'), rounded 6dp; rng=random.Random('20260903-random-<i>')",
+      "rng_seed": "20260903-random-023",
+      "sha256": "fd56a1325067a1e771073161ab0ac933702d551e792eb0e76d726388660e5754"
+    },
+    {
+      "name": "random_024.json",
+      "file": "/home/vincent/Desktop/experiments-MIXCOMPILE/result/config/weight_candidates/random_024.json",
+      "rule": "per-pass per-dim U[0.05,1.0] (amended 2026-09-05: compiler fatals on values >1.0 'weights must be finite values in [0,1]'), rounded 6dp; rng=random.Random('20260903-random-<i>')",
+      "rng_seed": "20260903-random-024",
+      "sha256": "90ba6ad296becafa53cf455d82b2531bb4a78c46144dd215e54128f4fdb74de0"
+    },
+    {
+      "name": "random_025.json",
+      "file": "/home/vincent/Desktop/experiments-MIXCOMPILE/result/config/weight_candidates/random_025.json",
+      "rule": "per-pass per-dim U[0.05,1.0] (amended 2026-09-05: compiler fatals on values >1.0 'weights must be finite values in [0,1]'), rounded 6dp; rng=random.Random('20260903-random-<i>')",
+      "rng_seed": "20260903-random-025",
+      "sha256": "ccda7426d2d7c3b5f60114a795da4d9202595927adf938391ed4e4f8daceb550"
+    },
+    {
+      "name": "random_026.json",
+      "file": "/home/vincent/Desktop/experiments-MIXCOMPILE/result/config/weight_candidates/random_026.json",
+      "rule": "per-pass per-dim U[0.05,1.0] (amended 2026-09-05: compiler fatals on values >1.0 'weights must be finite values in [0,1]'), rounded 6dp; rng=random.Random('20260903-random-<i>')",
+      "rng_seed": "20260903-random-026",
+      "sha256": "5a9b9e56628f0d0faa8754ab0d9ad63fb8d7fd551605fba30929ef97be5aa01c"
+    },
+    {
+      "name": "random_027.json",
+      "file": "/home/vincent/Desktop/experiments-MIXCOMPILE/result/config/weight_candidates/random_027.json",
+      "rule": "per-pass per-dim U[0.05,1.0] (amended 2026-09-05: compiler fatals on values >1.0 'weights must be finite values in [0,1]'), rounded 6dp; rng=random.Random('20260903-random-<i>')",
+      "rng_seed": "20260903-random-027",
+      "sha256": "ad312561168b1d8378ae77e3c67dda81f6a44a64918596c9a45f47e1e5d54d6b"
+    },
+    {
+      "name": "random_028.json",
+      "file": "/home/vincent/Desktop/experiments-MIXCOMPILE/result/config/weight_candidates/random_028.json",
+      "rule": "per-pass per-dim U[0.05,1.0] (amended 2026-09-05: compiler fatals on values >1.0 'weights must be finite values in [0,1]'), rounded 6dp; rng=random.Random('20260903-random-<i>')",
+      "rng_seed": "20260903-random-028",
+      "sha256": "423539349b9db46e14164387987e50f520b7a61109da0cfde32b4e5e9178cf3b"
+    },
+    {
+      "name": "random_029.json",
+      "file": "/home/vincent/Desktop/experiments-MIXCOMPILE/result/config/weight_candidates/random_029.json",
+      "rule": "per-pass per-dim U[0.05,1.0] (amended 2026-09-05: compiler fatals on values >1.0 'weights must be finite values in [0,1]'), rounded 6dp; rng=random.Random('20260903-random-<i>')",
+      "rng_seed": "20260903-random-029",
+      "sha256": "62bac0be7c7c744ea54c71e37388ee8743b70dd15c0393473b5d1cf290096a54"
+    },
+    {
+      "name": "random_030.json",
+      "file": "/home/vincent/Desktop/experiments-MIXCOMPILE/result/config/weight_candidates/random_030.json",
+      "rule": "per-pass per-dim U[0.05,1.0] (amended 2026-09-05: compiler fatals on values >1.0 'weights must be finite values in [0,1]'), rounded 6dp; rng=random.Random('20260903-random-<i>')",
+      "rng_seed": "20260903-random-030",
+      "sha256": "f003c2142051588c0eee803d6ec191f13545364dadef52d4590109edb1fc44a4"
+    }
+  ],
+  "amendment": "v2 2026-09-05: random candidates resampled to U[0.05,1.0] \u2014 the compiler validates weights in [0,1] and rejected the original U[0.05,1.2] draws (fatal in backend); RNG seed stream unchanged"
+}

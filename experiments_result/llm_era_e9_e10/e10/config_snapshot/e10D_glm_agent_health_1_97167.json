@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  },
+  "BCF": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.3
+  },
+  "FLA": {
+   "SecurityGain": 0.65,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.3
+  },
+  "SPLIT": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.45,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.15
+  },
+  "IBR": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.25
+  },
+  "ICALL": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.45,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.3
+  },
+  "IGV": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.25
+  }
+ },
+ "rationale": "Round 0 built and passed, so I raise obfuscation intensity from that baseline while keeping cost weights moderate because this is a tiny (2.4KB text, 14 functions), pointer-heavy Olden benchmark whose hot loop lives in sim(). BCF gets the highest SecurityGain weight since bogus control flow is the strongest semantic deterrent and the small text size leaves ample budget for its size overhead; FLA and IBR stay at mid-high security weights to flatten sim()'s recognizable loop/nest structure without stacking too much overhead in the hot path; SUB remains strong because arithmetic substitution is nearly free at this size and complements the pointer-heavy list/tree code. SPLIT is kept lower since most functions are already small (largest is 560 bytes) and splitting tiny functions adds little security for its size cost. ICALL and IGV are moderate: health.c has few indirect-call sites and limited globals, but IGV still helps obscure the simulation's shared state, so both stay enabled with modest weights rather than disabled to preserve transform diversity across the binary. CorrectnessRisk weights are kept low-to-mid across the board since the previous round showed no ICE or runtime failure, allowing a stronger table without risking the build.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__Olden__health",
+  "run_id": "e10D_glm_agent_health_1_97167",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T14:33:25Z"
+ }
+}

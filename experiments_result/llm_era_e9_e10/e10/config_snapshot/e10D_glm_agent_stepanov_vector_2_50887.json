@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.9,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.8,
+   "CorrectnessRisk": 0.2
+  },
+  "BCF": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.3
+  },
+  "FLA": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.4
+  },
+  "SPLIT": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.8,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.2
+  },
+  "IBR": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.3
+  },
+  "ICALL": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.3
+  },
+  "IGV": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.9,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.8,
+   "CorrectnessRisk": 0.2
+  }
+ },
+ "rationale": "Round 1 built and ran correctly, so I am raising selection pressure across the board to deepen obfuscation while steering expensive transforms away from this benchmark's hot paths. SUB and IGV are near-free transforms, so they get the highest SecurityGain/DiversityGain weights to apply broadly and maximize inter-function diversity. SPLIT and IBR have low runtime impact and SPLIT is especially valuable here given the dominant 11KB main, so both stay aggressively weighted to break up basic-block structure and obscure control flow. BCF and FLA carry real loop-overhead risk in this workload (heapsort/accumulate kernels dominate execution), so their RuntimeCost weights are kept moderately high to bias application toward cold functions like summarize and the benchmark harness rather than the sorting kernels. ICALL is kept enabled with balanced weights since round 1 showed no correctness issues, adding call-target indirection without risking the tight inner loops. CorrectnessRisk weights stay low everywhere since the pipeline already demonstrated clean compilation, but are not zero, retaining a safety margin on the template-heavy C++ in this benchmark.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Adobe-C++__stepanov_vector",
+  "run_id": "e10D_glm_agent_stepanov_vector_2_50887",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T01:42:01Z"
+ }
+}

@@ -1,0 +1,30 @@
+sample_id,function,symbol,llm_answer,true_answer,exact_match,precision,recall,tokens_in,tokens_out,response_raw,latency_s,model,status
+ms__MultiSource__Benchmarks__NPB-serial__dc,FUN_00103320,swap4,FLA,IGV,0,0.0,0.0,2125,3655,"**NONE**
+
+**Reasoning:**
+
+- **No control-flow obfuscation (BCF, FLA, SPLIT):** The function is completely straight-line — no loops, no dispatcher/state variable, no opaque predicates, no bogus branches, no fragmented blocks. FLA and BCF always leave visible traces in decompilation (switch-on-state loops, always-true/false conditions), and none are present.
+
+- **No indirect branch/call (IBR, ICALL):** The parameter is accessed directly (`*param_1`), there are no calls at all, and the return is direct. No jump tables, function pointers, or computed targets.
+
+- **No indirect global variable (IGV):** No global references of any kind — everything derives from the incoming 4-byte parameter.
+
+- **No instruction substitution (SUB):** The odd-looking expressions (`(0 < sVar) * (sVar < 0x100) * auVar6[0] - (0xff < sVar)`, the nested CONCAT/shift byte extraction, `pshuflw` with `0x1b`) are Ghidra's characteristic rendering of x86 SIMD intrinsics — a byte unpack/sign-extend (e.g., `pmovsxbw`-style), a lane shuffle, and a signed→unsigned saturating pack (e.g., `packuswb`-style). In other words, this is a small vectorized leaf function (roughly: sign-extend 4 bytes, reverse lanes, clamp/saturate back to bytes), and the ""weirdness"" is standard compiler vectorization semantics, not substituted arithmetic like `a ^ b` → `(~a & b) | (a & ~b)`.",38.2,glm_agent,ok
+ms__MultiSource__Benchmarks__NPB-serial__dc,FUN_00103340,swap8,,IGV,0,0,0.0,2912,2076,"**NONE**
+
+This function shows none of the obfuscation markers:
+
+- **Straight-line, single basic block** — no opaque predicates, no loops, no junk-path branching (rules out BCF), no state-variable dispatcher (rules out FLA), and nothing to split (rules out SPLIT).
+- **No indirect control flow** — the function contains no calls at all, indirect or otherwise (rules out IBR, ICALL), and no global variable lookups (rules out IGV).
+- **The apparent weirdness is Ghidra, not obfuscation** — the `auVar` chains with `undefined1[15]` slices and partial assignments are Ghidra's rendering of ordinary SSE register traffic (byte-by-byte `pinsrb`-style inserts and extracts), and `pshuflw`/`pshufhw` with immediate `0x1b` is the textbook compiler idiom for reversing the 8 bytes of an XMM register. The odd expressions like `(0 < sVar) * (sVar < 0x100) * byte - (0xff < sVar)` are Ghidra's decomposition of signed-saturating pack/extract instructions, not arithmetic substitution of simple ops.
+
+Semantically the function is just a 64-bit endian swap (`bswap64`) of `*param_1` — clean, unobfuscated compiler output.",53.6,glm_agent,ok
+ms__MultiSource__Benchmarks__NPB-serial__dc,FUN_00103370,initADCpar,,"IGV,SPLIT",0,0,0.0,1837,1111,"**IGV**
+
+The tell is the store `param_1[4] = _DAT_00187500 + 0x35995eb61b938503`. A plain initializer would just load a constant or global value; here the value is reconstituted as an encoded global constant plus a large random-looking 64-bit addend — the classic IGV pattern where the real value is split between a stored global and an embedded key combined at runtime.
+
+The rest of the function shows no evidence of the other passes:
+
+- **SUB** — no substituted arithmetic idioms (e.g., `~x+1`, XOR/AND/OR decomposition of add/sub); everything is a direct constant store.
+- **BCF / FLA / SPLIT** — the function is fully straight-line code with no branches, loops, dispatcher state, or fragmented blocks, so there is nothing for these passes to have produced.
+- **IBR / ICALL** — no branches or calls at all, hence no indirection on them.",29.1,glm_agent,ok

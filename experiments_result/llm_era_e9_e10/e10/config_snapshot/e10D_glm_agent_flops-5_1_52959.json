@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  },
+  "BCF": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.3
+  },
+  "FLA": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.4,
+   "RuntimeCost": 0.8,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.5
+  },
+  "SPLIT": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.2
+  },
+  "IBR": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.3
+  },
+  "ICALL": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.3
+  },
+  "IGV": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.4,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.3
+  }
+ },
+ "rationale": "Round 0 built and ran correctly, so I shifted weights toward stronger obfuscation while respecting that flops-5 is a tiny, hot floating-point loop benchmark (791 bytes of text, one dense main) where runtime cost dominates: SUB gets the highest benefit weights because arithmetic substitution adds real diversity to FP/ALU-heavy straight-line code at low cost, and SPLIT stays cheap and safe for structural scrambling; BCF and FLA are kept as options with high RuntimeCost weights (0.7/0.8) so the selector applies them only where control-flow features justify it, avoiding degradation of the numeric hot loops; IBR and ICALL are held at mid-levels since this binary has almost no calls or branches to disguise, making their transformation overhead hard to amortize; IGV remains enabled at modest weights for diversity despite the near-total absence of globals. Overall the table raises security/diversity pressure versus round 0 while gating the two most expensive control-flow passes behind runtime-cost sensitivity, preserving correctness (risk weights kept <=0.5) on this float-sensitive workload.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Misc__flops-5",
+  "run_id": "e10D_glm_agent_flops-5_1_52959",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T02:16:47Z"
+ }
+}

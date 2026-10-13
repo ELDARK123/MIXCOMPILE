@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.15
+  },
+  "BCF": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.55,
+   "SizeCost": 0.55,
+   "CorrectnessRisk": 0.2
+  },
+  "FLA": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.3
+  },
+  "SPLIT": {
+   "SecurityGain": 0.3,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.15,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.3
+  },
+  "ICALL": {
+   "SecurityGain": 0.35,
+   "DiversityGain": 0.4,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.25
+  },
+  "IGV": {
+   "SecurityGain": 0.3,
+   "DiversityGain": 0.35,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.3
+  }
+ },
+ "rationale": "almabench is a floating-point numeric benchmark dominated by one or a few large hot loops containing mostly double-precision arithmetic and few calls or global accesses, and with the function-level profile unavailable the weighting must be robust to that structure. SUB gets the highest diversity weighting and low cost/risk scores because integer/pointer arithmetic substitution is cheap, composes well with other passes, and FP ops are typically skipped, making it safe for the hot kernel; SPLIT is weighted as a low-cost enabler that increases block count and thereby improves the effectiveness of FLA and BCF. FLA receives the highest SecurityGain since flattening the loop/nesting structure is the strongest structural deterrent for a program whose control flow is otherwise simple, but its moderate RuntimeCost/CorrectnessRisk scores prevent over-application on the innermost FP loop where dispatch overhead and loop-carried transformation bugs would hurt most. BCF is kept at a solid but tempered weight (opaque predicates add real resistance but inflate both code size and branch pressure in hot loops), and IBR is middling \u2014 indirect branches add resistance on the few real control edges but cost indirect-branch predictor performance in tight loops. ICALL and IGV are included but scored low on security/diversity because almabench has an almost call-free, mostly stack-resident FP kernel with minimal global state, so indirect calls and global-variable indirection would add overhead and correctness surface with little to hide.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__CoyoteBench__almabench",
+  "run_id": "e10D_glm_agent_almabench_2_85407",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T11:17:45Z"
+ }
+}

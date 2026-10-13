@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.45,
+   "CorrectnessRisk": 0.15
+  },
+  "FLA": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.2
+  },
+  "SPLIT": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.05
+  },
+  "IBR": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.1
+  },
+  "ICALL": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.2
+  },
+  "IGV": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.15,
+   "CorrectnessRisk": 0.05
+  }
+ },
+ "rationale": "Round 1 built and passed correctness with no ICE fallback, so this round pushes obfuscation strength up while keeping the cost-gate weights moderate to protect the compute-hot ray-tracing loops (node_t::intersect, main's render loop) and the recursive createSphereflake. FLA and BCF get the highest SecurityGain since this program's control flow is loop- and branch-dense, making flattening and bogus control flow the highest-value transforms; FLA's DiversityGain is raised too because its loop restructuring synergizes with the recursive generator. SUB stays strong for instruction-level diversity across all seven functions. IBR is kept high to interpose opaque predicates on the branch-heavy intersect instantiations, but its RuntimeCost weight is capped so it is not pushed onto the hottest paths. ICALL gets a solid weight to indirect the few C++ calls (basis_t constructors, node_t methods), adding call-graph obscurity at modest cost. SPLIT and IGV are enabled mainly for diversity with low risk and low cost: the two large functions (createSphereflake at 2379 bytes, main at 1674 bytes) benefit from splitting, and IGV obscures global v_t/basis_t constants cheaply. Size headroom is large (only ~6.5KB text), so SizeCost weights are permissive; all CorrectnessRisk weights stay at or below 0.2 to preserve the clean correctness record.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Misc-C++__Large__sphereflake",
+  "run_id": "e10D_glm_agent_sphereflake_2_96979",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T14:30:06Z"
+ }
+}

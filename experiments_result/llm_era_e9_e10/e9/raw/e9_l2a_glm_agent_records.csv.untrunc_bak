@@ -1,0 +1,75 @@
+run_id,level,e9_arm,sample_id,function_id,variant_seed,pool_size,prompt_sha256,model,model_version,response_raw,parse_status,top1_hit,rank,tokens_in,tokens_out,latency_s,cost_usd,agent_retry,harness_violation,status
+e9_L0_glm_agent_A1_0000_93400,L0,A1,ms__MultiSource__Benchmarks__MiBench__security-sha,FUN_00101310,1,13,292f64e7e2f2f03a,glm_agent,claude-opus-5-5(1148out),"## Reasoning
+
+**Step 1 — Identify the target.** The target function is the `entry` function in the protected binary: it loads `__libc_start_main` through a pointer (`PTR___libc_start_main_00105fd8`), passes a single function pointer (`FUN_00102e90` — the real `main`), the second argument/stack pointer, and zeroed registration arguments, then falls into a `do {} while(true)` latch.
+
+**Step 2 — Compare structurally.**
+- **F001** is exactly the same shape: `processEntry entry(...)` calling `__libc_start_main` via a GOT pointer with the main function (`FUN_00101810`), `param_2`, `&stack0x00000008`, `0, 0, param_1`, and an `auStack_8` buffer, followed by the same infinite-loop tail. Only the code pointer address differs (00105fd8 vs 00103fd0), which is expected after obfuscation/relocation. This is a near-exact match.
+- **F002 / F003** are trivial `return;` stubs — structurally tiny and control-flow-wise closest in size after F001, but with no call to `__libc_start_main` and no loop.
+- **F005** (`_INIT_0`) is also small: a single call then return — similar in size but different semantics.
+- **F004** (`_FINI_0`) has a conditional guard, a call, and a global flag — more structure, still unrelated.
+- **F012** is a tiny printf wrapper (5 values) — small but unrelated logic.
+- **F006** initializes a hash state (writes constants like 0xc3d2e1f0 — SHA-1-like context init); unrelated.
+- **F007, F008, F009, F010, F011, F013** are larger hash/crypto/parsing routines (SHA-1 transform, padding, update, final, main file loop) — the largest and least similar in structure. F013 is `main` (the callee inside entry), but the target function being matched is `entry` itself, so F001 is the match, not F013.
+
+**Step 3 — Rank.** F001 is a direct structural match. The remaining candidates are ranked by decreasing structural similarity (smallness / simple control flow first, large obfuscation-heavy crypto bodies last).
+
+{""ranking"": [""F001"", ""F002"", ""F003"", ""F005"", ""F004"", ""F012"", ""F006"", ""F013"", ""F010"", ""F011"", ""F009"", ""F008"", ""F007""]}",ok,1,1,154316,975,42.3,1.253988,0,none,ok
+e9_L0_glm_agent_A1_0001_93442,L0,A1,ms__MultiSource__Benchmarks__MiBench__security-sha,FUN_00101650,1,13,93b1d38a863f2608,glm_agent,claude-opus-5-5(1343out),"## Reasoning
+
+**Target function analysis:** `FUN_001010d0` is a trivial stub — a `void` function with no parameters, no calls, no locals, that simply returns. The decompiler warnings about removed unreachable blocks (`0x001010e3`, `0x001010ef`) suggest it originally had some padding/no-op instructions that were stripped. Notably, the target's address (0x001010d0) is preserved between the protected and original binary, and one candidate shares exactly this address.
+
+**Step-by-step ranking:**
+
+1. **F002** — This is *literally the same function*: `FUN_001010d0`, identical signature (`void` / no args), identical empty body with `return`, and even the same unreachable-block warnings at `0x001010e3` and `0x001010ef`. It's an exact address and structural match.
+
+2. **F003** — `FUN_00101100`, the only other candidate that is also a trivial void-return stub with removed unreachable blocks. Structurally nearly identical to the target (no logic, no parameters), just at a different address.
+
+3. **F005** — `_INIT_0`: small void function, no params, whose body is just a single call to `FUN_00101100` (the stub from F003). Very close to the target's simplicity — one level above an empty function.
+
+4. **F004** — `_FINI_0`: small void function with minimal logic (a global flag check and a call to `FUN_001010d0`, the target itself). Slightly more logic than F005 but still tiny and directly related to the target.
+
+5. **F012** — `FUN_001017f0`: a tiny void function (single `printf` call). Small and simple, but performs a call with arguments, making it less similar to an empty stub than F004/F005.
+
+6. **F006** — `FUN_00101190`: small void function writing fixed constants into a struct (state initialization). Few operations, no control flow, still relatively close in complexity.
+
+7. **F001** — `processEntry`: small but distinctive (calls `__libc_start_main` with an infinite-loop tail). Not similar to a stub.
+
+8. **F007** — `FUN_001011b0`: substantial function with many local variables, arithmetic on a state buffer, and loops — clearly more complex.
+
+9. **F010** — `FUN_001015b0`: padding/finalization logic with `memset`, branches, and calls — larger and more complex.
+
+10. **F009** — `FUN_00101310`: a large function with many locals and heavy arithmetic (SHA round function body).
+
+11. **F008** — `FUN_00101250`: SIMD-heavy transform function with many XMM operations — very different from an empty stub.
+
+12. **F011** — `FUN_00101650`: the largest candidate — full file-hashing driver with buffers, loops, and many calls. Least similar.
+
+13. **F013** — `FUN_00101810`: main-like driver with argument parsing, file loops, and multiple calls — complex control flow, essentially unrelated to a stub.
+
+The ordering after F002 is driven by size/complexity distance from a no-op: empty stubs first, then tiny wrappers, then progressively larger functions.
+
+{""ranking"": [""F002"", ""F003"", ""F005"", ""F004"", ""F012"", ""F006"", ""F001"", ""F007"", ""F010"", ""F009"", ""F008"", ""F011"", ""F013""]}",ok,1,1,154268,1125,41.7,0.7317056,0,none,ok
+e9_L0_glm_agent_A1_0002_93484,L0,A1,ms__MultiSource__Benchmarks__MiBench__security-sha,FUN_00101810,1,13,fce824e84f6c8998,glm_agent,claude-opus-5-5(1267out),"## Reasoning
+
+**Target analysis:** The target function `FUN_00101100` is a trivial do-nothing stub: `void FUN_00101100(void) { return; }` with two unreachable blocks removed. It has no parameters, no body, and it appears in a chain of tiny CRT/ctor-style helpers. Under the obfuscation examples given (Examples 1–3), even the protected versions preserve the overall structure of simple functions (Example 3 shows a nearly untouched trivial function), so the best match should be a similarly empty stub.
+
+**Candidate-by-candidate:**
+
+1. **F003** — This is *literally identical* to the target: same address (`0x00101100`), same signature (`void`/no params), same decompiled body (`return;`), and the same two unreachable-block warnings at `0x00101124` and `0x00101130`. This is an exact match — almost certainly the unprotected counterpart of the target itself.
+2. **F002** — `FUN_001010d0`, also an empty `return;` stub with the same style of unreachable-block warnings (`0x001010e3`, `0x001010ef`), sitting at the adjacent address. Structurally indistinguishable except for the address.
+3. **F005** — `_INIT_0`: a tiny function whose only action is calling `FUN_00101100` (the target's unprotected counterpart). Close in size and purpose (CRT init stub chain).
+4. **F004** — `_FINI_0`: similarly tiny destructor stub that calls `FUN_001010d0`, with a simple conditional and one library call. Slightly more body than F005.
+5. **F001** — `entry`: small, just forwards to `__libc_start_main` with an infinite loop. Minimal but a distinct structural role (process entry).
+6. **F012** — `FUN_001017f0`: very small, single `printf` of 5 state words. Simple straight-line, but does real work unlike the target.
+7. **F006** — `FUN_00101190`: small initializer writing a few constants into a state struct. Still small but more assignments.
+8. **F010** — `FUN_001015b0`: medium-size padding/block-finalization routine with memset branches and calls.
+9. **F007** — `FUN_001011b0`: medium-size transform-update function with many locals and arithmetic.
+10. **F009** — `FUN_00101310`: larger, heavy arithmetic loop (hash round function) with a large stack buffer.
+11. **F008** — `FUN_00101250`: large, fully expanded SIMD/unrolled constant-table function — very large body.
+12. **F011** — `FUN_00101650`: the main file/hash-processing routine, largest real function with file I/O and buffers.
+13. **F013** — `FUN_00101810`: `main` with argument looping, fopen/fclose, multiple calls — most structurally different from a void stub.
+
+The tiny stubs (F003, F002, F005, F004) dominate the top of the ranking since the target is a no-op stub; everything else is a real working function of increasing size/complexity.
+
+{""ranking"": [""F003"", ""F002"", ""F005"", ""F004"", ""F001"", ""F012"", ""F006"", ""F010"", ""F007"", ""F009"", ""F008"", ""F011"", ""F013""]}",ok,1,1,154269,1105,36.1,0.6815536,0,none,ok

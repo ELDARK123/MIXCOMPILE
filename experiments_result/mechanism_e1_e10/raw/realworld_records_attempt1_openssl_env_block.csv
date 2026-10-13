@@ -1,0 +1,17 @@
+project,variant,step,exit_code,wall_s,detail
+openssl,llvm,config,0,5.5,ok
+openssl,llvm,make,2,0.2,~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+11 errors generated.
+make: *** [Makefile:6772：apps/lib/libapps-lib-apps.o] 错误 1
+
+openssl,optimized,config,0,5.5,ok
+openssl,optimized,make,2,0.2,~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+11 errors generated.
+make: *** [Makefile:6793：apps/lib/libapps-lib-apps.o] 错误 1
+
+llama.cpp,llvm,cmake,0,1.6,ok
+llama.cpp,llvm,build_llama-cli,1,0.0,ninja: error: unknown target 'llama-cli', did you mean 'llama-idle'?
+
+llama.cpp,optimized,cmake,0,1.6,ok
+llama.cpp,optimized,build_llama-cli,1,0.0,ninja: error: unknown target 'llama-cli', did you mean 'llama-idle'?
+

@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.2
+  },
+  "BCF": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.2
+  },
+  "FLA": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.3
+  },
+  "SPLIT": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.4
+  },
+  "ICALL": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.3
+  },
+  "IGV": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.3
+  }
+ },
+ "rationale": "fp-convert is a tiny, FP-arithmetic-dominated SingleSource benchmark with no source metadata available, so the profile gives little to discriminate on; the strategy is broad but moderate-strength obfuscation. SUB gets the highest security/diversity weights because a conversion benchmark is arithmetic-dense, making expression substitution maximally effective and cheap, and its weights keep cost/risk penalties low so it fires widely. FLA and BCF are the main structural deterrents and are kept strong, but their moderate RuntimeCost/SizeCost weights prevent over-application in a program whose small hot kernels would otherwise suffer disproportionate slowdown. SPLIT is enabled weakly (high security weight withheld) since a tiny function count limits its benefit, serving mainly as a low-risk enabler for FLA. IBR and ICALL carry elevated CorrectnessRisk weights because FP-heavy code with calling-convention-sensitive conversions and possible FP exceptions makes indirect dispatch the likeliest correctness hazard, so they apply selectively; IGV is kept at moderate weights as a cheap global-state indirection that adds diversity without threatening FP semantics. Overall the table biases toward arithmetic and control-flow transformation while gating the dispatch-level passes behind cost and correctness penalties to preserve benchmark validity.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Misc__fp-convert",
+  "run_id": "e10C_glm_agent_fp-convert_0_86129",
+  "arm": "C",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T11:29:20Z"
+ }
+}

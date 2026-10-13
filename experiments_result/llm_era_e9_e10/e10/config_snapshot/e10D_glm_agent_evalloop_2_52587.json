@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.15
+  },
+  "BCF": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.55,
+   "SizeCost": 0.45,
+   "CorrectnessRisk": 0.2
+  },
+  "FLA": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.75,
+   "SizeCost": 0.55,
+   "CorrectnessRisk": 0.35
+  },
+  "SPLIT": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.25,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.3
+  },
+  "ICALL": {
+   "SecurityGain": 0.65,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.25
+  },
+  "IGV": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.85,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  }
+ },
+ "rationale": "Round 1 built and ran correctly with no ICE, so this round pushes obfuscation strength up while protecting the program's defining characteristic: it is a tiny (800-byte text, 4-function) floating-point kernel suite where nearly all code sits in hot FP loops (flops/fbench/whetstone-style kernels inside eval/main). SUB is weighted most aggressively since instruction substitution has near-zero runtime and size cost but strong contribution to pattern-breaking; IGV and SPLIT are also boosted because they add inter-procedural and structural diversity cheaply on a program this small, where low static diversity is the main weakness. FLA keeps the highest SecurityGain of the control-flow passes but its high RuntimeCost weight restrains it on the hot FP loops, where flattening's dispatch overhead hurts most; BCF gets moderate cost sensitivity so bogus predicates appear where features permit but not on the tightest loops. IBR and ICALL round out diversity with somewhat higher cost weights since indirect branching/calling adds real dispatch overhead in kernel-style code. CorrectnessRisk weights stay modest overall \u2014 round 1 showed clean correctness \u2014 but remain highest for FLA and IBR, the passes most likely to perturb FP-heavy control flow, ensuring the selector prefers safer applications of them. With only 800 bytes of text, size is nearly free, so SizeCost weights are uniformly low except where a pass also inflates codeLayout interaction (BCF, FLA).",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Misc__evalloop",
+  "run_id": "e10D_glm_agent_evalloop_2_52587",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T02:10:18Z"
+ }
+}

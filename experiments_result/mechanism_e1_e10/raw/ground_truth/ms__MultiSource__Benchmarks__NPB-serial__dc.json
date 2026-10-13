@@ -1,0 +1,381 @@
+{
+  "sample_id": "ms__MultiSource__Benchmarks__NPB-serial__dc",
+  "rule": "k-th .text function (sorted by entry) of llvm reference pairs with k-th recovered function of target; offsets relative to first entry",
+  "functions": [
+    {
+      "name": "_start",
+      "addr": 4656,
+      "size": 38
+    },
+    {
+      "name": "swap4",
+      "addr": 4896,
+      "size": 26
+    },
+    {
+      "name": "swap8",
+      "addr": 4928,
+      "size": 36
+    },
+    {
+      "name": "initADCpar",
+      "addr": 4976,
+      "size": 51
+    },
+    {
+      "name": "ShowFactorization",
+      "addr": 5040,
+      "size": 294
+    },
+    {
+      "name": "ListFirstPrimes",
+      "addr": 5344,
+      "size": 182
+    },
+    {
+      "name": "GetLCM",
+      "addr": 5536,
+      "size": 440
+    },
+    {
+      "name": "ExtendFactors",
+      "addr": 5984,
+      "size": 227
+    },
+    {
+      "name": "GetFactorization",
+      "addr": 6224,
+      "size": 925
+    },
+    {
+      "name": "CompareSizesByValue",
+      "addr": 7152,
+      "size": 25
+    },
+    {
+      "name": "CompareViewsBySize",
+      "addr": 7184,
+      "size": 44
+    },
+    {
+      "name": "CalculateVeiwSizes",
+      "addr": 7232,
+      "size": 1107
+    },
+    {
+      "name": "ParseParFile",
+      "addr": 8352,
+      "size": 664
+    },
+    {
+      "name": "WriteADCPar",
+      "addr": 9024,
+      "size": 242
+    },
+    {
+      "name": "ShowADCPar",
+      "addr": 9280,
+      "size": 193
+    },
+    {
+      "name": "GetNextTuple",
+      "addr": 9488,
+      "size": 990
+    },
+    {
+      "name": "GenerateADC",
+      "addr": 10480,
+      "size": 607
+    },
+    {
+      "name": "c_print_results",
+      "addr": 11088,
+      "size": 299
+    },
+    {
+      "name": "main",
+      "addr": 11392,
+      "size": 749
+    },
+    {
+      "name": "DC",
+      "addr": 12144,
+      "size": 749
+    },
+    {
+      "name": "Verify",
+      "addr": 12896,
+      "size": 117
+    },
+    {
+      "name": "ReadWholeInputData",
+      "addr": 13024,
+      "size": 238
+    },
+    {
+      "name": "ComputeMemoryFittedView",
+      "addr": 13264,
+      "size": 497
+    },
+    {
+      "name": "SelectToView",
+      "addr": 13776,
+      "size": 175
+    },
+    {
+      "name": "SharedSortAggregate",
+      "addr": 13952,
+      "size": 1499
+    },
+    {
+      "name": "MultiWayMerge",
+      "addr": 15456,
+      "size": 1703
+    },
+    {
+      "name": "PrefixedAggregate",
+      "addr": 17168,
+      "size": 1373
+    },
+    {
+      "name": "RunFormation",
+      "addr": 18544,
+      "size": 704
+    },
+    {
+      "name": "SeekAndReadNextSubChunk",
+      "addr": 19248,
+      "size": 115
+    },
+    {
+      "name": "ReadSubChunk",
+      "addr": 19376,
+      "size": 309
+    },
+    {
+      "name": "AdcFileOpen",
+      "addr": 19696,
+      "size": 69
+    },
+    {
+      "name": "AdcFileName",
+      "addr": 19776,
+      "size": 23
+    },
+    {
+      "name": "NewAdcViewCntl",
+      "addr": 19808,
+      "size": 2049
+    },
+    {
+      "name": "InitAdcViewCntl",
+      "addr": 21872,
+      "size": 454
+    },
+    {
+      "name": "CloseAdcView",
+      "addr": 22336,
+      "size": 321
+    },
+    {
+      "name": "AdcCntlLog",
+      "addr": 22672,
+      "size": 183
+    },
+    {
+      "name": "ViewSizesVerification",
+      "addr": 22864,
+      "size": 835
+    },
+    {
+      "name": "ComputeGivenGroupbys",
+      "addr": 23712,
+      "size": 1435
+    },
+    {
+      "name": "SetOneBit",
+      "addr": 25152,
+      "size": 19
+    },
+    {
+      "name": "SetOneBit32",
+      "addr": 25184,
+      "size": 12
+    },
+    {
+      "name": "Mlo32",
+      "addr": 25200,
+      "size": 38
+    },
+    {
+      "name": "mro32",
+      "addr": 25248,
+      "size": 58
+    },
+    {
+      "name": "setLeadingOnes32",
+      "addr": 25312,
+      "size": 137
+    },
+    {
+      "name": "DeleteOneFile",
+      "addr": 25456,
+      "size": 5
+    },
+    {
+      "name": "WriteOne32Tuple",
+      "addr": 25472,
+      "size": 91
+    },
+    {
+      "name": "NumOfCombsFromNbyK",
+      "addr": 25568,
+      "size": 150
+    },
+    {
+      "name": "JobPoolUpdate",
+      "addr": 25728,
+      "size": 85
+    },
+    {
+      "name": "GetParent",
+      "addr": 25824,
+      "size": 1266
+    },
+    {
+      "name": "NumberOfOnes",
+      "addr": 27104,
+      "size": 105
+    },
+    {
+      "name": "GetSmallestParent",
+      "addr": 27216,
+      "size": 342
+    },
+    {
+      "name": "GetPrefixedParent",
+      "addr": 27568,
+      "size": 603
+    },
+    {
+      "name": "JobPoolInit",
+      "addr": 28176,
+      "size": 112
+    },
+    {
+      "name": "WriteOne64Tuple",
+      "addr": 28288,
+      "size": 108
+    },
+    {
+      "name": "GetRegTupleFromBin64",
+      "addr": 28400,
+      "size": 157
+    },
+    {
+      "name": "getRegTupleFromBin32",
+      "addr": 28560,
+      "size": 153
+    },
+    {
+      "name": "GetRegTupleFromParent",
+      "addr": 28720,
+      "size": 78
+    },
+    {
+      "name": "CreateBinTuple",
+      "addr": 28800,
+      "size": 251
+    },
+    {
+      "name": "d32v",
+      "addr": 29056,
+      "size": 100
+    },
+    {
+      "name": "Comp8gbuf",
+      "addr": 29168,
+      "size": 17
+    },
+    {
+      "name": "restore",
+      "addr": 29200,
+      "size": 138
+    },
+    {
+      "name": "vszsort",
+      "addr": 29344,
+      "size": 395
+    },
+    {
+      "name": "countTupleOnes",
+      "addr": 29744,
+      "size": 149
+    },
+    {
+      "name": "restoreo",
+      "addr": 29904,
+      "size": 138
+    },
+    {
+      "name": "onessort",
+      "addr": 30048,
+      "size": 411
+    },
+    {
+      "name": "MultiFileProcJobs",
+      "addr": 30464,
+      "size": 1070
+    },
+    {
+      "name": "PartitionCube",
+      "addr": 31536,
+      "size": 966
+    },
+    {
+      "name": "KeyComp",
+      "addr": 32512,
+      "size": 49
+    },
+    {
+      "name": "TreeInsert",
+      "addr": 32576,
+      "size": 1069
+    },
+    {
+      "name": "WriteViewToDisk",
+      "addr": 33648,
+      "size": 449
+    },
+    {
+      "name": "WriteViewToDiskCS",
+      "addr": 34112,
+      "size": 266
+    },
+    {
+      "name": "computeChecksum",
+      "addr": 34384,
+      "size": 175
+    },
+    {
+      "name": "WriteChunkToDisk",
+      "addr": 34560,
+      "size": 158
+    },
+    {
+      "name": "CreateEmptyTree",
+      "addr": 34720,
+      "size": 221
+    },
+    {
+      "name": "InitializeTree",
+      "addr": 34944,
+      "size": 102
+    },
+    {
+      "name": "DestroyTree",
+      "addr": 35056,
+      "size": 69
+    }
+  ]
+}

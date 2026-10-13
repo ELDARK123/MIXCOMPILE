@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.2
+  },
+  "BCF": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.8,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.5
+  },
+  "FLA": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.5
+  },
+  "SPLIT": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  },
+  "IBR": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.4
+  },
+  "ICALL": {
+   "SecurityGain": 0.3,
+   "DiversityGain": 0.3,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.5
+  },
+  "IGV": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.4,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.3
+  }
+ },
+ "rationale": "nsieve-bits is a tiny (521 text bytes, single hot 'main') compute-kernel dominated by tight bit-manipulation and sieve loops, so runtime cost is the binding constraint and size cost a secondary one: BCF and FLA carry the highest RuntimeCost/SizeCost weights so the selector applies them only where feature scores strongly justify it (or skips the hottest loops), while SUB is favored because arithmetic/bitwise substitution is cheap, low-risk, and directly obscures the sieve's bitwise logic; SPLIT is cheap and amplifies the effectiveness of control-flow passes on a single large function so it gets high diversity weight with minimal penalties; IBR is moderately weighted as a control-flow hardener that pairs well with FLA but is held back by per-branch dispatch overhead in hot loops; ICALL and IGV are down-weighted because with only 2 functions, minimal call sites, and negligible global-variable structure they offer little security or diversity benefit while adding indirect-call and correctness risk.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__BenchmarkGame__nsieve-bits",
+  "run_id": "e10C_glm_agent_nsieve-bits_0_1549",
+  "arm": "C",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T15:46:17Z"
+ }
+}

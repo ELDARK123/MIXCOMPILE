@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.55,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.2
+  },
+  "BCF": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.65,
+   "CorrectnessRisk": 0.3
+  },
+  "FLA": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.65,
+   "SizeCost": 0.45,
+   "CorrectnessRisk": 0.3
+  },
+  "SPLIT": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.25,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.15
+  },
+  "IBR": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.3
+  },
+  "ICALL": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.35
+  },
+  "IGV": {
+   "SecurityGain": 0.65,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.25
+  }
+ },
+ "rationale": "The prior candidate built and passed, so I raised security/diversity pressure while keeping cost sensitivities moderate. oopack is a timing-driven C++ benchmark whose hot loops live in Benchmark::time_one/time_both and the ComplexBenchmark/Stepanov kernels, so BCF and IBR keep elevated RuntimeCost/SizeCost weights to bias them away from the tightest loops while still contributing control-flow ambiguity. ICALL gets the highest SecurityGain because this program is rich in virtual dispatch and function pointers (the whole harness dispatches through benchmark objects), making indirect-call transformation both high-value and well-matched; its CorrectnessRisk stays moderate since vtable-related miscompiles are the main hazard. SUB and FLA are inexpensive here (small functions, total text only ~3.2KB), so they get strong security weights with low size concern. SPLIT is weighted primarily for DiversityGain since it adds little resistance alone but multiplies the effectiveness of FLA/BCF in the larger main. IGV is kept mid-range: global variable indirection suits the C++ static objects in this benchmark, but the timing harness reads globals in loops, so runtime sensitivity is retained.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Misc-C++__oopack_v1p8",
+  "run_id": "e10D_glm_agent_oopack_v1p8_1_97322",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T14:35:47Z"
+ }
+}

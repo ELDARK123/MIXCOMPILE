@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.85,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.1,
+   "CorrectnessRisk": 0.05
+  },
+  "BCF": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.15
+  },
+  "FLA": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.15
+  },
+  "SPLIT": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.15,
+   "CorrectnessRisk": 0.05
+  },
+  "IBR": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.2
+  },
+  "ICALL": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.15,
+   "CorrectnessRisk": 0.2
+  },
+  "IGV": {
+   "SecurityGain": 0.65,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.25,
+   "SizeCost": 0.15,
+   "CorrectnessRisk": 0.2
+  }
+ },
+ "rationale": "Round 0 compiled and ran correctly with no ICE, so this round raises obfuscation pressure while staying within the runtime/size envelope. SUB is weighted highest for diversity and security because it is nearly free and composes with every other pass; SPLIT is kept cheap to precondition FLA by fragmenting the 750-byte main and the loop-heavy sums/eden/next bodies. FLA is the primary control-flow protector for these small but loop-intensive functions (life's grid update loops run many iterations, so flattening's dispatcher overhead is acceptable relative to the memory-access-dominated workload). BCF is pushed up from a presumably conservative round-0 value to add opaque predicates on hot loops, but its RuntimeCost and SizeCost are capped at ~0.35-0.4 since the binary's total text is only ~2.1 KB and unbounded bogus-flow inflation would be disproportionate. IBR, ICALL, and IGV get moderately strong security/diversity weights to break static call-graph and data-flow recovery (the C++ virtual-free but class-heavy code of living/empty/eden makes indirected calls and globals effective against xref-based analysis), with CorrectnessRisk kept at ~0.2 to preserve the correct behavior already achieved, since ICALL/IGV lowering is the most fragile path for C++ name-mangled and vtable-adjacent code.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__Prolangs-C++__life",
+  "run_id": "e10D_glm_agent_life_1_94399",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T13:46:59Z"
+ }
+}

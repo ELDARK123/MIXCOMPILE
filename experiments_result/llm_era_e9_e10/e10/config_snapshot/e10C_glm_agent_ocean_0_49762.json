@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "SPLIT": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "FLA": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.3
+  },
+  "BCF": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.4,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.2
+  },
+  "IBR": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.4
+  },
+  "ICALL": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.4,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.5
+  },
+  "IGV": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.4,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.4
+  }
+ },
+ "rationale": "This is a tiny C++ simulation (249 lines, 37 small functions, only 3.7KB of text), so the size budget is essentially unconstrained but the hot Predator/Prey/Ocean movement loops make runtime overhead the binding constraint. SUB and SPLIT get the highest security/diversity weights and the lowest cost penalties because they are near-free transforms that should apply broadly and that also prime the CFG for FLA; FLA is the primary structural defense (the 276-316 byte multi-branch functions like addPredators/process/moveFrom are ideal flattening targets) but carries a moderate runtime penalty so it is not weighted as aggressively as the free passes. BCF is kept at moderate weight: its bogus-loop overhead hits every execution of the simulation's hot loops, even though the tiny binary could easily absorb its size growth. IBR, ICALL, and IGV are held at lower security weights with elevated correctness-risk penalties: C++ name-mangled methods, virtual/indirect call sites, and global state in a small binary make indirection transforms the most likely to break linkage or impose per-access runtime costs, so they should only trigger on functions whose features strongly favor them rather than program-wide.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__Prolangs-C++__ocean",
+  "run_id": "e10C_glm_agent_ocean_0_49762",
+  "arm": "C",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T01:23:19Z"
+ }
+}

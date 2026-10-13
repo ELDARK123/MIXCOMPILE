@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.9,
+   "DiversityGain": 0.85,
+   "RuntimeCost": 0.9,
+   "SizeCost": 0.9,
+   "CorrectnessRisk": 0.95
+  },
+  "BCF": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.45,
+   "CorrectnessRisk": 0.85
+  },
+  "FLA": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.85
+  },
+  "SPLIT": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.8,
+   "SizeCost": 0.75,
+   "CorrectnessRisk": 0.9
+  },
+  "IBR": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.8
+  },
+  "ICALL": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.45,
+   "CorrectnessRisk": 0.7
+  },
+  "IGV": {
+   "SecurityGain": 0.3,
+   "DiversityGain": 0.35,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.6
+  }
+ },
+ "rationale": "This is a very small program (343 text bytes, 3 functions) whose hot path is main's column-summation loop, which is largely I/O-bound, so runtime headroom is generous but size and correctness margins are tight. SUB gets near-maximal weights across all dimensions because it has negligible runtime/size cost and essentially no correctness risk, making it an unconditional baseline layer. FLA and BCF carry high SecurityGain/DiversityGain weights since flattening plus bogus predicates are the strongest structural deterrents for reversing main's control flow, but their RuntimeCost and SizeCost weights are deliberately low to keep the dispatcher overhead and code blowup bounded in a binary this tiny. SPLIT is cheap and synergistic with FLA (more basic blocks to flatten), so it stays enabled broadly; IBR and ICALL get moderate security weights but low RuntimeCost/CorrectnessRisk weights because indirect branching and indirect calls introduce dispatch overhead and the highest miscompilation risk, and with only one meaningful function there is little to gain from aggressive indirection. IGV is kept at low weight across the board since the program has minimal global-variable state, so its payoff is small relative to its correctness exposure.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Shootout-C++__sumcol",
+  "run_id": "e10C_glm_agent_sumcol_0_4986",
+  "arm": "C",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T16:43:43Z"
+ }
+}

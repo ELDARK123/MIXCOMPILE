@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.9,
+   "SizeCost": 0.85,
+   "CorrectnessRisk": 0.95
+  },
+  "BCF": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.15,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.7
+  },
+  "FLA": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.6
+  },
+  "SPLIT": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.8,
+   "SizeCost": 0.75,
+   "CorrectnessRisk": 0.9
+  },
+  "IBR": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.55,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.85
+  },
+  "ICALL": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.65,
+   "CorrectnessRisk": 0.8
+  },
+  "IGV": {
+   "SecurityGain": 0.65,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.75,
+   "SizeCost": 0.8,
+   "CorrectnessRisk": 0.85
+  }
+ },
+ "rationale": "The moments benchmark is a small, loop-heavy numeric C++ program (statistical aggregation over input streams) with no static profile details beyond its Shootout origin, so the weight table favors low-overhead, correctness-safe passes and discounts control-flow passes that tax hot FP loops. SUB gets high weights across the board because instruction substitution is cheap in both size and runtime, semantically safe, and adds meaningful arithmetic-level confusion to numeric code. SPLIT and IGV (which mostly reshapes globals/CFG structure at compile time) are weighted toward high runtime/size favorability and diversity, giving good structural obfuscation nearly for free. IBR and ICALL receive moderate scores: indirect branching and calls complicate static analysis of the dispatch and call graph, which matters for decompilers, but they introduce some indirect-dispatch overhead in tight loops, so their RuntimeCost favorability is mid-range. BCF and FLA are deliberately given low RuntimeCost/SizeCost favorability (and only modest security scores) because bogus control flow inflates loop bodies and flattening imposes a dispatcher on the program's dominant hot loops, where even modest overhead is unacceptable; keeping them in the table at reduced weight lets the compiler apply them only to cold, feature-favoring functions rather than disabling them outright.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Shootout-C++__moments",
+  "run_id": "e10C_glm_agent_moments_0_86786",
+  "arm": "C",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T11:40:09Z"
+ }
+}

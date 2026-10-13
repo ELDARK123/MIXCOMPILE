@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.9,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.8,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.3
+  },
+  "FLA": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.8,
+   "CorrectnessRisk": 0.5
+  },
+  "SPLIT": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.2
+  },
+  "IBR": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.2
+  },
+  "ICALL": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.3
+  },
+  "IGV": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.3
+  }
+ },
+ "rationale": "Round 1 built and ran correctly, so the table shifts moderately toward stronger obfuscation while respecting the workload: this benchmark is a tiny (471 text bytes, 2 functions), tight floating-point loop where cache behavior and loop overhead dominate, so BCF keeps a high RuntimeCost weight (0.8) to limit bogus control flow inside the hot FP loop, and FLA retains a high SizeCost weight (0.8) since flattening a small main would balloon the binary and hurt an already minimal function. SUB stays the workhorse (SecurityGain 0.9, low costs) because instruction substitution is nearly free for arithmetic-heavy FP code and the previous round tolerated it. SPLIT, IBR, ICALL, and IGV are all kept in play with moderate-to-high SecurityGain (0.6-0.8) and low cost weights, since basic-block splitting, indirect branching, indirect calls, and global variable indirection add static-analysis resistance with modest overhead on a two-function program where correctness already held. FLA's elevated CorrectnessRisk (0.5) reflects its known interactions with structured FP control flow, letting the feature-driven selector avoid it where the loop structure makes it risky.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Misc__flops-7",
+  "run_id": "e10D_glm_agent_flops-7_2_3960",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T16:26:18Z"
+ }
+}

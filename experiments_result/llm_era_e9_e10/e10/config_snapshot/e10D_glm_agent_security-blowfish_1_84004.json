@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.9,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.2
+  },
+  "FLA": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.55,
+   "CorrectnessRisk": 0.3
+  },
+  "SPLIT": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.05
+  },
+  "IBR": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.4
+  },
+  "ICALL": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.4,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.2
+  },
+  "IGV": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.25,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.15
+  }
+ },
+ "rationale": "Blowfish is a compact, extremely hot cryptographic kernel dominated by bitwise logic, modular additions, and heavy access to static tables (S-boxes and the P-array) inside a 16-round Feistel loop, with essentially no indirect-call-rich code. SUB gets the highest priority because arithmetic/logic substitution maps directly onto the cipher's XOR/add mix at near-zero cost; IGV is prioritized nearly as highly since virtually all of the cipher state lives in global/static arrays, so indirecting table references obfuscates the most informative data flow cheaply. FLA and BCF receive strong security/diversity weights to destroy the clean per-round control-flow signature that reverse engineers use to locate and lift the Feistel network, with runtime/size weights held at moderate levels so the hot decrypt/encrypt loop is not over-transformed. IBR is kept at a moderate weight with an elevated CorrectnessRisk acknowledgment: indirect branching is powerful against static analysis but adds real dispatch overhead in a tight loop, so it should only attach to functions whose features genuinely support it. SPLIT is cheap and improves the coverage of FLA/BCF/IBR, so it is enabled as a force multiplier. ICALL is effectively deprioritized (low security weight): blowfish exposes almost no call sites worth indirecting, so its weight is low enough that the selector will rarely fire it, though it is retained for any dispatch-like helpers.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__MiBench__security-blowfish",
+  "run_id": "e10D_glm_agent_security-blowfish_1_84004",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T10:53:54Z"
+ }
+}

@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.55,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.15
+  },
+  "FLA": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.45,
+   "CorrectnessRisk": 0.2
+  },
+  "SPLIT": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.05
+  },
+  "IBR": {
+   "SecurityGain": 0.65,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.1
+  },
+  "ICALL": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.25
+  },
+  "IGV": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.2
+  }
+ },
+ "rationale": "Round 1 built cleanly with full correctness and no ICE fallback, so this revision escalates obfuscation intensity across all seven passes rather than holding back. FLA gets the highest SecurityGain since wordfreq's logic concentrates in a handful of larger functions (main at 852 text bytes plus STL tree/sort/heap helpers), where control-flow flattening most disrupts static recovery; SUB and BCF follow closely, with SUB kept low-risk and cheap so it can apply broadly including in the STL template instantiations, while BCF carries the highest RuntimeCost weight because bogus predicates are pure overhead in wordfreq's hot per-character and per-token loops. SPLIT and IBR are boosted mainly for DiversityGain since they compose well with flattening and add cheap indirection with little correctness exposure. ICALL and IGV keep moderate security weights but the highest CorrectnessRisk weights of the set, since indirect dispatch and global-value hiding interact most dangerously with C++ virtual/template linkage and dynamic initialization in the iostream-heavy sources; the elevated RuntimeCost/SizeCost values on BCF and moderate ones on ICALL keep aggregate overhead acceptable on this small (3.7 KB text) binary, where size inflation would otherwise dominate the result.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Shootout-C++__wordfreq",
+  "run_id": "e10D_glm_agent_wordfreq_2_55015",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T02:50:40Z"
+ }
+}

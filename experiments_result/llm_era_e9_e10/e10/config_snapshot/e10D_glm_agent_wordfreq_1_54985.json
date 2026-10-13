@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.15,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.05
+  },
+  "BCF": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.15
+  },
+  "FLA": {
+   "SecurityGain": 0.9,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.55,
+   "SizeCost": 0.45,
+   "CorrectnessRisk": 0.2
+  },
+  "SPLIT": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.05
+  },
+  "IBR": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.85,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.1
+  },
+  "ICALL": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.25
+  },
+  "IGV": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  }
+ },
+ "rationale": "Round 0 built and ran correctly, so this candidate escalates obfuscation across all seven passes while keeping risk weights conservative for this STL-heavy target. wordfreq.cpp's main functions are dominated by std::map/std::set (_Rb_tree) operations, introsort heap adjustments, and string handling \u2014 control-flow-dense, data-structure-heavy code \u2014 so FLA and BCF get the highest SecurityGain weights to flatten and bogus-condition the branchy main/_Rb_tree/__adjust_heap bodies, while ICALL and IGV add indirect-call and global-variable indirection to obscure the frequent libstdc++ comparator/allocator call sites; SUB and SPLIT are nearly free (arithmetic substitution and basic-block splitting) so they are enabled broadly with low cost weights to build a cheap diversity base layer, and IBR adds opaque branch redirection across the flattened regions. RuntimeCost/SizeCost weights are kept moderate for BCF/FLA (the two most expensive transforms) because the binary is tiny (3.6 KB text) and the shootout-style hot loops in word counting are short, tolerating modest slowdown, and CorrectnessRisk is capped at 0.25 everywhere \u2014 highest for ICALL/IGV since indirecting calls and globals through STL template instantiations is the most fragile transformation \u2014 to preserve the correct end-to-end behavior already demonstrated.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Shootout-C++__wordfreq",
+  "run_id": "e10D_glm_agent_wordfreq_1_54985",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T02:50:14Z"
+ }
+}

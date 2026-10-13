@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.55,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.85
+  },
+  "BCF": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.75
+  },
+  "FLA": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.8
+  },
+  "SPLIT": {
+   "SecurityGain": 0.65,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.65,
+   "CorrectnessRisk": 0.9
+  },
+  "IBR": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.7
+  },
+  "ICALL": {
+   "SecurityGain": 0.45,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.5
+  },
+  "IGV": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.55,
+   "CorrectnessRisk": 0.7
+  }
+ },
+ "rationale": "Round 1 built and ran correctly on this small (10.5 KB text, 46-function) pointer- and float-heavy Olden benchmark, so the table now leans into obfuscation while budgeting costs: SUB gets the strongest security/diversity weights since voronoi is dominated by geometric arithmetic (vector.c, circle_center, triangulation math) where instruction substitution is cheap, safe, and highly resistant-raising; FLA stays high because the large control-flow-dense functions (do_merge ~2 KB, output_voronoi_diagram ~1.9 KB, build_delaunay) are ideal flattening targets, with moderate cost weights reflecting their hot loops; BCF is raised moderately for bogus-path depth on those same functions but its runtime weight is kept lower since voronoi's Delaunay/merge loops are runtime-sensitive; SPLIT is weighted toward diversity at minimal cost and acts as a force multiplier for FLA by creating more basic blocks to flatten; IBR gets elevated diversity weight to convert the branch-heavy merge/sweep logic into indirect control flow, complicating static CFG recovery; IGV is kept mid-range since voronoi has few global constants to hide but parameterized bounds/tables still benefit; ICALL stays lowest of the set because indirect-call transformation on a small program adds call-overhead and correctness risk (function-pointer-heavy Olden code) with limited payoff. Overall the cost weights are held just below the security weights so feature-matched functions are aggressively transformed, while the still-substantial CorrectnessRisk weights preserve the pass gate that kept round 1 correct.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__Olden__voronoi",
+  "run_id": "e10D_glm_agent_voronoi_2_97435",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T14:37:27Z"
+ }
+}

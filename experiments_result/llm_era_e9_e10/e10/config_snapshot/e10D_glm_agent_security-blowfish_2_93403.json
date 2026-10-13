@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.25,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.15
+  },
+  "BCF": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.2
+  },
+  "FLA": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.2
+  },
+  "SPLIT": {
+   "SecurityGain": 0.45,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.15,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.15
+  },
+  "ICALL": {
+   "SecurityGain": 0.65,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.2
+  },
+  "IGV": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.25
+  }
+ },
+ "rationale": "Round 1 built and validated correct, so the weights are pushed toward stronger obfuscation while keeping hot-path overhead bounded: blowfish's runtime is dominated by the 16-round BF_encrypt loop and the CBC/CFB/OFB block-mode loops, so the two heaviest runtime passes, BCF and FLA, get elevated SecurityGain (0.80) but retain restrained RuntimeCost/SizeCost weights (0.40-0.50) so per-function feature matching still gates them off the hottest inner loops; SUB gets the highest SecurityGain (0.85) since instruction substitution is nearly free at runtime and strongly obscures the blowfish P-array/S-box round arithmetic and key schedule; IBR (0.70) adds opaque inter-block routing that complements FLA on the larger functions (test, BF_encrypt, BF_cbc_encrypt) at moderate cost; ICALL (0.65) increases indirect-call indirection to hinder static call-graph recovery but is capped so the encrypt/decrypt hot path is not burdened with excessive indirect dispatch; SPLIT and IGV are treated as cheap diversity amplifiers (DiversityGain 0.75/0.70) that break basic-block and global-variable layout patterns an analyst relies on for cross-referencing, and IGV's slightly higher CorrectnessRisk (0.25) reflects its interaction with the file-scope S-box/P-array constants in bf_pi.h, which must remain semantically intact. All seven passes stay enabled because the reference build succeeded with no ICE fallback, indicating the pipeline tolerates full-pass coverage on this benchmark.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__MiBench__security-blowfish",
+  "run_id": "e10D_glm_agent_security-blowfish_2_93403",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T13:30:27Z"
+ }
+}

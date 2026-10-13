@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.9,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.5
+  },
+  "BCF": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.5
+  },
+  "FLA": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.6
+  },
+  "SPLIT": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.3
+  },
+  "IBR": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.8,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.6
+  },
+  "ICALL": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.8,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.7
+  },
+  "IGV": {
+   "SecurityGain": 0.3,
+   "DiversityGain": 0.3,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.6
+  }
+ },
+ "rationale": "Olden bisort is a tiny, pointer-intensive recursive benchmark (binary-tree sort plus a shift/xor random generator) with almost no globals and few call sites, so we favor passes that obscure arithmetic and control flow over those targeting data or calls. SUB gets the highest security weight because bisort's hot paths are short arithmetic/bit-twiddling sequences in the RNG and tree comparisons, which instruction substitution obscures cheaply; BCF and FLA follow closely since the program's simple recursive structure is easy for an analyst to follow and both passes disproportionately increase static comprehension cost, while their runtime cost weight is kept moderately high to avoid amplifying the recursive hot loops. SPLIT is kept enabled at moderate weight as a low-cost force multiplier that improves the combinatorial effect of FLA/BCF without meaningful size or correctness impact. IBR is assigned a lower security weight but high runtime/size cost weights because indirect-branch dispatch overhead lands directly on the small hot recursion loops; ICALL is similarly de-emphasized since bisort has very few indirect-call opportunities (mostly self-recursion and libc calls) yet pays indirect-dispatch cost on every recursive call, with correctness risk elevated due to calling-convention sensitivity. IGV is effectively disabled (lowest weights across dimensions) because the program has essentially no global state to hide, so it adds diversity noise and size without real security gain. Overall the table tilts toward arithmetic and control-flow transformation with strict cost pressure, matching the goal of maximizing reverse-engineering resistance while bounding runtime/size growth on a runtime-sensitive Olden kernel and preserving correctness of its pointer-heavy recursion.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__Olden__bisort",
+  "run_id": "e10D_glm_agent_bisort_1_84084",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T10:55:14Z"
+ }
+}

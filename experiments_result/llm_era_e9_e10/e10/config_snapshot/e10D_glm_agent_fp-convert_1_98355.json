@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.15,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.2
+  },
+  "FLA": {
+   "SecurityGain": 0.65,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.55,
+   "SizeCost": 0.45,
+   "CorrectnessRisk": 0.25
+  },
+  "SPLIT": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.15,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  },
+  "ICALL": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.3
+  },
+  "IGV": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.25,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.2
+  }
+ },
+ "rationale": "Round 0 compiled and ran correctly, so I shift weights toward stronger obfuscation while respecting that fp-convert is a 584-byte, 3-function binary with hot floating-point loops where runtime overhead is the main constraint. SUB stays the workhorse: instruction substitution is nearly free at runtime and size, so its high SecurityGain/DiversityGain weights and low cost weights make it applicable everywhere. SPLIT gets a strong DiversityGain weight because basic-block splitting composes cheaply with the other passes and this program is too small to protect via volume alone. FLA and BCF carry the bulk of control-flow disguise but their elevated RuntimeCost weights keep them from being forced onto the hot FP conversion loops; their moderate CorrectnessRisk weights stay low since round 0 showed no instability. IBR and ICALL raise branch/call indirection for static-analysis resistance with mid-range cost tolerance. IGV adds global indirection at low cost given the tiny data section. No passes are disabled \u2014 the cost weights, not omissions, gate the expensive transforms.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Misc__fp-convert",
+  "run_id": "e10D_glm_agent_fp-convert_1_98355",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T14:53:01Z"
+ }
+}

@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.9,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.1,
+   "CorrectnessRisk": 0.05
+  },
+  "BCF": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.8,
+   "SizeCost": 0.8,
+   "CorrectnessRisk": 0.1
+  },
+  "FLA": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.35
+  },
+  "SPLIT": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.05
+  },
+  "IBR": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.2
+  },
+  "ICALL": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.15
+  },
+  "IGV": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  }
+ },
+ "rationale": "five11 is a tiny (1259 text bytes, 12 functions) bitstream-decoding benchmark whose hot loops (read_x_bits, read_11_bits, five11) execute many iterations, so the table favors cheap, loop-safe transforms and restrains expensive control-flow inflation: SUB gets the strongest SecurityGain/DiversityGain weights because arithmetic substitution is nearly free at runtime and size, works well on the bit-manipulation arithmetic that dominates this program, and carries minimal correctness risk; ICALL and IGV get moderate security weights with low cost/risk weights since indirect calls and global-variable indirection add solid disassembly/decompilation resistance to a small binary at modest overhead and this program's pointer/list code (free_list2) tolerates them well; FLA keeps a high SecurityGain weight so it is applied selectively where control-flow features support it (e.g., the larger five11/main bodies) while its elevated RuntimeCost weight prevents blanket flattening of the hot bit-reading loops; BCF is retained for spot BogusControlFlow hardening but with the highest RuntimeCost/SizeCost weights so its code-bloating dispatch blocks are applied sparingly to a binary this small; SPLIT is a low-cost enabling pass that improves FLA/BCF effectiveness and stays on with minimal penalties; and IBR carries moderate weights across the board, giving basic-block indirection where features justify it without compounding overhead on loops already paying FLA/BCF costs. Overall this maximizes layered static-analysis resistance (arithmetic, call, data, and control-flow obfuscation all active) while keeping aggregate runtime and size overhead acceptable for a benchmark-shaped workload and keeping CorrectnessRisk weights low enough that the recursive list manipulation and bit-exact decoding logic remain semantically intact.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__BitBench__five11",
+  "run_id": "e10C_glm_agent_five11_0_42416",
+  "arm": "C",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-05T23:20:40Z"
+ }
+}

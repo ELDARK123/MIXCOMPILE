@@ -1,0 +1,4 @@
+sample_id,function,symbol,llm_answer,true_answer,exact_match,precision,recall,tokens_in,tokens_out,latency_s,model,status
+ms__MultiSource__Benchmarks__NPB-serial__dc,FUN_00103320,swap4,,IGV,0,0,0.0,2125,586,17.5,glm_agent,ok
+ms__MultiSource__Benchmarks__NPB-serial__dc,FUN_00103340,swap8,,IGV,0,0,0.0,2912,817,21.3,glm_agent,ok
+ms__MultiSource__Benchmarks__NPB-serial__dc,FUN_00103370,initADCpar,"FLA,IBR,ICALL,SPLIT","IGV,SPLIT",0,0.25,0.5,1837,626,17.7,glm_agent,ok

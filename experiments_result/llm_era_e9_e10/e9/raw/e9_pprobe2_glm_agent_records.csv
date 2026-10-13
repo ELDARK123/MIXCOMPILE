@@ -1,0 +1,742 @@
+sample_id,function,symbol,llm_answer,true_answer,exact_match,precision,recall,tokens_in,tokens_out,response_raw,latency_s,model,status
+ms__MultiSource__Benchmarks__NPB-serial__dc,FUN_00103320,swap4,NONE,IGV,0,0.0,0.0,2125,2014,"**NONE**
+
+Reasoning:
+
+- **No control-flow obfuscation signatures.** The function is a straight-line computation with a single entry and return. There is no dispatcher/state variable (FLA), no always-true opaque predicates wrapped around real blocks (BCF), no fragmented blocks with jumps (SPLIT), no computed jump tables or branch through registers (IBR), no calls through function pointers (ICALL), and no global variable references, let alone pointer-chased ones (IGV).
+
+- **The ""weird"" arithmetic is standard compiler output, not substitution.** The convoluted `CONCAT/ZEXT/pshuflw` byte shuffling is how Ghidra renders the compiler's (LLVM -O2/-O3) vectorization of a byte-wise operation — a per-lane clamp implemented with SIMD shuffles. Similarly, the clamp pattern
+
+  `(0 < x) * (x < 0x100) * x - (0xff < x)`
+
+  is the familiar DAGCombine expansion of `smax(smin(x, 255), 0)` into arithmetic (`x - (x > 255)` for umin, boolean-multiply for smax), not an obfuscator's substitution idiom (SUB typically shows up as rewrites like `a + b → a ^ b ^ 2*(a & b)`).
+
+The function appears to be a plain optimized/autovectorized byte-clamp (e.g., over a 4-byte pixel value) with no trace of any of the seven passes.",60.2,glm_agent,ok
+ms__MultiSource__Benchmarks__NPB-serial__dc,FUN_00103340,swap8,NONE,IGV,0,0.0,0.0,2912,1943,"**NONE**
+
+Reasoning per pass:
+
+- **SUB** — The convoluted vector code (byte extractions, `pshuflw`/`pshufhw` with `0x1b`, the `(0 < sVar) * (sVar < 0x100) * byte - (0xff < sVar)` pattern) is just Ghidra's rendering of SSE2 shuffles and a saturating pack (`packuswb`). Reconstructing it, the function is essentially a byte-reversal/`bswap64` of `*param_1` that was auto-vectorized — there are no substituted arithmetic identities (e.g., `a-b` → `a+(-b)+1`-style rewrites or opaque XOR mixing on scalar arithmetic).
+- **BCF** — No bogus predicates, no opaque conditions, no nested loop flattening structure; the function is a single straight-line block.
+- **FLA** — No dispatcher/state variable, no switch-based control loop.
+- **SPLIT** — Only one basic block exists; no artificial splitting.
+- **IBR** — All control flow (none) is direct; no computed jumps or jump tables.
+- **ICALL** — No indirect calls through function pointers.
+- **IGV** — No global variable accesses at all, let alone indirection through a global table.
+
+The apparent complexity is a compiler-vectorization artifact of a simple byte-swap, not obfuscation.",46.2,glm_agent,ok
+ms__MultiSource__Benchmarks__NPB-serial__dc,FUN_00103370,initADCpar,,"IGV,SPLIT",0,0,0.0,1837,1168,"**SUB**
+
+The function is pure straight-line code — six stores and a return, no loops, branches, or calls — so the control-flow passes are all absent:
+
+- **BCF / FLA / SPLIT / IBR**: there is no control flow to bogusify, flatten, split, or indirect; the CFG is a single basic block.
+- **ICALL**: every write is a direct store; no function pointers or indirect calls appear.
+- **IGV**: `_DAT_00187500` is a direct reference to a labeled global, not an access routed through a pointer table or decryption stub.
+
+The one anomaly is `param_1[4] = _DAT_00187500 + 0x35995eb61b938503` — materializing a value as a global constant plus a large arbitrary addend is not something a compiler emits for a plain 64-bit constant (it would use a single `movabs`). That split-constant/add pattern is the typical residue of instruction substitution applied to the initialization, which is why SUB is the likely pass.",15.4,glm_agent,ok
+ms__MultiSource__Benchmarks__NPB-serial__dc,FUN_001033b0,ShowFactorization,,"BCF,IGV,SPLIT",0,0,0.0,3177,810,"**BCF, IGV**
+
+Reasoning:
+
+- **BCF (bogus control flow)** — the function is saturated with the two signature opaque predicates from the obfuscator-llvm/Hikari BCF pass:
+  - `((x + -1) * x & 1) == 0` — always false, since `x*(x-1)` is a product of consecutive integers and thus always even.
+  - `9 < *(int *)(...)` — always false for the predicate global, which BCF initializes to a value ≤ 9.
+  
+  These predicates guard `break`/`goto` out of infinite `do {} while(true)` loops — the classic BCF ""bogus loop + bogus predicate"" structure, repeated many times.
+
+- **IGV (indirect global variable)** — the predicate values are never read directly from a named global; instead they're loaded through `DAT_00187510 + -0x7a1619a0708bad1e` and `DAT_00187518 + ...`, i.e. a global holding a pointer that is offset to reach the real variable. That extra level of indirection on global references is exactly what the IGV pass produces.
+
+Not applied (no supporting evidence):
+
+- **FLA** — there is no dispatcher loop / state-variable `switch`; control flow still has real structure (labels, direct gotos), so it's not flattened.
+- **IBR** — all branch targets are direct (`LAB_...`, `joined_r_...`); no computed jumps through a jump table.
+- **ICALL** — no indirect calls; the function contains no call sites at all in the visible portion.
+- **SPLIT** — while blocks appear fragmented, that fragmentation is fully explained by BCF itself; there's no independent sign of block splitting on real code.
+- **SUB** — the only arithmetic (`(x-1)*x & 1`) is the standard BCF predicate, not evidence of instruction substitution on real computation.",9.3,glm_agent,ok
+ms__MultiSource__Benchmarks__NPB-serial__dc,FUN_00105940,ListFirstPrimes,SPLIT,"BCF,IGV,SPLIT",0,1.0,0.333,3245,1116,"**BCF, SPLIT, IGV**
+
+Reasoning from the decompilation:
+
+- **BCF (bogus control flow)** — The predicate `((*(int *)(DAT_00187540 + K) + -1) * *(int *)(DAT_00187540 + K) & 1U) != 0` computes `x*(x-1) & 1`, which is **always 0** (a product of consecutive integers is always even). So every one of those `!= 0` conditions is statically false, meaning the surrounding `while` loops, `goto`s, and `do/while` loops are all dead bogus code wrapped around the real statements (`*param_2 = 2; param_2[1] = 3; param_2[2] = 5; ...`). This is the signature of the classic BCF opaque predicate.
+
+- **SPLIT (basic block splitting)** — The pattern where a block jumps to a label that contains a *duplicate* of the same statement (e.g. the `while (param_2[1] = 3, ...) { LAB_00105a1a: param_2[1] = 3; }` structure) is what block splitting looks like after decompilation: the real instruction was split into its own basic block, with the loop-exit path re-executing it.
+
+- **IGV (indirect global variable)** — The global loads `*(int *)(DAT_00187540 + -0x7e3941b1916b035d)` use a global pointer base plus a large constant offset rather than referencing a named global directly, which is how IGV-obfuscated globals decompile.
+
+Not applied / no evidence:
+
+- **FLA** — there's no flattening dispatcher (no state variable, no `switch` dispatch loop); the control flow is still recognizable nested loops.
+- **IBR / ICALL** — no indirect branches or indirect calls appear.
+- **SUB** — no clear instruction-substitution artifacts beyond what's inherent to the opaque predicate itself; the arithmetic is consistent with standard BCF predicate construction.
+
+(The real function underneath appears to compute a small lookup sequence — writing 2, 3, 5, ... into `param_2` — which is why the actual content is so trivial relative to the code size.)",27.8,glm_agent,ok
+ms__MultiSource__Benchmarks__ASC_Sequoia__AMGmk,FUN_00102240,hypre_CSRMatrixCreate,"FLA,SPLIT","IGV,SPLIT",0,0.5,0.5,1899,199,"NONE
+
+The function is a single straight-line basic block: one direct call to the allocator (`FUN_0012e280`), field initializations, and a return. There's no control flow to flatten, split, or obscure (no BCF, FLA, SPLIT, IBR), the only call is direct (no ICALL), no global variable access (no IGV), and the arithmetic/stores show no signs of instruction substitution (SUB). It appears unobfuscated.",6.8,glm_agent,ok
+ms__MultiSource__Benchmarks__ASC_Sequoia__AMGmk,FUN_00102290,hypre_CSRMatrixDestroy,,"IBR,SPLIT",0,0,0.0,1955,1934,"**BCF, IBR**
+
+Evidence:
+
+- **BCF (bogus control flow):** The two `switch(<boolean comparison>) { case true: ... }` constructs — `switch(param_1 == 0)` and `switch(*(long *)(param_1 + 0x28) != 0)` — are 2-way branches rendered as jump-table dispatches with only one real case. Simple `if` statements don't compile to switch/jumptable form naturally; this is the signature of bogus control flow wrapping basic blocks in opaque conditional dispatchers.
+- **IBR (indirect branch):** The function's exit is a computed jump through a global table with a constant correction — `*(code *)(*plVar2 + -0xdbd92b5912cadba)` — confirmed by Ghidra's warnings (""Could not recover jumptable"", ""Treating indirect jump as call""). A direct branch/tail-call was replaced by a table-driven indirect jump with an additive offset, the classic IBR artifact.
+
+Not applied:
+- **FLA:** No dispatcher loop with an integer state variable; the switches are on data conditions, not a flattened state machine.
+- **SUB:** No substituted arithmetic (all operations are plain loads/compares/stores).
+- **SPLIT:** No visible artifacts (it's largely transparent in decompilation, and nothing here requires it as an explanation).
+- **ICALL:** The direct calls `FUN_0012e370(...)` remain direct; the final dispatch is an indirect *branch* (IBR), not an indirect call.
+- **IGV:** The `DAT_001490c0`/`DAT_001490d8` selection looks like original vtable/pointer selection logic, not global-variable indirection through a rewritten access layer.",55.4,glm_agent,ok
+ms__MultiSource__Benchmarks__ASC_Sequoia__AMGmk,FUN_00102350,hypre_CSRMatrixInitialize,NONE,"IGV,SPLIT",0,0.0,0.0,1918,436,"**NONE**
+
+Reasoning from the decompiled structure:
+
+- **SUB** — all arithmetic is trivial and canonical (`iVar1`, `(int)lVar3 + 1`, sizes 8 and 4). No weird equivalent expressions (e.g., `x - (-1)`, `x ^ 0`, shifts replacing add/mul) that substitution typically leaves behind.
+- **BCF** — the CFG is three simple sequential `if` bodies with no opaque predicates, no repeated/redundant conditions, and no tangled diamond structures. Ghidra would show spurious always-true/false comparisons if BCF had run.
+- **FLA** — no dispatcher state variable, no `switch`/loop driving block transitions; the code is straight-line lazy initialization.
+- **SPLIT** — each `if` body is a single small block with no artificially fragmented sequences of statements.
+- **IBR** — control flow between blocks is ordinary fallthrough/branching; there are no computed jumps or jump tables.
+- **ICALL** — all three calls (`FUN_0012e280`) are direct; no function pointers are stored or loaded.
+- **IGV** — there are no global variable references at all; all state lives in `*param_1` fields on the heap.
+
+The function looks like an untouched lazy-allocation helper (allocate buffer, counts array, and secondary array on first use).",13.0,glm_agent,ok
+ms__MultiSource__Benchmarks__ASC_Sequoia__AMGmk,FUN_001023c0,hypre_CSRMatrixSetDataOwner,NONE,IGV,0,0.0,0.0,1751,339,"**NONE**
+
+This function is a trivial setter — a single store to `param_1 + 0x34` and a constant return of 0, with no branches, calls, or global references. There's no evidence of any pass:
+
+- **SUB**: the store and `return 0` appear as plain, unsubstituted operations (no xnor/add-negate-style arithmetic tricks).
+- **BCF / SPLIT**: no extra basic blocks or opaque predicates — just one straight-line block.
+- **FLA**: no dispatcher/switch state variable.
+- **IBR**: the single exit is a direct return, no indirect jump.
+- **ICALL**: no calls at all.
+- **IGV**: the store target is a direct parameter offset, not an obfuscated global reference.",9.8,glm_agent,ok
+ms__MultiSource__Benchmarks__ASC_Sequoia__AMGmk,FUN_001023d0,hypre_CSRMatrixSetRownnz,,"BCF,SPLIT",0,0,0.0,3099,1758,"**BCF**
+
+Reasoning:
+
+- The function is saturated with the classic bogus-control-flow opaque predicate: `((DAT_00149420 + -1) * DAT_00149420 & 1U) == 0` — i.e. `x * (x - 1) % 2 == 0`, which is always true since `x*(x-1)` is always even. Combined with the companion check `9 < DAT_00149434` (the `y < 10` half of the same predicate), this is exactly the opaque-predicate pair used by LLVM obfuscator's BogusControlFlow pass, with its two condition globals living at `DAT_00149420` and `DAT_00149434`.
+- The resulting tangle of always-true `do-while` loops, duplicated blocks, and `joined_r0x...`/`code_r0x...` fragments is the signature of BCF cloning basic blocks behind opaque predicates.
+
+Why the others are unlikely:
+
+- **FLA**: there is no dispatcher loop with a state variable and `switch`-style jump table, which flattening always produces.
+- **SPLIT**: the fragmentation present is fully explained by BCF block cloning; no independent splitting signature.
+- **SUB**: no substituted arithmetic identities (xor/add/sub mixes) beyond the BCF predicate itself.
+- **IBR / ICALL**: no computed jumps or indirect function-pointer calls appear.
+- **IGV**: the BCF globals are read directly (`DAT_00149420`), not through an indirection table/pointer, so indirect global variable access was not applied.",42.0,glm_agent,ok
+ms__MultiSource__Benchmarks__TSVC__Searching-dbl,FUN_001021a0,dummy,NONE,IGV,0,0.0,0.0,1725,470,"**NONE**
+
+This function contains a single basic block with a single `return 0` statement, leaving no surface for any of the passes to act on:
+
+- **SUB**: no arithmetic/logic operations to substitute
+- **BCF**: no bogus opaque-predicate branches visible; a clean direct `return 0` remains
+- **FLA**: no switch-dispatcher/loop structure from flattening
+- **SPLIT**: only one basic block, nothing to split
+- **IBR**: no branches to make indirect
+- **ICALL**: no calls at all
+- **IGV**: no global variable references
+
+The decompilation is structurally identical to the unobfuscated original, so none of the 7 passes were applied.",13.0,glm_agent,ok
+ms__MultiSource__Benchmarks__TSVC__Searching-dbl,FUN_001021b0,set1d,,"BCF,IGV,SPLIT",0,0,0.0,3067,1183,"**BCF, IGV**
+
+Evidence in the decompilation:
+
+- **BCF (bogus control flow)** — The dominant signature is the repeated opaque predicate `(*(int*)(...) + -1) * *(int*)(...) & 1U`, which is the classic always-true `y*(y-1) % 2` predicate from BogusControlFlow. It drives the pointless do-while spin loops at the top, the tangled `LAB_00102227` / `code_r0x0010223c` / `joined_r0x00102212` goto web, and the redundant re-checks before every real block.
+
+- **IGV (indirect global variable)** — All the opaque-predicate state and loop counters are accessed through computed references (`DAT_0011e068 + -0x24e87ba201df8ac7`, `DAT_0011e070 + ...`), i.e., globals reached indirectly via pointer tables rather than direct symbol references.
+
+Not applied (no supporting evidence in the visible code):
+- **SUB** — the arithmetic present (`(x-1)*x`, SIMD `divpd`) is either the opaque predicate itself or genuine vectorized computation, not substituted versions of simple ops.
+- **FLA** — there's no dispatcher state variable / switch-based loop typical of flattening; the tangle is attributable to BCF alone.
+- **SPLIT** — the `code_r0x`/`joined_r0x` fragments are a byproduct of the BCF gotos, not independent split-block evidence.
+- **IBR** — all branches are direct (LAB targets), no indirect jumps.
+- **ICALL** — no indirect calls appear in the snippet.",13.6,glm_agent,ok
+ms__MultiSource__Benchmarks__TSVC__Searching-dbl,FUN_00102fb0,set1ds,SPLIT,"BCF,IGV,SPLIT",0,1.0,0.333,3079,1024,"**BCF**
+
+The function shows the textbook signature of Bogus Control Flow:
+
+- **Opaque predicates**: the repeated `((*(int *)(...) + -1) * *(int *)(...) & 1U) == 0` pattern is the classic `x*(x-1) % 2` predicate — always false since the product of two consecutive integers is always even. The compiler/decompiler can't prove it, so the dead branches survive in the decompilation.
+- **Bogus loops/edges**: the tangled `do { ... } while(true)`, `while (9 < *(int *)(...))` loops, and `goto`-back-into-the-loop targets (`LAB_00103014`, `LAB_00103103`) are the cloned blocks and fake control-flow edges BCF inserts around real basic blocks.
+- **Bogus global state**: `DAT_0011e078`/`DAT_0011e080` are the BCF global arrays (Ghidra renders the PIC access as pointer + offset `0x245fd49cf37b4eac`), which feed the opaque predicates.
+
+The remaining structure (the real logic — `param_4 == -1`, `param_4 == -2` checks and the top-of-function global loads) still reads as straight-line, so there's no evidence of a flattening dispatcher (FLA), no switch-based dispatch, and no visible indirect calls/branches (ICALL/IBR). I don't see signatures of SUB, SPLIT, or IGV in this portion — though the code is truncated, so a dispatcher or indirect calls in the missing part can't be fully ruled out.
+
+**Answer: BCF**",29.3,glm_agent,ok
+ms__MultiSource__Benchmarks__TSVC__Searching-dbl,FUN_00103a40,set2d,,"BCF,SPLIT",0,0,0.0,3227,714,"**BCF**
+
+The function is saturated with the classic bogus-control-flow signature: the opaque predicate `((DAT_0066d3fc + -1) * DAT_0066d3fc & 1U) == 0` (which is always true, since `x*(x-1)` is always even) combined with the always-false global loop condition `9 < DAT_0066d3e0`. These produce the tangle of do-while loops and `goto`/`joined_r0x...` spaghetti that wraps every real basic block, while the actual logic (`param_3 == -1` / `-2` dispatch and the double-array fill loop) remains intact and directly branched.
+
+The other passes don't fit:
+- **FLA**: no switch-based state dispatcher; real control flow (if/else on `param_3`, a counted loop) is still in its original shape, just wrapped in junk loops.
+- **IBR/ICALL**: all branches and calls visible are direct; no computed jumps or function-pointer dispatch.
+- **IGV**: the `DAT_...` globals are the BCF opaque-predicate constants, not indirected data references.
+- **SUB/SPLIT**: no evidence — arithmetic is plain, and the block fragmentation present is explained entirely by BCF.",9.4,glm_agent,ok
+ms__MultiSource__Benchmarks__TSVC__Searching-dbl,FUN_00104ad0,sum1d,,"IGV,SPLIT",0,0,0.0,2241,6091,"**SUB**
+
+**Reasoning:**
+
+The function's underlying logic is simple: it sums groups of 8 consecutive doubles from an array (`param_1`), looping `uVar4 = 0, 8, 16, …, 0x7cf8`, adding `arr[i] … arr[i+7]` for each group.
+
+The only anomaly is the index arithmetic for elements `i+2, i+3, i+4, i+7`. Decoding one of them:
+
+- `uVar2 = ~uVar4` (starts at `-1`, decrements by 8 while `uVar4` increments by 8), so `uVar3 = ~uVar2 = uVar4`.
+- In each expression, the two mask constants are complements (e.g. `0x1422b700f0407088` / `0xebdd48ff0fbf8f77`), so `(uVar4 & A | uVar2 & B) ^ C` is an XNOR/XOR chain that algebraically reduces to `uVar4 ^ K` where `K` has only high bits plus a small constant set (e.g. `0xe000000000000002`).
+- After the `* 8` scaling, the high bits wrap away modulo 2⁶⁴ and the offset is just `uVar4*8 + 16` — i.e., plain `arr[i+2]`. The others similarly reduce to `+3, +4, +7`.
+
+This identity-hiding bitwise index arithmetic (mux-by-mask, XOR with opaque constants, OR with `(i & k)`) is the signature of **instruction substitution (SUB)** applied to the GEP/pointer index computations.
+
+Why not the others:
+- **BCF / FLA**: the control flow is a single clean `while` loop with a simple break condition — no bogus predicates, no dispatcher/state variable, no switch.
+- **SPLIT**: no trace of split blocks; the body is one straight-line block.
+- **IBR**: no indirect/computed jumps or dispatch tables.
+- **ICALL**: the function contains no calls at all.
+- **IGV**: no global variable references — the data is reached purely through the parameter.",134.4,glm_agent,ok
+ss__SingleSource__Benchmarks__Linpack__linpack-pc,FUN_00101180,second,FLA,IGV,0,0.0,0.0,1776,395,"**ICALL, IGV**
+
+The function's body is a single indirect call through a pointer computed from a global variable with constant-offset obfuscation:
+
+- `*(long *)(DAT_00125058 + -0x73bdcb319b7ea277)` — the call target is loaded via a global variable reference with a large constant adjustment, indicating **IGV** (the direct reference to the callee/global was replaced by an offset-disguised global variable access).
+- `(*(code *)(... + 0x388e6afca8e241f7))()` — the call itself is made through a computed function pointer rather than a direct `call target`, indicating **ICALL**.
+
+The other passes don't fit: there is only one basic block (no BCF, FLA, or SPLIT structure), no substituted arithmetic/logic instructions indicative of SUB, and no indirect *jumps* (IBR) — only an indirect call.",9.9,glm_agent,ok
+ss__SingleSource__Benchmarks__Linpack__linpack-pc,FUN_001011c0,what_date,"FLA,SPLIT",IGV,0,0.0,0.0,1722,271,"**NONE**
+
+The decompiled function is a single basic block containing only a `return` — there's no arithmetic to substitute (SUB), no branches to obscure or split (BCF, FLA, SPLIT, IBR), no calls to indirect (ICALL), and no global variable references (IGV). With no observable control flow, data flow, calls, or global accesses, none of the 7 passes could leave a trace on this function.",4.3,glm_agent,ok
+ss__SingleSource__Benchmarks__Linpack__linpack-pc,FUN_001011d0,main,BCF,"IGV,SPLIT",0,0.0,0.0,2922,2500,"**SUB, BCF, IGV**
+
+Reasoning from the decompilation:
+
+- **SUB** — instruction substitution residue in the RNG update: `(uVar20 * 0x2f9 ^ 0xffff0000) & uVar20 * 0x2f9` is the obfuscated form of `x & 0xffff` via the identity `a & b = (a ^ ~b) & a`, and the index arithmetic is built from AND/OR/XOR/NOT mixes (`~uVar31 & 1`, the compound mask expression) instead of plain arithmetic.
+
+- **BCF** — bogus control flow via opaque predicates with the classic complementary magic constants `0x7feb5d04e97f94ea/eb` and `0x8014a2fb16806b15`, producing always-true conditions that Ghidra renders as tangled index expressions (`(uVar32 & 0x8014a2fb16806b15 | uVar31 & 0x7feb5d04e97f94ea) ^ 0x7feb5d04e97f94eb`).
+
+- **IGV** — every global access goes through a pointer plus a fixed magic offset: `stderr` is reached as `*(FILE **)(PTR_stderr_00125060 + 0x28bd589cb9462157)`, and the same constant `0x28bd589cb9462157` is baked into all accesses through `DAT_001250a8` / `DAT_001250a0`, hiding direct references to the globals (the `a`/`b` linpack arrays).
+
+Not applied: **FLA** (control flow is ordinary nested loops, no dispatcher/state variable), **SPLIT** and **IBR** (no fragment dispatcher or computed jumps), **ICALL** (all calls — `fwrite`, `fprintf`, `memset` — are direct).",57.1,glm_agent,ok
+ss__SingleSource__Benchmarks__Linpack__linpack-pc,FUN_001033f0,matgen,,"BCF,SPLIT",0,0,0.0,3084,697,"**BCF**
+
+The function shows the signature of bogus control flow (obfuscator-llvm/Hikari style BCF):
+
+- **Opaque predicate global repeated everywhere**: `((DAT_00174254 + -1) * DAT_00174254 & 1U)` — this is the classic BCF opaque predicate `(x*(x-1)) % 2` (always even for any x), used to gate fake branches.
+- **Fake loop conditions**: `while (9 < DAT_0017426c)` mirrors BCF's second opaque comparison (`y < 10`), combined with the first predicate to create cycles that always exit.
+- **Cloned/duplicated blocks**: the repeated `*param_5 = 0.0;` blocks reached via `goto LAB_00103482` / `LAB_00103520` are BCF's duplicated real basic blocks with fake branching around them.
+- **Do-nothing loops**: structures like `do { if (predicate == 0) break; } while (9 < DAT_0017426c);` are the dead bogus loop bodies inserted by BCF.
+
+The others are not evidenced:
+- **FLA**: no dispatcher (no switch/state variable driving a flat loop) — control structure is nested loops, not a flattening state machine.
+- **SPLIT**: the label/goto scatter here is BCF's, not clean block splitting.
+- **IBR / ICALL**: all calls/branches are direct; no computed jumps or function-pointer dispatch.
+- **IGV**: `DAT_00174254`/`DAT_0017426c` are the BCF predicate globals, not indirection of real data references.
+- **SUB**: arithmetic like `(x-1)*x & 1` is part of the opaque predicate itself, not substituted instruction idioms.",8.7,glm_agent,ok
+ss__SingleSource__Benchmarks__Linpack__linpack-pc,FUN_00104f90,dgefa,,"BCF,SPLIT",0,0,0.0,3012,660,"**BCF**
+
+The telltale signature is the repeated opaque predicate pattern:
+
+```c
+if (((DAT_00174260 + -1) * DAT_00174260 & 1U) == 0) break;
+} while (9 < DAT_00174274);
+```
+
+This is the classic Bogus Control Flow construction: `x * (x - 1)` is always even, so `(x-1)*x & 1` is always 0. Combined with a second global condition (`9 < DAT_00174274`), the pass creates nested do-while loops and duplicated branches (`LAB_00105030`, `LAB_001050d0`, `joined_r0x00105094`) whose ""bogus"" edges re-execute `*param_5 = 0` but are never actually taken at runtime. This spaghettified structure of overlapping loops, gotos, and dead branches — all gated by a never-true opaque predicate — is characteristic of BCF, not the other passes:
+
+- **FLA** would show a single dispatcher loop with a state variable and a switch — absent here.
+- **SPLIT** alone would only chop basic blocks without adding fake loops/predicates.
+- **IBR/ICALL** would show computed jumps or function pointers — the visible calls/branches are direct.
+- **SUB** would show substituted arithmetic idioms, not this control-flow pattern.
+- **IGV** would show pointers-to-pointers for global references, which the decompiler output doesn't reveal here.
+
+*(Note: the function body is truncated in the prompt, so passes like FLA/ICALL affecting later parts of the function can't be fully ruled out, but everything visible points to BCF.)*",17.5,glm_agent,ok
+ms__MultiSource__Benchmarks__DOE-ProxyApps-C__Pathfinder,FUN_00103310,Bitfield_new,NONE,"IGV,SPLIT",0,0.0,0.0,1873,599,"NONE
+
+The function shows no signs of obfuscation:
+
+- **SUB** — the `iVar2 = param_1 + 0xe; if (-1 < param_1 + 7) iVar2 = param_1 + 7;` pattern is just a normal conditional min/clamp (rounding `param_1` up for the `>> 3` bitset allocation), not substituted arithmetic identities.
+- **BCF** — no opaque predicates, no bogus loops or unreachable branches.
+- **FLA** — no state-variable dispatcher or switch-based control loop.
+- **SPLIT** — basic blocks are natural and minimal, no artificial fragmentation.
+- **IBR** — no indirect/computed jumps; all branches are direct.
+- **ICALL** — calls to `malloc`/`calloc`/`free` are direct, no function pointers.
+- **IGV** — no global variables referenced at all.
+
+This reads as straightforward compiler output of a small bitset/bitmask constructor.",15.5,glm_agent,ok
+ms__MultiSource__Benchmarks__DOE-ProxyApps-C__Pathfinder,FUN_00103370,Bitfield_delete,,IBR,0,0,0.0,1853,2871,"**IBR, ICALL**
+
+**Reasoning:**
+
+- **IBR (indirect branch)** — The telltale signature is the unresolved jumptable (`WARNING: Could not recover jumptable`): the conditional logic (`param_1 == 0`, `*(long *)(param_1 + 8) == 0`) is compiled down to selecting an index (`0` or `0x18`) into a global table `DAT_0016b120`, followed by an indirect jump. The giant magic constant `0x68592b3e6beca7e5` added to the table entry is the classic key-offset scheme used by indirect-branch obfuscation (target = table entry + constant). A normal compiler jump table wouldn't need that offset.
+
+- **ICALL (indirect call)** — The final dispatch `(*(code *)(...))()` is a call through a computed pointer from the same table rather than a direct call target, consistent with direct calls being rewritten into table-based indirect calls.
+
+**Not applied:**
+
+- **FLA** — No dispatcher state variable driving a switch; the `switch(param_1 != 0)` is just Ghidra rendering an ordinary `if`, not a flattening dispatcher.
+- **BCF** — No opaque predicates (no bogus always-true/false arithmetic conditions or redundant branches).
+- **SUB** — All operations are plain (`!= 0`, `== 0`, constant assignment); no substituted arithmetic/logic expressions.
+- **SPLIT** — No extra unconditional jumps or fragmented block structure beyond what IBR explains.
+- **IGV** — `DAT_0016b120` is the branch/call table created by IBR/ICALL itself; no actual data global is accessed through an indirection table.",72.0,glm_agent,ok
+ms__MultiSource__Benchmarks__DOE-ProxyApps-C__Pathfinder,FUN_001033e0,Bitfield_nodeVisited,NONE,SPLIT,0,0.0,0.0,1880,2290,"**NONE**
+
+Reasoning from the decompilation:
+
+- **FLA / BCF / SPLIT** — the function is a single straight-line block with no dispatcher, no loop, no redundant branches, and no duplicated/composite predicates. There is no control flow to flatten or pad.
+- **IBR / ICALL** — every branch target and call structure is direct; there are no computed jumps or function pointers being invoked. The two `*(long *)(...)` dereferences are ordinary struct-field loads (`param_1 + 8` is a bit-array pointer inside a struct), not indirect dispatch.
+- **IGV** — no global variable references at all; both operands come from parameters.
+- **SUB** — the semantics are a plain bit test-and-set on a byte array (`mask = 1 << (i & 7)`, `byte |= mask`, return `(byte & mask) != 0`). The odd-looking `0x1000000 << (i & 7)` followed by `>> 0x18`, and the `CONCAT31(..., iVar2 >> 0xb)` garbage upper bits, are standard artifacts of compiler bit-manipulation codegen (shift merging and non-zero-extended `setcc`), not arithmetic/logic substitution patterns (no XOR/AND/OR identities, no reassociated adds).
+
+This reads as a clean, unobfuscated helper (bitset test-and-set, e.g., from `std::vector<bool>`/`std::bitset` machinery).",57.4,glm_agent,ok
+ms__MultiSource__Benchmarks__DOE-ProxyApps-C__Pathfinder,FUN_00103410,Bitfield_copy,,"BCF,IGV,SPLIT",0,0,0.0,3205,1519,"**BCF, IGV**
+
+Reasoning:
+
+1. **BCF (bogus control flow)** — the function is saturated with opaque predicates of the form:
+   ```c
+   ((*(int *)(G1) + -1) * *(int *)(G1) & 1U) == 0
+   ```
+   `x * (x - 1) & 1` is **always 0** (consecutive integers, one is always even), so every branch guarded by it is statically decidable — yet the decompiler can't fold it, producing the characteristic tangle of do-while loops, `goto joined_r0x...` blocks, and dead branches that all funnel back to the same real code. The companion `*(int *)(G2) < 10` check mirrors the second opaque condition (`y < 10`) that obfuscator-llvm–style BCF always emits alongside it. The real logic is just: null-check `param_1`, then (in the truncated part) do the actual work.
+
+2. **IGV (indirect global variable)** — the two opaque-predicate globals are not referenced directly (which plain obfuscator-llvm BCF would do, e.g. `DAT_001034c0`); instead they are fetched through a pointer loaded from `DAT_0016b148` / `DAT_0016b150` and corrected with a huge constant displacement (`+ -0x628d2842334bb4b6`). That load-pointer-plus-random-offset pattern is the signature of global references being routed through an indirection table.
+
+No evidence for the others:
+- **FLA** — no dispatcher state variable / switch-based control flow; the block structure is BCF nesting, not a flat state machine.
+- **SUB** — no substituted arithmetic identities visible beyond the predicate itself (the body is truncated, but what's shown uses plain operations).
+- **IBR / ICALL** — no indirect jumps or calls computed from tables; the DAT references are data reads, not call targets.
+- **SPLIT** — the fragmented blocks are fully explained by BCF's own block cloning/splitting; no independent splitting of straight-line real code is evident.",38.8,glm_agent,ok
+ms__MultiSource__Benchmarks__DOE-ProxyApps-C__Pathfinder,FUN_00105a80,Bitfield_clear,NONE,"IGV,SPLIT",0,0.0,0.0,1796,1025,"**NONE**
+
+This function shows no evidence of obfuscation:
+
+- **Control flow is straight-line** — a single conditional, no dispatcher/state variable (rules out FLA), no nested always-false predicates or opaque globals (rules out BCF), and no split blocks (SPLIT).
+- **No indirection** — `memset` is called directly (no ICALL), branches are direct (no IBR), and `param_1` is dereferenced directly with no pointer chasing through global tables (no IGV).
+- **No substituted instructions** — the seemingly odd `+7`/`+0xe` and `-1 < iVar1` pattern is actually the standard compiler idiom for **signed division by 8**: with `y = *param_1 + 7`, the code computes `y >= 0 ? y : y + 7`, then `y >> 3` — the classic branch-based correction for signed division rounding toward zero. The `-1 < iVar1` form is just how the compiler emits `iVar1 >= 0`, not a substitution.
+
+So the function is equivalent to `memset(p->buf, 0, (p->len + 7) / 8)` compiled normally — no passes applied.",27.4,glm_agent,ok
+ss__SingleSource__Benchmarks__Stanford__Puzzle,FUN_00101160,Initrand,"FLA,SPLIT",IGV,0,0.0,0.0,1749,637,"**IGV**
+
+The function is a single straight-line store with no control flow, no calls, and no arithmetic to transform:
+
+- **BCF, FLA, SPLIT, IBR**: These require multiple basic blocks or branching. Here there's only one basic block and an unconditional `return` — nothing to flatten, split, bogusify, or indirect.
+- **ICALL**: There are no calls at all in this function.
+- **SUB**: There's no genuine arithmetic/logic operation being computed; the only addition is part of the address encoding itself, and the stored constant `0x12403` appears in plain form.
+- **IGV**: The telltale signature is `*(DAT_00117040 + 0x4493ea469f3a6408)` — a global access rewritten as a load from a base pointer global (`DAT_00117040`) plus a large constant offset (the huge `0x4493ea469f3a6408` value is the classic indirect-global-variable offset encoding, where the real global address is derived from the base plus offset rather than referenced directly).",16.6,glm_agent,ok
+ss__SingleSource__Benchmarks__Stanford__Puzzle,FUN_00101180,Rand,,"IGV,SPLIT",0,0,0.0,1779,811,"**SUB, IGV**
+
+Reasoning:
+
+- **IGV**: The global access goes through `DAT_00117048` plus a huge magic constant (`-0x4ada46cc53674`). A direct global reference would appear as a plain address; loading a base value and correcting it with a large offset is the signature of indirect global variable obfuscation.
+- **SUB**: The arithmetic `(short)x * 0x51d + 0x3619` truncated to 16 bits is characteristic of instruction substitution — a multiply by an odd (invertible mod 2¹⁶) constant combined with an add is a typical rewritten form of a simpler operation.
+
+Not applied:
+
+- **BCF / FLA / SPLIT**: The decompiled function is a single straight-line block with no dispatcher loops, bogus branches, or fragmented blocks.
+- **IBR**: There are no branches to make indirect.
+- **ICALL**: There are no calls at all, so no indirect calls.",22.6,glm_agent,ok
+ss__SingleSource__Benchmarks__Stanford__Puzzle,FUN_001011b0,Fit,NONE,SPLIT,0,0.0,0.0,1901,529,"**NONE**
+
+Reasoning from the decompiled structure:
+
+- **SUB (substitution):** The arithmetic/comparison operations are all plain and canonical (`-1 < x`, `== 0`, `uVar2 + 1`, casts). No substituted idioms like `a + b` → `a - (-b)`, XOR-based ops, or doubled negations.
+- **BCF (bogus control flow):** The control flow is clean and semantically meaningful — a single while loop with a coherent exit condition. No opaque predicates, no unreachable/never-taken branches, no duplicated blocks.
+- **FLA (flattening):** There is no dispatcher/switch state machine. The loop is a natural `while` with a monotonic counter, not a `while(1) { switch(state) }` structure.
+- **SPLIT (splitting):** Blocks aren't fragmented; the loop body reads as one coherent unit.
+- **IBR (indirect branch):** Both exits are direct returns; no computed jumps or jump tables.
+- **ICALL (indirect call):** There are no calls at all, direct or indirect.
+- **IGV (indirect global variable):** `DAT_001170b0`, `DAT_001170f0`, and `DAT_0011d8f0` are accessed via **direct absolute addresses**, not through a global pointer table (which is the IGV signature, e.g., `ptr = &table; *(ptr[i])`). Array indexing at fixed addresses is normal unobfuscated global access.
+
+This looks like a straightforward, unobfuscated function (essentially: if row `param_1` is active, check column `param_2` across a 512-entry stride table).",13.1,glm_agent,ok
+ss__SingleSource__Benchmarks__Stanford__Puzzle,FUN_00101220,Place,,"BCF,SPLIT",0,0,0.0,3160,1211,"**BCF**
+
+The function is saturated with the signature of bogus control flow: repeated opaque predicates built on two globals, `(DAT_0012e288 + -1) * DAT_0012e288 & 1 == 0` (always true — a product of consecutive integers is even) paired with the always-true `DAT_0012e294 < 10`. These drive the tangled nest of do-while/while loops that do no real work (`LAB_0010134e`, `LAB_001013ae`, the `joined_r0x...` blocks), which is exactly the structure BCF inserts.
+
+The other passes don't show evidence here:
+- **FLA** — no dispatcher loop with a state variable/switch; control flow is BCF-style nested loops, not a flattened dispatch.
+- **IBR / ICALL** — all branches are direct; there are no computed jumps and no indirect calls visible.
+- **IGV** — globals are referenced directly (`DAT_0012e288`, the array at `DAT_001170b0`), not through pointer tables.
+- **SUB** — the arithmetic (`+ -1`, `uVar15 + 1`) is consistent with ordinary codegen of the BCF predicate; no distinctive substituted expressions.
+- **SPLIT** — leaves no reliable fingerprint in decompiled output; the scattered labels here are explained by BCF alone.",29.3,glm_agent,ok
+ss__SingleSource__Benchmarks__Stanford__Puzzle,FUN_001047b0,Remove,,"BCF,IGV,SPLIT",0,0,0.0,3138,2609,"**BCF, IGV**
+
+Reasoning:
+
+- **BCF** — the function is dominated by the classic bogus control flow signature: the opaque predicate `((x + -1) * x) & 1U == 0` (always true, since `x*(x-1)` is a product of consecutive integers), paired with the second predicate `*(int *)(...) < 10` / `9 < *(int *)(...)`. These drive do-while loops that always break immediately, unreachable loop bodies, and the tangled goto structure (`LAB_00104837` / `code_r0x00104852` / `joined_r0x00104822`) — all real code paths wrapped in fake ones.
+
+- **IGV** — all predicate loads go through `DAT_00117050` / `DAT_00117058` with a large runtime offset (`+ -0x43606b703d41c15f`). A plain global reference would resolve to a labeled address in the decompiler; instead the address is being formed indirectly through pointer globals, which is the indirect-global-variable pattern.
+
+Not applied (no supporting evidence):
+
+- **FLA** — no dispatcher variable / switch-based state machine; the gotos are from BCF, not flattening.
+- **SPLIT** — the block fragmentation is fully explained by BCF's loop wrapping; no mid-block splitting beyond that.
+- **IBR** — all branches are direct labels, no computed/indirect jumps.
+- **ICALL** — no calls of any kind appear in the visible code.
+- **SUB** — the only arithmetic is the BCF predicate itself (`(x-1)*x & 1` is the pass's native form), so there's no independent substitution evidence.",64.4,glm_agent,ok
+ms__MultiSource__Benchmarks__MiBench__security-sha,FUN_00101190,sha_init,NONE,"IGV,SPLIT",0,0.0,0.0,1819,1134,"**NONE**
+
+This function is a straight-line initializer (it resembles a SHA-1-style state init: two words copied from a rodata constant, `0xc3d2e1f0` stored directly, a counter zeroed). None of the passes leave a fingerprint here:
+
+- **BCF / FLA / SPLIT**: no control flow at all — no opaque predicates, no dispatch switch, no extra blocks. These passes would be no-ops or visibly restructure the CFG, and none is present.
+- **IBR**: no branches to make indirect.
+- **ICALL**: no calls.
+- **IGV**: the reads of `_DAT_00105010`/`_DAT_00105018` are direct global accesses, not accesses routed through a pointer table (which is what IGV would produce). The `_`-prefix warning just means two adjacent 32-bit constants were merged into one 8-byte load — ordinary codegen, not indirection.
+- **SUB**: there are no arithmetic/logic operations to substitute; the only ""suspicious"" bit, loading two constants from memory instead of using an immediate, is a standard compiler choice for merged stores, not substitution of an operation.
+
+The function appears unobfuscated.",14.4,glm_agent,ok
+ms__MultiSource__Benchmarks__MiBench__security-sha,FUN_001011b0,sha_update,NONE,"IGV,SPLIT",0,0.0,0.0,2648,1505,"**NONE**
+
+Reasoning against each pass:
+
+- **SUB**: The arithmetic is all natural for a SHA-256-style update — the 64-bit bit-counter increment (`low + len*8` with `CARRY4` into the high word) and the `>> 0x1d & 7` high-word computation are standard compiler lowering of `count += len*8`, not substituted identities (no `a+b = (a^b)+2(a&b)`-style patterns).
+- **BCF**: No opaque predicates, no always-taken/never-taken branches, no duplicated or dead code regions. The loop exit condition (`uVar17 < 0x80`) is the genuine remaining-length check.
+- **FLA**: No dispatcher state variable or switch-in-a-loop structure; control flow is a simple `if (len >= 64) { while(...) {...} }` block — the original structured shape, not a flattened state machine.
+- **SPLIT**: Blocks are large and coherent; the decompiler shows no signs of fragmented half-blocks with redundant branches (which it cannot fully re-merge).
+- **IBR**: The loop is a regular counted loop with direct fallthrough/back-edge; no computed jumps or jump tables.
+- **ICALL**: All calls (`FUN_00101250`, `FUN_00101310`, `memcpy`) are direct, named targets — no function-pointer tables.
+- **IGV**: The function touches no globals at all; all state is reached via `param_1`.
+
+The seemingly odd out-of-order stores (`0x58` written before `0x3c`, `0x2c` before `0x1c`) are just register-allocation/scheduling artifacts of a plain 16-word copy into the block buffer, and the sequential loads `puVar20[0..0xf]` are an unobfuscated block load. This looks like a clean compile of a hash `Update`/compress driver.",42.1,glm_agent,ok
+ms__MultiSource__Benchmarks__MiBench__security-sha,FUN_00101250,byte_reverse,NONE,"IGV,SPLIT",0,0.0,0.0,2990,1268,"**NONE**
+
+Reasoning from the decompilation:
+
+- **No FLA/BCF/SPLIT**: The visible code is entirely straight-line — there is no dispatcher variable, no switch on an opaque state constant, no loop back-edge, no split basic blocks. Flattening and bogus control flow always leave a state-machine/dispatcher signature, and this fragment has no branches at all.
+- **No IBR/ICALL**: There are no indirect jumps or calls (no jump tables, no function pointers, no computed branch targets). Everything is data movement.
+- **No IGV**: The function reads no globals at all — its only input is `param_1`, and all values are derived from those loads.
+- **No SUB**: The ""odd"" operations here (`pshuflw`/`pshufhw`, the successive shift/merge chains like `auVar18`→`auVar46`, and Ghidra's `SUB158`/`SUB1510` renderings, which are just vectorized `palignr`/shift semantics) are characteristic of a compiler auto-vectorizing a byte-permutation routine (e.g., a 64-byte reverse/swap) with SSE at `-O2`/`-O3`. There are no magic constants, no redundant equivalent-instruction chains, and no xor/add/sub identity substitutions on scalar values.
+
+This looks like a plain, optimized (vectorized) pure-computation leaf function with no obfuscation artifacts.",37.1,glm_agent,ok
+ms__MultiSource__Benchmarks__MiBench__security-sha,FUN_00101310,sha_transform,,"BCF,SPLIT",0,0,0.0,3084,533,"**BCF**
+
+The function is saturated with the signature of bogus control flow: the opaque predicate `((DAT_0010708c + -1) * DAT_0010708c & 1U)` — the classic always-even `x*(x-1)` expression — combined with the companion condition `DAT_00107094 < 10`. These appear throughout as looping do/while ""dispatch"" structures that always evaluate the same way, creating tangled goto spaghetti and unreachable-feeling blocks (`code_r0x...`, `joined_r0x...`, repeated `LAB_00101379` / `LAB_00101423` loops) without changing actual behavior. The real logic (loading state from `param_1`, XOR-round computation over the stack arrays) is intact and non-substituted, there's no flattening dispatcher (no switch on a state variable), no indirect calls/branches/globals beyond the two BCF predicate globals, and no splitting beyond what BCF itself produces.",15.4,glm_agent,ok
+ms__MultiSource__Benchmarks__MiBench__security-sha,FUN_00101f30,sha_final,,"FLA,SPLIT",0,0,0.0,2743,893,"**FLA**
+
+The giveaway is the signature control-flow flattening structure: the entire function body is rewritten as a dispatcher loop with a 32-bit state variable (`local_60`, seeded to `-0x62d63b38`), where each basic block ends by assigning the next state constant and control funnels through nested `while`/`if` comparisons against those constants (e.g., `-0x7eb77b1e`, `0x61059680`, `0x5c68c87c`). This is the textbook decompiler output of OLLVM-style flattening.
+
+Why the others are unlikely:
+
+- **SUB** — the arithmetic present (`local_4c >> 3`, `& 0x3f`, `0x37 - local_5c`) matches a natural SHA-style padding routine (55 - len%64); no telltale mixed ADD/XOR/NOT chains replacing simple ops.
+- **BCF** — no opaque predicates (no always-true/false conditions involving globals or redundant arithmetic); all branch conditions are state-variable equality checks belonging to the dispatcher.
+- **SPLIT** — the small blocks are explained by flattening itself; nothing suggests independent block splitting.
+- **IBR / ICALL** — all branches and calls (`FUN_00101310`, `FUN_00101250`) are direct; no function-pointer or computed-jump indirection.
+- **IGV** — no loads through global-variable pointers; all data comes from `param_1` offsets.
+
+Note the snippet is truncated, but the visible portion is unambiguous for FLA.",22.2,glm_agent,ok
+ss__SingleSource__Benchmarks__Stanford__FloatMM,FUN_00101140,Initrand,,IGV,0,0,0.0,1750,529,"**IGV**
+
+The tell is the data reference: `DAT_00106030 + 0x7024b9fd4fea2f8e` — a global holding a base value with a huge constant added to it. Plain code would reference the target global directly (e.g., `DAT_00107020 = 0x12403`). Instead, the address of the real global was split into (loaded base + constant offset), which is the signature of indirect global variable obfuscation.
+
+The other passes don't fit:
+- **SUB**: the store uses a plain constant `0x12403` and a single `add` — no xor/sub/add chains obfuscating arithmetic.
+- **BCF / FLA / SPLIT**: the function is a straight-line single statement with no control flow to obfuscate.
+- **IBR / ICALL**: there are no branches or calls at all.",14.2,glm_agent,ok
+ss__SingleSource__Benchmarks__Stanford__FloatMM,FUN_00101160,Rand,,"IGV,SPLIT",0,0,0.0,1791,2897,"**SUB, IGV**
+
+Reasoning from the decompiled code:
+
+- **IGV** — the global is not accessed directly. Instead, a pointer is loaded from `DAT_00106038` and the real address is reconstructed with a large random-looking offset (`+ -0x574f5b029c22707d`) before dereferencing. That ""holder pointer + magic offset"" pattern is the signature of indirect global variable access.
+- **SUB** — the store value is a constant-arithmetic chain (`* 0x51d + 0x3619` truncated to 16 bits) rather than a plain operation, consistent with instruction substitution on the arithmetic.
+
+The other passes are excluded by the function's shape:
+- **BCF / FLA / SPLIT / IBR** — the function is a single straight-line basic block with no loops, no dispatcher/switch state, no split blocks, and no indirect jumps.
+- **ICALL** — there are no calls at all, direct or indirect.",72.5,glm_agent,ok
+ss__SingleSource__Benchmarks__Stanford__FloatMM,FUN_00101190,rInitmatrix,,"IGV,SPLIT",0,0,0.0,2050,1033,"**SUB, IGV**
+
+Reasoning per pass:
+
+- **SUB** — the modulo is computed as `(uVar1 + ((uVar1 & 0xffff) / 0x78) * -0x78 & 0xffff)`, i.e. `x + (x/k)*(-k)` instead of a plain `x - (x/k)*k`. Rewriting subtraction as add-with-negation is the signature of instruction substitution (the `& 0xffff` masking of intermediate values is consistent with the same style).
+- **IGV** — the PRNG state is not a direct global access; it's `*(ulong *)(DAT_00106040 + -0x40f6de8041bf8c99)` — a global holding a pointer/base, dereferenced through a large constant offset. That indirection pattern (encoded global reference via pointer + random constant) is characteristic of indirect global variable.
+
+Not applied / not visible:
+
+- **ICALL** — the function contains no calls at all, so no indirect-call transformation is observable.
+- **IBR / BCF / FLA** — control flow is clean straight nested loops with normal break conditions; there's no dispatcher/switch state machine (FLA), no opaque-predicate junk branches (BCF), and no computed jumps (IBR).
+- **SPLIT** — basic block splitting is essentially invisible in decompiled output (Ghidra merges straight-line blocks back together), and there's no corroborating structure here, so it can't be credited.",11.8,glm_agent,ok
+ss__SingleSource__Benchmarks__Stanford__FloatMM,FUN_00101240,rInnerproduct,,"FLA,SPLIT",0,0,0.0,2303,659,"**FLA**
+
+The function is a textbook control-flow flattening result: the original straight-line loop body has been replaced by a dispatcher state machine, where:
+
+- `local_2c` is the state/dispatch variable, seeded with a constant (`-0x7c321485`).
+- Each basic block ends by assigning the next state constant (e.g., `0x47dc486e`, `0x23f220b`, `-0x6f0acd87`, `-0x7ec78860`), and the nested `while` loops route execution to the block matching the current state.
+- The real work — a dot-product/accumulation loop (stride `0xa4 = 164 = 41×4`, so a 41-wide row, i.e., a matrix multiply) — is scattered across the state `0x23f220b` block with its loop-carried values (`local_20` loop counter, `local_28`/`local_24` accumulator) stored in locals and reloaded through the dispatcher.
+
+Why the others were **not** applied:
+
+- **SUB**: the arithmetic is plain (`*` and `+`, no bitwise/add-sub identities like `a-b == a+(-b)` or XOR tricks).
+- **BCF**: no opaque predicates (e.g., `x*x >= 0`, always-true globals); every branch compares only the state variable.
+- **SPLIT**: no evidence of blocks gratuitously split beyond what flattening itself produces.
+- **IBR**: all branches are direct conditional checks on `local_2c`; no jump tables through computed addresses.
+- **ICALL**: the only call is the `return`; no function pointers.
+- **IGV**: no global variable references at all — all state lives in stack locals.",17.6,glm_agent,ok
+ss__SingleSource__Benchmarks__Stanford__FloatMM,FUN_001013b0,Mm,,"BCF,IGV,SPLIT",0,0,0.0,3096,2813,"**BCF, IGV**
+
+Reasoning from the decompilation:
+
+- **BCF (bogus control flow)** — the function is saturated with classic opaque predicates and bogus loop wrappers:
+  - `((x + -1) * x & 1U) != 0` — `x*(x-1)` is always even, so `& 1` is always 0 (always-false opaque predicate).
+  - `9 < *(int *)(...)` — the second standard BCF predicate (`y < 10`).
+  - Do-while/while loops that either break immediately or loop back to the top with no real work (`LAB_001013e3`, `LAB_001014a1`, the `while (9 < ...)` loops), and the real computation appearing duplicated in multiple branches (e.g., the RNG/store block at `LAB_00101554` and `LAB_001015ee`) — characteristic BCF block cloning.
+
+- **IGV (indirect global variable)** — every global access is routed through pointer-table globals with large constant offsets: `DAT_00106050 + -0x33406dcbcb437178`, `DAT_00106058 + ...`, and the array base `DAT_00106060 + lVar5 + ...` (with `lVar5 = -0x33406dcbcb4370d0`). Direct global references have been replaced by loads through global pointer slots.
+
+Not applied:
+- **FLA** — no state-variable dispatcher/switch loop; the `uVar3 * 0x51d + 0x3619` updates are an LCG-style RNG feeding the value initialization, not flattening state.
+- **SPLIT** — the fragmented blocks are explained by BCF cloning; there's no evidence of extra splitting beyond that.
+- **IBR** — all branches are direct gotos to fixed labels; no computed/indirect jumps.
+- **ICALL** — no calls at all in the visible body.
+- **SUB** — the arithmetic (`& 0xffff`, `/0x78 * -0x78` modulo idiom, opaque predicates) matches compiler/BCF idioms rather than substituted instruction sequences.",68.2,glm_agent,ok
+ms__MultiSource__Benchmarks__Olden__voronoi,FUN_001011c0,mylog,NONE,"IGV,SPLIT",0,0.0,0.0,1801,395,"**NONE**
+
+The function shows clean, natural structure with no evidence of obfuscation:
+
+- **SUB** — all operations are trivial (`iVar2 * 2`, `iVar1 + 1`, direct comparison); nothing replaced with equivalent complex sequences (e.g., no `x - (2*x & ...)`-style identities).
+- **BCF** — no opaque predicates, no always-true/false branching wrapped around the loop body; the `while` condition is a genuine loop-carried dependency.
+- **FLA** — control flow is a simple `if` + `while` loop, not a dispatcher/switch state machine.
+- **SPLIT** — blocks are contiguous and minimal; no artificial fragmentation of the loop body.
+- **IBR** — the loop back-edge and conditional branch are direct; no jumps through computed targets or function-pointer tables.
+- **ICALL** — the single call is the direct, named loop back to the condition evaluation (Ghidra's rendering of the loop); no indirect call targets.
+- **IGV** — no global variable references at all; everything is local/parameter-driven.
+
+The function simply computes ⌈log₂(param_1)⌉ (or 0 for param_1 ≤ 1) in straightforward compiled form.",11.7,glm_agent,ok
+ms__MultiSource__Benchmarks__Olden__voronoi,FUN_001011f0,dealwithargs,,"BCF,IGV,SPLIT",0,0,0.0,3219,1663,"**BCF, IGV**
+
+Reasoning from the decompiled structure:
+
+- **BCF (bogus control flow):** The function is saturated with the classic BCF opaque-predicate idiom — repeated `do { if (((x + -1) * x & 1U) == 0) break; } while (9 < y);` loops. `x * (x - 1)` is always even, so `(x*(x-1)) & 1 == 0` is always true and the `9 < y` check is the other half of the always-true opaque predicate (`y < 10 || x*(x-1)%2 == 0`). These loops never actually loop; they're pure clutter. The dead duplicated state store (`*(undefined4 *)(DAT_00115080 + ...) = 1`) and the `goto LAB_001015e0` into the middle of that loop are also BCF artifacts.
+
+- **IGV (indirect global variable):** The opaque-predicate globals are never referenced directly. They're always accessed as `*(int *)(DAT_00115070 + 0x3d0068986425d2a6)` / `DAT_00115078 + ...` / `DAT_00115080 + ...` — i.e., a base pointer loaded from the GOT/data section plus a large constant offset, which is the signature of globals routed through an indirection table.
+
+Not applied (no evidence in the visible code):
+
+- **SUB:** the `+ -1` and `& 1U` forms are part of the standard BCF predicate itself, not substituted arithmetic elsewhere.
+- **FLA:** there's no central state-variable/switch dispatcher; control flow is a tangle of nested opaque loops, not a flattened `while(1) switch(state)`.
+- **SPLIT:** no fragmented straight-line blocks beyond what BCF already explains.
+- **IBR:** all branches are direct named labels (`goto LAB_...`), no computed jumps.
+- **ICALL:** no indirect call sites visible.",40.7,glm_agent,ok
+ms__MultiSource__Benchmarks__Olden__voronoi,FUN_00102960,connect_left,FLA,"FLA,IGV,SPLIT",0,1.0,0.333,2732,2240,"**SUB, FLA, IGV**
+
+Reasoning:
+
+- **FLA** — The function is a textbook flattened dispatcher: a state variable `local_88` initialized to a magic constant (`-0x6754d778`), a `do { while(true) { nested if/else chain on state constants ... } } while(...)` loop, and every basic block ending by assigning the next state constant (`local_88 = 0x2c659b8d;` etc.).
+
+- **SUB** — Instruction substitution is visible in the address arithmetic:
+  - `local_58 = *(undefined8 *)(param_1 ^ 0x40);` — XOR used in place of add/sub.
+  - `(param_1 & 0xffffffffffffff80) + (ulong)((int)param_1 + 0x60U & 0x7f) + 8` — a simple aligned-offset computation expanded into a masked base + masked-offset decomposition.
+
+- **IGV** — `local_78 = *(undefined8 **)(DAT_00115130 + -0x248dfca4f8424000);` — a global variable accessed not directly, but through its address plus a huge constant offset, which is the signature pattern of indirect global variable referencing.
+
+Not applied (no supporting evidence):
+- **BCF** — no opaque predicates or always-true/false side conditions; all the comparisons on `local_88` are just the flattened dispatcher's range/equality checks.
+- **SPLIT** — the fragmentation present is fully explained by FLA itself; no independent splitting signature.
+- **IBR / ICALL** — all calls (`memalign`, `puts`, `exit`) are direct, and there's no computed/indirect jump in the visible code.",51.7,glm_agent,ok
+ms__MultiSource__Benchmarks__Olden__voronoi,FUN_00102d20,connect_right,,"FLA,SPLIT",0,0,0.0,2685,1059,"**FLA, SPLIT**
+
+Reasoning from the decompiled structure:
+
+- **FLA (control flow flattening)** — unmistakable: the entire function is rewritten as a state machine with a dispatcher variable (`local_90`, initialized to `0x1083ff34`), nested `while(true)` loops doing binary-search range comparisons on that state, and each basic block setting `local_90` to the next state (e.g. `local_90 = 0x3720b119;` at the end of a block).
+- **SPLIT (basic block splitting)** — the states are suspiciously fine-grained: single trivial operations get their own state IDs (e.g. state `0x256d067f` does only `local_30 = local_80 + 1`, state `0x5e12bc88` only `DAT_001152d0 = local_28`). This one-op-per-state pattern indicates blocks were split before flattening to multiply the number of states.
+
+Not applied (or not evidenced in this snippet):
+
+- **BCF** — no opaque predicates of the typical form (tautological/contradictory arithmetic conditions); the nested range checks are just the decompiler's rendering of the FLA dispatcher.
+- **SUB** — operations like `param_1 ^ 0x40` are plausible genuine code (masking an address to 0x80-alignment); no telltale substituted arithmetic.
+- **IBR** — no computed/indirect jumps; the dispatch is ordinary comparisons.
+- **ICALL** — all calls (`memalign`, `puts`, `exit`) are direct.
+- **IGV** — `DAT_001152d0` is referenced directly as a global, not through an obfuscated global table indirection.",27.4,glm_agent,ok
+ms__MultiSource__Benchmarks__Olden__voronoi,FUN_001030f0,deleteedge,NONE,SPLIT,0,0.0,0.0,2492,5216,"**NONE**
+
+Reasoning, pass by pass:
+
+- **SUB** — The arithmetic is consistent and uniform (`& 0xffffffffffffff80` / `+ 0x20 & 0x7f` decomposition used identically for `param_1`, `uVar3`, `uVar7`, and the loaded pointer), with no signature substitution forms like `a - (-b)` for addition, or `(~a & b) | (a & ~b)` / `(a | b) - (a & b)` for XOR. The single `^ 0x40` appears in compact form, not an expanded SUB-style encoding, and the masked offset expressions are genuinely data-dependent (not rewritten constant offsets).
+- **BCF** — No opaque predicates, no always-taken branches, no duplicated bodies or bogus loops; the function is purely straight-line.
+- **FLA** — No dispatcher state variable, no `while(1)` + switch structure.
+- **SPLIT** — No artificial block boundaries, gotos, or jump chains; Ghidra recovered a single straight-line block.
+- **IBR** — No computed/indirect jumps (e.g., `goto *(table[...])`).
+- **ICALL** — There are no calls at all, direct or indirect.
+- **IGV** — The global `DAT_001152d0` (a free-list head being pushed: `*(uVar2 + 8) = DAT_001152d0; DAT_001152d0 = uVar2;`) is accessed directly by address, not through a pointer table or indirection.
+
+The function reads as a coherent unobfuscated routine (looks like freelist/chunk bookkeeping with tagged low-bit offsets), so no passes appear to have been applied.",122.4,glm_agent,ok
+ms__MultiSource__Benchmarks__McCat__12-IOtest,FUN_00101150,getac,"FLA,IBR,SPLIT",IGV,0,0.0,0.0,1745,768,"**IGV**
+
+The function is a single straight-line block — no control-flow restructuring is visible (ruling out BCF, FLA, SPLIT, IBR, and ICALL, since there are no bogus branches, no dispatcher, no split blocks, no indirect jumps, and no calls at all).
+
+The telltale pattern is the global access itself: the real pointer is never referenced directly. Instead, a pointer is loaded from a data location (`DAT_00104038`) and a large ""magic"" constant (`0x47154a426bc57aec`) is added to recover the actual address. That is the signature of the Indirect Global Variable pass, which replaces direct references to a global with a load from an indirection table plus a constant offset that hides the true address. The single `add` here is part of that address encoding, not evidence of SUB.",21.3,glm_agent,ok
+ms__MultiSource__Benchmarks__McCat__12-IOtest,FUN_00101170,setac,,IGV,0,0,0.0,1763,490,"**IGV**
+
+Reasoning:
+
+- **IGV** — The global reference `DAT_00104040 + -0x1046d3dc56a29850` shows the hallmark of indirect global variable obfuscation: the true global is accessed via a base pointer plus a large magic constant offset instead of a direct reference.
+- **SUB** — The `% 0x28f492` is just Ghidra's reconstruction of a constant modulo (compiled mulhi/shift sequence); there's no substituted arithmetic idiom visible.
+- **BCF / FLA / SPLIT / IBR** — The function is a straight-line store with no control flow at all, so there was nothing to bogusify, flatten, split, or indirect.
+- **ICALL** — There are no calls in the function.",12.7,glm_agent,ok
+ms__MultiSource__Benchmarks__McCat__12-IOtest,FUN_001011b0,initarray,,"FLA,IGV,SPLIT",0,0,0.0,2050,1221,"**FLA, IGV**
+
+**FLA (control flow flattening):** The function has the signature flattened dispatcher structure — a state variable `local_14` seeded with a magic constant (`-0x7aa444ee`), a do-while/while nesting that only serves to compare the state against opaque constants (`0x6542e2f5`, `0x5e23d133`) and reassign it to route between the real basic blocks. There is no natural control-flow reason for this shape.
+
+**IGV (indirect global variable):** The destination buffer is never referenced directly; it is reached via `*(long *)(DAT_00104048 + 0x545342f5f76108e7)` — a pointer loaded from a global slot and offset by a large magic constant. That computed-offset global access is the IGV pattern.
+
+Not applied / not evidenced:
+- **BCF:** no opaque predicates (e.g., `x*x < 10`-style always-true/false tests); the `local_8 == 0x28f492` check is a genuine loop-termination condition, and the dispatcher comes from FLA.
+- **SPLIT:** nothing distinguishable beyond what FLA already explains.
+- **IBR:** dispatch is via an explicit state variable compared with `if`s, not a computed/indirect jump.
+- **ICALL:** there are no calls at all in the function; the indirection is on a data pointer (IGV), not a call target.
+- **SUB:** the `/0xff` arithmetic reads as ordinary constant division that the compiler would have strength-reduced anyway; no telltale substituted expression chains.",33.3,glm_agent,ok
+ms__MultiSource__Benchmarks__McCat__12-IOtest,FUN_00101280,array,FLA,,0,0.0,0,1740,296,"**IGV**
+
+The function is a simple single-block load with no control flow to transform, which rules out BCF, FLA, and SPLIT (and IBR, since there's only one block and a direct return). There's no call site, so ICALL doesn't apply, and the offset computation `param_1 + base` is plain addition with no signs of SUB-style arithmetic substitution.
+
+The tell is `DAT_001040f0`: the base of the accessed array is not a direct global reference but a pointer loaded from a data location, and the function then indexes through it (`DAT_001040f0 + param_1`). That indirection of a global variable's address through memory is exactly what the IGV (indirect global variable) pass produces — the original was likely a direct global array access like `table[param_1]`.",9.0,glm_agent,ok
+ms__MultiSource__Benchmarks__McCat__12-IOtest,FUN_00101290,min,NONE,IGV,0,0.0,0.0,1763,467,"**NONE**
+
+The decompiled function shows a clean, minimal structure — a simple max operation on the low bytes of two parameters:
+
+- **No FLA/BCF/SPLIT**: The control flow is a single straight-line conditional with no dispatcher, no opaque predicates, no repeated/bogus blocks, and no fragmented basic blocks.
+- **No IBR/ICALL**: The return is direct; there are no indirect jumps or function pointers.
+- **No IGV**: No global variable references at all.
+- **No SUB**: The comparison is a plain `<` with no substituted arithmetic/logical identities (e.g., XOR/ADD chains or negated comparisons) that substitution passes typically leave behind.
+
+The `(char)` casts just indicate byte-sized operands, which is consistent with unobfuscated code compiled from a small `max`-style function.",13.9,glm_agent,ok
+ss__SingleSource__Benchmarks__Misc-C++__stepanov_container,FUN_00102330,_Z3runPFvPdS_iES_S_i,NONE,"IGV,SPLIT",0,0.0,0.0,1815,1033,"**NONE**
+
+Reasoning:
+
+- **ICALL** — The call `(*param_1)(...)` is indirect, but the target comes straight from a function-pointer *parameter*, which is the natural shape of a callback/repeat helper (e.g., ""invoke this callback N times""). The ICALL pass converts *direct* calls into indirect ones, typically via a global function-pointer table or loaded address — none of that is present here. This indirection is inherent to the original code.
+- **BCF** — No opaque predicates, no tangled never-false/never-true branches; the loop condition is clean and meaningful.
+- **FLA** — No dispatcher loop with a state variable and switch; control flow is a simple do-while.
+- **SPLIT** — No extra gotos or fragmented blocks; the function reads as one coherent loop.
+- **IBR** — No computed/indirect jumps between blocks.
+- **IGV** — No accesses through global pointer tables.
+- **SUB** — Instruction substitution operates at the instruction level (e.g., `a - b` → `a + ~b + 1`) and Ghidra-style decompilation largely normalizes it away; here the arithmetic (`param_4 - 1`, `1 < param_4`) is already in its simplest form, with no odd equivalent expressions that would hint at substituted operations.
+
+The function decompiles to a completely natural loop (call callback `param_4` times with a decrementing count), so no obfuscation pass left a detectable trace.",26.2,glm_agent,ok
+ss__SingleSource__Benchmarks__Misc-C++__stepanov_container,FUN_00102380,_Z10array_testPdS_i,,"BCF,IGV,SPLIT",0,0,0.0,3238,894,"**BCF, IGV**
+
+Reasoning:
+
+- **BCF (bogus control flow)** — The entire prologue is padded with the classic BCF opaque predicate: `(x * (x - 1)) & 1`, which is always 0 (an even number times its predecessor is even), so the ""bogus"" branches are never taken. The paired `9 < *(int *)(...)` checks and the do-while shells that immediately `break` are the other half of the BCF template (the clone of the original body guarded by a never-true predicate). The real logic (`uVar6 = param_2 - param_1; operator_new__(uVar5); ...`) only proceeds once these predicates fall through.
+
+- **IGV (indirect global variable)** — The opaque predicates read their state through `*(int *)(DAT_0011d100 + 0x34fba1ea8e6ca1f1)` and `*(int *)(DAT_0011d108 + 0x34fba1ea8e6ca1f1)`: two base pointers plus a fixed 64-bit offset into a relocated global array, rather than a direct global symbol reference. That base-plus-offset access pattern is the signature of globals being moved into an indirect global pool.
+
+Not applied (no evidence in the visible code):
+- **FLA** — there's no dispatcher (no switch/state variable loop around a `switch`), just scattered goto spaghetti from BCF.
+- **IBR** — no computed/indirect jumps between blocks; all transitions are direct gotos.
+- **ICALL** — the one call shown, `operator_new__`, is a direct call.
+- **SUB** — the arithmetic (`x*(x-1)`, subtraction of pointers) is the BCF predicate itself, not substituted versions of ordinary instructions.",23.7,glm_agent,ok
+ss__SingleSource__Benchmarks__Misc-C++__stepanov_container,FUN_00103800,_Z19vector_pointer_testPdS_i,,"BCF,IGV,SPLIT",0,0,0.0,3162,1095,"**BCF, IGV**
+
+Reasoning:
+
+- **BCF (bogus control flow)** — dominant signature. The recurring opaque predicate `((x + -1) * x & 1) == 0`, where `x = *(int *)(DAT_... + 0x6fa08e59b26be78d)`, is always true (`x*(x-1)` is always even), so all the surrounding loops, `goto`s, and `joined_r0x...` fragments are dead/bogus control flow wrapped around the real logic.
+
+- **IGV (indirect global variable)** — the opaque-predicate globals are not referenced directly; they are reached through pointer constants `DAT_0011d110` / `DAT_0011d118` plus a large offset (`+ 0x6fa08e59b26be78d`), which is the classic indirection-over-global-table pattern left by the IGV pass.
+
+Not indicated:
+
+- **FLA** — no dispatch loop or state-variable/switch dispatcher; theCFG structure is nested opaque loops, not a flattened state machine.
+- **SPLIT / IBR** — the fragmented blocks and `joined_r0x...` labels are explainable by BCF alone; there are no computed jumps or dispatch tables visible.
+- **SUB** — `x + -1` and `>> 3` are normal compiler output; no substituted arithmetic idioms stand out.
+- **ICALL** — the real body (a byte/word-copy loop: `uVar8 = end - begin`, `uVar7 = uVar8 >> 3`, `memcpy`-style destination) shows no indirect calls.",28.6,glm_agent,ok
+ss__SingleSource__Benchmarks__Misc-C++__stepanov_container,FUN_00105c10,_Z20vector_iterator_testPdS_i,,"BCF,SPLIT",0,0,0.0,3075,639,"**BCF**
+
+The function is saturated with the classic Bogus Control Flow signature from the LLVM-based obfuscation tool (e.g., Obfuscator-LLVM / Hikari):
+
+1. **Opaque predicate**: `((DAT_0011d1cc + -1) * DAT_0011d1cc & 1U) == 0` — this is the textbook BCF predicate `x * (x - 1) mod 2 == 0`, which is always true since `x*(x-1)` is always even. The two globals `DAT_0011d1cc` / `DAT_0011d1d0` correspond to BCF's random seed and the loop-bound counter used to keep the bogus loop iterations ""plausible"" (`9 < DAT_0011d1d0`).
+
+2. **Bogus loops**: The repeated `do { if (predicate) break; } while (9 < DAT_0011d1d0);` blocks are the dummy basic blocks BCF clones and wires in with always-false guard conditions.
+
+Why the others are unlikely:
+- **SUB**: No evidence of substituted arithmetic on real program data (the only arithmetic belongs to the opaque predicate itself).
+- **FLA**: No dispatcher/state variable with a switch-based control flow — just real control flow tangled with bogus blocks.
+- **SPLIT**: The code doesn't show artificially fragmented real basic blocks; the block boundaries are BCF artifacts.
+- **IBR / ICALL**: All calls (e.g., `std::__throw_length_error`) and branches are direct.
+- **IGV**: The globals `DAT_0011d1cc`/`DAT_0011d1d0` are BCF's predicate globals, not an indirection over a global array/pointer table.
+
+The core logic appears to be a vector construction from a byte range (`uVar7 = (long)param_2 - (long)param_1; uVar3 = uVar7 >> 3` — computing element count of 8-byte doubles, likely a `std::vector<double>` fill from an iterator pair).",16.6,glm_agent,ok
+ss__SingleSource__Benchmarks__Misc-C++__stepanov_container,FUN_00106f40,_Z10deque_testPdS_i,SPLIT,"BCF,IGV,SPLIT",0,1.0,0.333,3071,1665,"**BCF, SPLIT, IGV**
+
+Reasoning from the decompilation:
+
+- **BCF** — the signature pattern is everywhere: the opaque predicate `(*(int*)(DAT_0011d130 + K) + -1) * *(int*)(DAT_0011d130 + K) & 1` (an `x*(x-1)` product, which is always even, so the `& 1` test always yields 0), plus the `while(true) { ... if (opaque) break; }` bogus loops that duplicate the same predicate checks (`LAB_00106fd9`, `LAB_001070c2`, `LAB_001070f2`).
+
+- **SPLIT** — basic blocks are fragmented into many small pieces connected by `goto`s and repeated re-evaluation of the same opaque condition across `LAB_` targets, rather than a few large blocks. This fragmentation beyond what BCF alone produces points to block splitting.
+
+- **IGV** — global data is never referenced directly; it's always computed as `DAT_0011d130 + -0x3e043f19851d1fe4` and `DAT_0011d138 + -0x3e043f19851d1fe4`, i.e., a base symbol plus a large constant offset. That computed-address access pattern is characteristic of indirect global variable references.
+
+Not applied (no evidence in this code):
+
+- **FLA** — there's no dispatcher/switch-state structure; control flow is loops and gotos, not a flattened state machine.
+- **SUB** — no decomposed arithmetic identities beyond the decompiler's normal `+ -1` spelling.
+- **IBR / ICALL** — no indirect jumps or indirect calls appear in the visible body (all branch targets are direct `LAB_` labels).
+
+Caveat: the function is truncated, so I'm judging only on the visible portion; BCF and SPLIT are near-certain, IGV is likely but less certain.",43.6,glm_agent,ok
+ss__SingleSource__Benchmarks__Adobe-C++__stepanov_abstraction,FUN_001011f0,_Z13record_resultdPKc,,"IBR,SPLIT",0,0,0.0,2013,671,"**BCF**
+
+The giveaway is the `switch` on a compound boolean predicate:
+
+```c
+switch(DAT_0010b278 < (int)DAT_0010b27c && DAT_0010b270 != (void *)0x0) {
+case false: /* real work: grow buffer */
+case true:  /* empty fall-through */
+}
+```
+
+The original source was almost certainly a simple `if (count >= capacity) { grow(); }`. BCF rewrites a real branch condition (or inserts an opaque one) into a switch-style dispatch over a boolean expression, with a bogus successor that is empty — exactly the `case true:` block here. The decompiler rendering it as a two-case switch on `a && b` is the canonical BCF artifact.
+
+Why not the others:
+- **SUB** — the comparisons/updates read like plain original semantics (`count < capacity`, `count + 10`, realloc); nothing shows substituted-but-equivalent arithmetic.
+- **FLA** — no dispatcher state variable/loop; control flow is straight-line after the single branch.
+- **SPLIT** — no artificial fragmentation; the blocks are large and cohesive.
+- **IBR/ICALL** — all calls (`realloc`, `printf`, `exit`) are direct; no jump tables or function pointers in control flow.
+- **IGV** — `DAT_0010b270/b278/b27c` are accessed directly as globals, not through a pointer table indirection.",21.5,glm_agent,ok
+ss__SingleSource__Benchmarks__Adobe-C++__stepanov_abstraction,FUN_001012d0,_Z9summarizePKciiii,,"BCF,IGV,SPLIT",0,0,0.0,3153,1818,"**BCF, IGV**
+
+Evidence:
+
+- **BCF (bogus control flow)** — the function is saturated with the classic opaque predicate `(x * (x - 1)) & 1`, which is always even, so the test is always false. This drives nested `do { if(...) break; } while(...)` bogus loops (`while (9 < iVar1)`, `while (true)`), unreachable branch arms, and duplicated/cloned basic blocks with the spaghetti `goto` structure (`joined_r0x...`, `code_r0x...`). That is the textbook OLLVM-style BCF signature, not a dispatcher loop.
+
+- **IGV (indirect global variable)** — every global reference is made through a base pointer plus a large constant offset: `*(int *)(DAT_0010b190 + 0x2fc0a9e26472dd4d)`, `*(int *)(DAT_0010b198 + 0x2fc0a9e26472dd4d)`, and `/_DAT_00109008`. Globals (including the opaque-predicate state) are accessed via a dispatch base + offset rather than directly, which is the IGV transform.
+
+Not evidenced:
+
+- **FLA** — no state-variable dispatcher/switch loop; control flow is bogus-loop based, not flattened.
+- **SPLIT** — the fragmented blocks are explained by BCF's block cloning; no clear single-block-split pattern.
+- **IBR / ICALL** — all branches are direct gotos and there are no calls in the visible code, so no indirect branches or indirect calls.
+- **SUB** — the one arithmetic expression (`(double)param_3 * (double)param_2 / const`) shows nothing identifiable as instruction substitution without the original.",48.7,glm_agent,ok
+ss__SingleSource__Benchmarks__Adobe-C++__stepanov_abstraction,FUN_00103660,_Z17summarize_simplefP8_IO_FILEPKc,,"BCF,IGV,SPLIT",0,0,0.0,3150,572,"**BCF, IGV**
+
+Reasoning from the decompiled snippet:
+
+- **BCF (bogus control flow):** The function is saturated with the classic opaque-predicate pattern:
+  ```c
+  if (((*(int *)(DAT_0010b1f0 + -0x68719cfe38ca3016) + -1) *
+       *(int *)(DAT_0010b1f0 + -0x68719cfe38ca3016) & 1U) == 0) break;
+  while (9 < *(int *)(DAT_0010b1f8 + ...));
+  ```
+  This is the well-known `(x*(x-1)) % 2 == 0` / `x > 9` opaque predicate pair that obfuscation tools (e.g., Hikari/Armariris-family LLVM passes) inject to create bogus loops and branches that never actually execute. The vast majority of the visible code is these never-taken constructions, not real logic.
+
+- **IGV (indirect global variable):** The globals are not referenced directly; instead a base pointer `DAT_0010b1f0`/`DAT_0010b1f8`/`DAT_0010b1f0` is offset by a constant (`-0x68719cfe38ca3016`) at every access. That indirection-through-offset pattern is the signature of IGV, which hides the true global variable behind a computed reference.
+
+Not indicated:
+- **FLA:** No flattening dispatcher (no state-variable `switch`/dispatch loop selecting real blocks).
+- **SPLIT:** Basic-block splitting alone isn't distinguishable here; the fragmented control flow is fully explained by BCF.
+- **IBR / ICALL:** All control transfers and the (truncated) body show no computed jumps or indirect function pointers.
+- **SUB:** No evidence of arithmetic substitution beyond what the opaque predicates themselves contain.
+
+Answer: **BCF, IGV**",14.5,glm_agent,ok
+ss__SingleSource__Benchmarks__Adobe-C++__stepanov_abstraction,FUN_001051e0,_Z11start_timerv,,IGV,0,0,0.0,1813,725,"**ICALL, IGV**
+
+Reasoning:
+
+- **ICALL (indirect call):** The only operation in the function is `(*(code *)(...))()` — a call through a computed function pointer rather than a direct `call target`. A plain function like this (a getter/setter wrapper) would normally contain one direct call; it has been rewritten as a load-then-call through a pointer.
+- **IGV (indirect global variable):** `DAT_0010b240` and `DAT_0010b248` are global slots whose values are offset by the opaque constant `-0x76929706c8dc407` before use (`DAT + K` dereferenced to reach the real target). That ""global pointer plus magic constant"" pattern is the signature of global-variable references being hidden behind an indirection.
+
+Not applied:
+
+- **SUB:** no substituted arithmetic (no xor/and/or/add chains implementing simpler ops) — the only arithmetic is address-offset computation from ICALL/IGV.
+- **BCF:** no bogus predicate loops or opaque-condition diamonds; the function is a single straight-line block.
+- **FLA:** no dispatcher/state-variable switch structure.
+- **SPLIT:** nothing to suggest it — the body remains one trivial basic block, and split blocks would show extra control flow in the decompilation.
+- **IBR:** no indirect jumps between blocks (the indirection here is at the call site, which is ICALL).",20.5,glm_agent,ok
+ss__SingleSource__Benchmarks__Adobe-C++__stepanov_abstraction,FUN_00105210,_Z5timerv,,"IGV,SPLIT",0,0,0.0,1779,488,"**IGV**
+
+The tell is the global access: the result of `clock()` is stored to `DAT_0010b250 + 0x6c7ca347b79d0efe` — a global variable referenced through a base pointer plus a large constant offset. That's the signature of the IGV (indirect global variable) pass, which hides direct global references behind a pointer table base and constant offsets.
+
+Why the others are unlikely:
+- **SUB**: virtually no arithmetic to substitute (the single add is the IGV offset encoding itself).
+- **BCF / FLA / SPLIT / IBR**: the function is a single straight-line basic block with no branches, so there's no control flow to bogusify, flatten, split, or indirect.
+- **ICALL**: `clock()` is called directly, not through a function pointer.",13.8,glm_agent,ok

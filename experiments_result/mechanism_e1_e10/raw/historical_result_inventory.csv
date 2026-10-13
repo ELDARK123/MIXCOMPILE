@@ -1,0 +1,86 @@
+directory,artifact_kind,name,rows_or_count,size_bytes,has_seed_evidence,has_hash_evidence,profile_evidence,classification,notes
+experiments_mixcompile,raw_csv,results/raw/pass_selection.csv,1,25,True,False,,unverified,
+experiments_mixcompile,raw_csv,results/raw/size_results.csv,321,71198,True,False,,unverified,
+experiments_mixcompile,raw_csv,results/raw/compile_results.csv,5,1248,True,False,,unverified,
+experiments_mixcompile,raw_csv,results/raw/radiff_similarity.csv,241,101168,True,False,,unverified,
+experiments_mixcompile,raw_csv,results/raw/runtime_results.csv,81,14704,True,False,,unverified,
+experiments_mixcompile,raw_csv,results/tables/table_overall.csv,5,430,True,False,,unverified,
+experiments_mixcompile,run_manifest.json,,0,,True,True,,unverified,
+experiments_mixcompile,weight_registry.csv,,0,,True,True,,unverified,
+experiments_mixcompile_cybersecurity,raw_csv,results/tables/table_code_paper_mapping.csv,22,3599,True,True,,reusable_candidate,dir has manifests/registry; per-record check pending
+experiments_mixcompile_cybersecurity,run_manifest.json,,87,,True,True,,reusable_candidate,formal manifests exist
+experiments_mixcompile_cybersecurity,weight_registry.csv,,0,,True,True,,unverified,
+experiments_mixcompile_final,raw_csv,results/raw/ghidra_final_raw.csv,51,5561,True,False,,unverified,
+experiments_mixcompile_final,raw_csv,results/tables/table_ghidra_final_overall.csv,6,259,True,False,,unverified,
+experiments_mixcompile_final,raw_csv,results/tables/table_pass_metric_baseline.csv,8,507,True,False,,unverified,
+experiments_mixcompile_final,raw_csv,results/tables/table_candidate_search.csv,17,599,True,False,,unverified,
+experiments_mixcompile_final,raw_csv,results/tables/table_ghidra_final_by_sample.csv,1,173,True,False,,unverified,
+experiments_mixcompile_final,raw_csv,results/tables/table_default_vs_optimized.csv,3,313,True,False,,unverified,
+experiments_mixcompile_final,raw_csv,results/tables/table_pass_weight_refit.csv,8,575,True,False,,unverified,
+experiments_mixcompile_final,run_manifest.json,,0,,True,True,,unverified,
+experiments_mixcompile_final,weight_registry.csv,,0,,True,True,,unverified,
+experiments_mixcompile_large_profile,raw_csv,results/raw/pass_selection.csv,1,25,True,False,,unverified,
+experiments_mixcompile_large_profile,raw_csv,results/raw/size_results.csv,321,75678,True,False,,unverified,
+experiments_mixcompile_large_profile,raw_csv,results/raw/compile_results.csv,3,610,True,False,,unverified,
+experiments_mixcompile_large_profile,raw_csv,results/raw/radiff_similarity.csv,41,17768,True,False,,unverified,
+experiments_mixcompile_large_profile,raw_csv,results/raw/runtime_results.csv,81,14610,True,False,,unverified,
+experiments_mixcompile_large_profile,raw_csv,results/tables/table_overall.csv,3,309,True,False,,unverified,
+experiments_mixcompile_large_profile,run_manifest.json,,0,,True,True,,unverified,
+experiments_mixcompile_large_profile,weight_registry.csv,,0,,True,True,,unverified,
+experiments_mixcompile_misc_full,raw_csv,results/raw/pass_selection.csv,69,2252,True,False,,unverified,
+experiments_mixcompile_misc_full,raw_csv,results/raw/size_results.csv,311,65166,True,False,,unverified,
+experiments_mixcompile_misc_full,raw_csv,results/raw/compile_results.csv,11,3105,True,False,,unverified,
+experiments_mixcompile_misc_full,raw_csv,results/raw/radiff_similarity.csv,280,110125,True,False,,unverified,
+experiments_mixcompile_misc_full,raw_csv,results/raw/runtime_results.csv,271,49370,True,False,,unverified,
+experiments_mixcompile_misc_full,raw_csv,results/tables/table_overall.csv,11,1005,True,False,,unverified,
+experiments_mixcompile_misc_full,run_manifest.json,,0,,True,True,,unverified,
+experiments_mixcompile_misc_full,weight_registry.csv,,0,,True,True,,unverified,
+experiments_mixcompile_modes_misc,raw_csv,results/raw/pass_selection.csv,70,2040,True,False,,unverified,
+experiments_mixcompile_modes_misc,raw_csv,results/raw/size_results.csv,218,44741,True,False,,unverified,
+experiments_mixcompile_modes_misc,raw_csv,results/raw/compile_results.csv,8,2084,True,False,,unverified,
+experiments_mixcompile_modes_misc,raw_csv,results/raw/radiff_similarity.csv,187,74303,True,False,,unverified,
+experiments_mixcompile_modes_misc,raw_csv,results/raw/runtime_results.csv,190,34206,True,False,,unverified,
+experiments_mixcompile_modes_misc,raw_csv,results/tables/table_overall.csv,8,741,True,False,,unverified,
+experiments_mixcompile_modes_misc,run_manifest.json,,0,,True,True,,unverified,
+experiments_mixcompile_modes_misc,weight_registry.csv,,0,,True,True,,unverified,
+experiments_mixcompile_new,raw_csv,results/raw/ghidra_final_raw.csv,51,5523,True,False,,unverified,
+experiments_mixcompile_new,raw_csv,results/raw/ghidra_tuning_raw.csv,343,49254,True,False,,unverified,
+experiments_mixcompile_new,raw_csv,results/tables/table_ghidra_final_overall.csv,6,260,True,False,,unverified,
+experiments_mixcompile_new,raw_csv,results/tables/table_default_vs_practical.csv,3,387,True,False,,unverified,
+experiments_mixcompile_new,raw_csv,results/tables/table_pass_only_metrics.csv,9,882,True,False,,unverified,
+experiments_mixcompile_new,raw_csv,results/tables/table_pass_metric_baseline.csv,8,370,True,False,,unverified,
+experiments_mixcompile_new,raw_csv,results/tables/table_pass_weight_refit.csv,8,557,True,False,,unverified,
+experiments_mixcompile_new,run_manifest.json,,0,,True,True,,unverified,
+experiments_mixcompile_new,weight_registry.csv,,0,,True,True,,unverified,
+experiments_mixcompile_param_sensitivity,raw_csv,results/raw/pass_selection.csv,454,13258,True,True,,reusable_candidate,dir has manifests/registry; per-record check pending
+experiments_mixcompile_param_sensitivity,raw_csv,results/raw/pass_distribution.csv,345,6992,True,True,,reusable_candidate,dir has manifests/registry; per-record check pending
+experiments_mixcompile_param_sensitivity,raw_csv,results/raw/cost_config_registry.csv,52,28399,True,True,,reusable_candidate,dir has manifests/registry; per-record check pending
+experiments_mixcompile_param_sensitivity,raw_csv,results/raw/size_results.csv,1566,332072,True,True,,reusable_candidate,dir has manifests/registry; per-record check pending
+experiments_mixcompile_param_sensitivity,raw_csv,results/raw/compile_results.csv,52,23786,True,True,,reusable_candidate,dir has manifests/registry; per-record check pending
+experiments_mixcompile_param_sensitivity,raw_csv,results/raw/radiff_similarity.csv,1524,638713,True,True,,reusable_candidate,dir has manifests/registry; per-record check pending
+experiments_mixcompile_param_sensitivity,raw_csv,results/raw/runtime_results.csv,1362,245764,True,True,,reusable_candidate,dir has manifests/registry; per-record check pending
+experiments_mixcompile_param_sensitivity,raw_csv,results/tables/random_sampling_stats.csv,2,275,True,True,,reusable_candidate,dir has manifests/registry; per-record check pending
+experiments_mixcompile_param_sensitivity,raw_csv,results/tables/table_sensitivity.csv,12,1157,True,True,,reusable_candidate,dir has manifests/registry; per-record check pending
+experiments_mixcompile_param_sensitivity,raw_csv,results/tables/table_transfer.csv,2,269,True,True,,reusable_candidate,dir has manifests/registry; per-record check pending
+experiments_mixcompile_param_sensitivity,raw_csv,results/tables/table_random_sampling.csv,31,2602,True,True,,reusable_candidate,dir has manifests/registry; per-record check pending
+experiments_mixcompile_param_sensitivity,raw_csv,results/tables/table_overall.csv,52,4410,True,True,,reusable_candidate,dir has manifests/registry; per-record check pending
+experiments_mixcompile_param_sensitivity,raw_csv,results/tables/table_ablation.csv,10,916,True,True,,reusable_candidate,dir has manifests/registry; per-record check pending
+experiments_mixcompile_param_sensitivity,raw_csv,results/tables/table_literature_consistency.csv,8,873,True,True,,reusable_candidate,dir has manifests/registry; per-record check pending
+experiments_mixcompile_param_sensitivity,run_manifest.json,,0,,True,True,,unverified,
+experiments_mixcompile_param_sensitivity,weight_registry.csv,,1,,True,True,,reusable_candidate,
+experiments_mixcompile_pass_level_and_ghidra,raw_csv,results/raw/pass_only_annotations.csv,9,312,True,False,,unverified,
+experiments_mixcompile_pass_level_and_ghidra,raw_csv,results/raw/pass_only_lit.csv,217,22252,True,False,,unverified,
+experiments_mixcompile_pass_level_and_ghidra,raw_csv,results/raw/pass_only_size.csv,249,12821,True,False,,unverified,
+experiments_mixcompile_pass_level_and_ghidra,raw_csv,results/raw/ghidra_decompile_time_raw.csv,151,12600,True,False,,unverified,
+experiments_mixcompile_pass_level_and_ghidra,raw_csv,results/raw/pass_only_radiff.csv,218,11388,True,False,,unverified,
+experiments_mixcompile_pass_level_and_ghidra,raw_csv,results/tables/table_ghidra_overall.csv,6,236,True,False,,unverified,
+experiments_mixcompile_pass_level_and_ghidra,raw_csv,results/tables/table_pass_only_by_pass.csv,8,1183,True,False,,unverified,
+experiments_mixcompile_pass_level_and_ghidra,raw_csv,results/tables/table_ghidra_by_sample.csv,11,912,True,False,,unverified,
+experiments_mixcompile_pass_level_and_ghidra,raw_csv,results/tables/table_pass_only_overall.csv,9,972,True,False,,unverified,
+experiments_mixcompile_pass_level_and_ghidra,raw_csv,results/tables/table_ghidra_paired_ratio.csv,6,217,True,False,,unverified,
+experiments_mixcompile_pass_level_and_ghidra,raw_csv,results/tables/table_pass_only_per_binary.csv,218,18123,True,False,,unverified,
+experiments_mixcompile_pass_level_and_ghidra,raw_csv,results/tables/ghidra_sample_manifest.csv,11,3246,True,False,,unverified,
+experiments_mixcompile_pass_level_and_ghidra,run_manifest.json,,0,,True,True,,unverified,
+experiments_mixcompile_pass_level_and_ghidra,weight_registry.csv,,0,,True,True,,unverified,
+experiments_mixcompile_re,run_manifest.json,,0,,True,True,,unverified,
+experiments_mixcompile_re,weight_registry.csv,,0,,True,True,,unverified,

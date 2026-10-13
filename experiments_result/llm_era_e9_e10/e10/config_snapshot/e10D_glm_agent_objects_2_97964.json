@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.2
+  },
+  "FLA": {
+   "SecurityGain": 0.9,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.3
+  },
+  "SPLIT": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.15,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  },
+  "ICALL": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.3
+  },
+  "IGV": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.2
+  }
+ },
+ "rationale": "Round 1 built and ran correctly with no ICE fallback, so the pipeline tolerates this program and the weights can be shifted toward stronger obfuscation: all seven passes are enabled with elevated SecurityGain/DiversityGain and lowered cost/risk weights to invite broader application across the 37 small C++ functions. FLA gets the highest security weight since control-flow flattening is the strongest single deterrent for the constructors/destructor hotspots, and its RuntimeCost stays moderate (0.5) because this benchmark's hot loops are short; SUB and BCF are pushed high too since bogus-arithmetic and opaque predicates compound well on top of flattening. SPLIT keeps high DiversityGain but low costs because it is cheap and increases the surface other passes transform; IBR, ICALL, and IGV get mid-high security weights to break basic-block traceability, indirect-call analysis, and global-value identity, with CorrectnessRisk kept at or below 0.3 everywhere so the correctness check that passed in round 1 remains protected while still allowing noticeably more aggressive transformation than the first candidate.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__Prolangs-C++__objects",
+  "run_id": "e10D_glm_agent_objects_2_97964",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T14:46:12Z"
+ }
+}

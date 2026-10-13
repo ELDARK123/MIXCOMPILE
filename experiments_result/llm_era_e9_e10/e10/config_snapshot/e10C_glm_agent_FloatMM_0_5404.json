@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.9,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.1
+  },
+  "SPLIT": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.2
+  },
+  "ICALL": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.3
+  },
+  "IGV": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.3
+  },
+  "FLA": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.3
+  },
+  "BCF": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.8,
+   "SizeCost": 0.8,
+   "CorrectnessRisk": 0.4
+  }
+ },
+ "rationale": "FloatMM is a tiny (849 text bytes, 7 functions) floating-point benchmark whose hot path is the Mm/rInnerproduct matrix-multiply loop, so the table favors low-overhead control/data transformations and suppresses aggressively costly ones: SUB gets the highest security and diversity weights because instruction substitution obscures the arithmetic with negligible runtime impact on a compute-bound kernel, SPLIT is nearly free and fragments the few sizable functions (Mm at 489 bytes is the only real target), and IBR/ICALL provide strong static-analysis and call-graph confusion at modest cost while IGV adds inter-procedural obscurity across the small function set. FLA and especially BCF are weighted toward high SizeCost and BCF toward high RuntimeCost so the selector steers them away from the hot inner loop \u2014 BCF's bogus-path overhead multiplies badly in a dense FP multiply loop and would balloon a 849-byte binary \u2014 while still remaining eligible for cold functions (main, _start, rInitmatrix) where their features favor application. CorrectnessRisk is kept low-to-moderate everywhere since all seven passes are well-understood and this program has no fragile constructs (no inline asm, no hand-written jumps), letting the obfuscator prioritize resistance without correctness concerns gating selection.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Stanford__FloatMM",
+  "run_id": "e10C_glm_agent_FloatMM_0_5404",
+  "arm": "C",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T16:50:26Z"
+ }
+}

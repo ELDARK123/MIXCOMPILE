@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.3
+  },
+  "BCF": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.15,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  },
+  "FLA": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.25,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.25
+  },
+  "SPLIT": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.55,
+   "CorrectnessRisk": 0.2
+  },
+  "IBR": {
+   "SecurityGain": 0.65,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.25
+  },
+  "ICALL": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.3
+  },
+  "IGV": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.3
+  }
+ },
+ "rationale": "Round 0 built and ran correctly, so this candidate pushes obfuscation intensity up while protecting the program's dominant cost: nestedloop's six-deep hot loop in a very small binary (3 functions, 231 text bytes), where per-iteration overhead is multiplied heavily. FLA gets the highest SecurityGain/DiversityGain because control-flow flattening gives the strongest structural resistance against recovery of the nested-loop logic, with a moderate RuntimeCost weight so it is not preferentially steered onto the hottest loop body; BCF keeps solid security weight but the lowest RuntimeCost weight since bogus-arithmetic predicates on a hot inner loop would be the single worst slowdown-per-benefit trade here. SUB, SPLIT, and IBR are cheap, correctness-safe transforms and so carry high RuntimeCost weights (allowed even on hot code) with solid security/diversity weights, giving broad instruction-level and branch-level divergence at minimal overhead. ICALL and IGV round out diversity against static call-graph and global-data analysis at mid weights, since this binary has little global state and few call sites, making them lower-yield. CorrectnessRisk weights are kept low across the board given the prior round showed clean compilation and execution, leaving headroom to escalate further if this round also passes.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Shootout-C++__nestedloop",
+  "run_id": "e10D_glm_agent_nestedloop_1_4785",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T16:40:28Z"
+ }
+}

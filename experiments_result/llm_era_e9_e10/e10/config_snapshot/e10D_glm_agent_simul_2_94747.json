@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.8,
+   "SizeCost": 0.85,
+   "CorrectnessRisk": 0.8
+  },
+  "BCF": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.8,
+   "CorrectnessRisk": 0.75
+  },
+  "FLA": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.65,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.65
+  },
+  "SPLIT": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.85,
+   "RuntimeCost": 0.85,
+   "SizeCost": 0.85,
+   "CorrectnessRisk": 0.9
+  },
+  "IBR": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.7
+  },
+  "ICALL": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.75,
+   "CorrectnessRisk": 0.5
+  },
+  "IGV": {
+   "SecurityGain": 0.65,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.55,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.45
+  }
+ },
+ "rationale": "Round 1 built and ran correctly with no ICE, so this candidate raises obfuscation pressure across the board: the program is tiny (600 bytes of text, 47 mostly small functions), so size overhead is cheap and BCF/FLA/SUB are pushed hard to swell and tangle the few large bodies (main, pop_around::cycle, simulation_unit::mov). SPLIT gets high diversity/size weights since fragmenting small functions compounds the effect of the other passes cheaply, and IBR is kept high to obscure the control-flow edges FLA/BCF create. ICALL and IGV are raised moderately from a conservative round-1 baseline but with the lowest CorrectnessRisk weights, because this is a C++ program with constructors and indirect-call-prone semantics (vtables, runtime dispatch) where aggressive indirect-call rewriting and global variable merging carry the most correctness exposure; keeping their risk tolerance below 0.5 lets the feature-driven selector apply them only where features clearly favor it, preserving the round-1 correctness result while still adding symbol/reference-level obfuscation.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__Prolangs-C++__simul",
+  "run_id": "e10D_glm_agent_simul_2_94747",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T13:52:45Z"
+ }
+}

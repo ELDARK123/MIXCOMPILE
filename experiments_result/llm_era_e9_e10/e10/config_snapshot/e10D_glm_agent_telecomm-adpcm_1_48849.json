@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.9,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.55,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.2
+  },
+  "FLA": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.45,
+   "CorrectnessRisk": 0.3
+  },
+  "SPLIT": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.05
+  },
+  "IBR": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.15
+  },
+  "ICALL": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.25
+  },
+  "IGV": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.35
+  }
+ },
+ "rationale": "Round 0 built and passed with no ICE fallback, so this round escalates obfuscation across the board: SUB weights are raised highest since arithmetic substitution is cheap, correct, and directly hardens adpcm's dense arithmetic (step-size table lookups, sign/delta computations); IGV and IBR are boosted to obscure loop structure and jump targets in the hot adpcm_coder/adpcm_decoder loops, while their RuntimeCost weights remain moderate so the selector still favors low-cost application sites; FLA and BCF are increased from a conservative first round to flatten control flow and add bogus paths, but their RuntimeCost/SizeCost weights (0.5-0.6) keep them from saturating the two largest functions where overhead would compound; ICALL adds indirect-call indirection with a modest CorrectnessRisk given the small 4-function call graph; SPLIT stays as a low-risk diversity amplifier that synergizes with FLA by creating more basic blocks to flatten. All seven passes remain enabled because the reference binary is tiny (933 text bytes) and the size/runtime budget tolerates broad coverage; the risk weights (IGV highest at 0.35) let the selector drop volatile transformations where feature analysis flags correctness exposure rather than disabling passes globally.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__MiBench__telecomm-adpcm",
+  "run_id": "e10D_glm_agent_telecomm-adpcm_1_48849",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T01:07:49Z"
+ }
+}

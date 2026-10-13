@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.9,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.15
+  },
+  "FLA": {
+   "SecurityGain": 0.9,
+   "DiversityGain": 0.85,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.2
+  },
+  "SPLIT": {
+   "SecurityGain": 0.65,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.45,
+   "CorrectnessRisk": 0.15
+  },
+  "ICALL": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  },
+  "IGV": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  }
+ },
+ "rationale": "Round 1 compiled and ran correctly with no ICE fallback, so this round shifts the table toward stronger obfuscation while bounding runtime growth. FLA and BCF get the highest SecurityGain/DiversityGain weights since control-flow flattening plus bogus branches give the largest reverse-engineering lift on the few large functions here (main at 3373 bytes dominates, so per-function control-flow distortion matters more than many small functions); their RuntimeCost weights of 0.5 keep them acceptable on the compute-heavy stepanov/vector-style loops rather than fully unrestricted. SPLIT is kept moderately enabled because splitting basic blocks synergizes with FLA by feeding it more blocks at near-zero cost. SUB stays strongly weighted since instruction substitution is cheap and safe, giving broad diversity with minimal risk. IBR is enabled with a slightly higher SizeCost tolerance because text size (4.4 KB total) has headroom, but its runtime weight stays at 0.5 to avoid compounding with BCF slowdowns in the hot loops. ICALL and IGV carry higher CorrectnessRisk weights (0.2) because indirecting calls and global references in C++ code with virtual dispatch and static initializers is where semantic breakage is most plausible; their low RuntimeCost weights keep them generally available. Overall, since round 1 succeeded, the round-2 adjustment is a deliberate increase in SecurityGain/DiversityGain across all passes with CorrectnessRisk kept low enough to preserve the clean build-and-run result.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Misc-C++__stepanov_v1p2",
+  "run_id": "e10D_glm_agent_stepanov_v1p2_2_52289",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T02:05:22Z"
+ }
+}

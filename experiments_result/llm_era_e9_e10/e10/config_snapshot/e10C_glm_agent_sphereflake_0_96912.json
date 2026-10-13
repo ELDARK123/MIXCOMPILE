@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  },
+  "BCF": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.3
+  },
+  "FLA": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.3
+  },
+  "SPLIT": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.4
+  },
+  "ICALL": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.5
+  },
+  "IGV": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.5
+  }
+ },
+ "rationale": "sphereflake is a small (7 functions, ~6.5KB text), floating-point-heavy recursive ray tracer whose hot code (main, create, node_t::intersect) executes in tight loops, so cost dimensions are weighted high enough to keep BCF/FLA selective rather than blanket-applied: both inflate code size substantially on tiny binaries and add per-iteration overhead on FP-intensive render loops, while their correctness risk stays low since control-flow transforms do not alter FP semantics. SUB is favored broadly (cheap instruction substitution, low risk, good diversity across the arithmetic-heavy vector math in basis_t and v_t helpers), and SPLIT acts as a cheap force-multiplier that enlarges basic-block graphs for BCF/FLA to scramble, so it gets high diversity weight with negligible cost/risk. IBR and ICALL receive solid security/diversity weights because flattening the call/branch structure of the recursive create and templated intersect instantiations resists static call-graph recovery, but their RuntimeCost and CorrectnessRisk weights are elevated since indirect dispatch on hot paths and through C++ template/member calls can cost real cycles and occasionally misfire on virtual/exception edges. IGV is kept with moderate weights: the program has limited global state, so its payoff is modest but its indirect-global references cheaply harden data-target recovery, gated by a higher correctness weight for the C++ static-init paths.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Misc-C++__Large__sphereflake",
+  "run_id": "e10C_glm_agent_sphereflake_0_96912",
+  "arm": "C",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T14:29:02Z"
+ }
+}

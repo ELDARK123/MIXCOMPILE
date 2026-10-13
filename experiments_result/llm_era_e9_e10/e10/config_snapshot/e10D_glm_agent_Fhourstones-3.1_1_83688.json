@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  },
+  "BCF": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.4,
+   "RuntimeCost": 0.9,
+   "SizeCost": 0.8,
+   "CorrectnessRisk": 0.3
+  },
+  "FLA": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.8,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.4
+  },
+  "SPLIT": {
+   "SecurityGain": 0.3,
+   "DiversityGain": 0.4,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.3
+  },
+  "ICALL": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.5
+  },
+  "IGV": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.3
+  }
+ },
+ "rationale": "Fhourstones-3.1 is a compute-bound connect-four game-tree searcher built from small, extremely hot integer-arithmetic kernels (board update, transposition-table probe, alpha-beta recursion) with no static profile available, so the table leans toward low-overhead transformations and heavily penalizes cost for the passes that bloat hot loops. SUB and IBR get the highest gain weights because arithmetic substitution and indirect branching obscure the heavily patterned integer ops and branch structure that a reverse engineer would anchor on, at modest runtime cost; IGV is weighted up since the benchmark is global-heavy (boards, counters, lookup tables), making global-variable encoding effective there. FLA and BCF carry high RuntimeCost/SizeCost weights so they are only selected for cold, control-flow-complex functions rather than the tight search kernels, where their 2-5x slowdowns would be unacceptable. SPLIT is nearly disabled (small functions, little to split) and ICALL is moderately penalized with an elevated CorrectnessRisk weight because this program has few indirect-call sites and virtualizing calls in recursive search code risks both overhead and miscompilation, while its SecurityGain is capped since call-graph obfuscation adds little against a small, self-contained benchmark.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__Fhourstones-3.1",
+  "run_id": "e10D_glm_agent_Fhourstones-3.1_1_83688",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T10:49:00Z"
+ }
+}

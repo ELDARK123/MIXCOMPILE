@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.8
+  },
+  "BCF": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.6
+  },
+  "FLA": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.6
+  },
+  "SPLIT": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.4,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.8
+  },
+  "IBR": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.7
+  },
+  "ICALL": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.6
+  },
+  "IGV": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.7
+  }
+ },
+ "rationale": "With no static profile available (empty source list, unknown function count) for this Prolangs-C++ benchmark, the table uses conservative, balanced defaults that favor low-cost, low-risk transformations over aggressive control-flow mangling. SUB and IGV get the highest SecurityGain weights because arithmetic/constant substitution is cheap, broadly applicable, and preserves correctness well, making them the security backbone. BCF and FLA receive moderate SecurityGain but the lowest RuntimeCost/SizeCost weights (i.e., their high cost sensitivity is respected) since bogus control flow and flattening carry the largest runtime and size penalties on unknown workloads; they will only fire on functions whose features strongly favor them. IBR and ICALL sit in the middle as moderate-cost diversifiers that add useful indirection-based resistance without dominating the overhead budget. SPLIT is weighted toward the cost/risk dimensions with the lowest benefit weights because it contributes little standalone resistance, acting mainly as a complement to FLA. All seven passes are enabled, letting the per-function feature matching decide actual application rather than hard-disabling anything given the absence of profile data.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__Prolangs-C++__NP",
+  "run_id": "e10D_glm_agent_NP_1_84291",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T10:58:34Z"
+ }
+}

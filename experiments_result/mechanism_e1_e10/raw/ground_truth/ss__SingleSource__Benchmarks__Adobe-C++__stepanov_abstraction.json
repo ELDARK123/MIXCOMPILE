@@ -1,0 +1,101 @@
+{
+  "sample_id": "ss__SingleSource__Benchmarks__Adobe-C++__stepanov_abstraction",
+  "rule": "k-th .text function (sorted by entry) of llvm reference pairs with k-th recovered function of target; offsets relative to first entry",
+  "functions": [
+    {
+      "name": "_start",
+      "addr": 4352,
+      "size": 38
+    },
+    {
+      "name": "_Z13record_resultdPKc",
+      "addr": 4592,
+      "size": 155
+    },
+    {
+      "name": "_Z9summarizePKciiii",
+      "addr": 4752,
+      "size": 615
+    },
+    {
+      "name": "_Z17summarize_simplefP8_IO_FILEPKc",
+      "addr": 5376,
+      "size": 440
+    },
+    {
+      "name": "_Z11start_timerv",
+      "addr": 5824,
+      "size": 15
+    },
+    {
+      "name": "_Z5timerv",
+      "addr": 5840,
+      "size": 35
+    },
+    {
+      "name": "main",
+      "addr": 5888,
+      "size": 8562
+    },
+    {
+      "name": "_ZN9benchmark9quicksortIPddEEvT_S2_",
+      "addr": 14464,
+      "size": 171
+    },
+    {
+      "name": "_ZN9benchmark9quicksortI14PointerWrapperIdEdEEvT_S3_",
+      "addr": 14640,
+      "size": 171
+    },
+    {
+      "name": "_ZN9benchmark9quicksortIP12ValueWrapperIdES2_EEvT_S4_",
+      "addr": 14816,
+      "size": 171
+    },
+    {
+      "name": "_ZN9benchmark9quicksortI14PointerWrapperI12ValueWrapperIdEES3_EEvT_S5_",
+      "addr": 14992,
+      "size": 171
+    },
+    {
+      "name": "_ZN9benchmark9quicksortIP12ValueWrapperIS1_IS1_IS1_IS1_IS1_IS1_IS1_IS1_IS1_IdEEEEEEEEEESB_EEvT_SD_",
+      "addr": 15168,
+      "size": 171
+    },
+    {
+      "name": "_ZN9benchmark9quicksortI14PointerWrapperI12ValueWrapperIS2_IS2_IS2_IS2_IS2_IS2_IS2_IS2_IS2_IdEEEEEEEEEEESC_EEvT_SE_",
+      "addr": 15344,
+      "size": 171
+    },
+    {
+      "name": "_ZN9benchmark8heapsortIPddEEvT_S2_",
+      "addr": 15520,
+      "size": 526
+    },
+    {
+      "name": "_ZN9benchmark8heapsortI14PointerWrapperIdEdEEvT_S3_",
+      "addr": 16048,
+      "size": 526
+    },
+    {
+      "name": "_ZN9benchmark8heapsortIP12ValueWrapperIdES2_EEvT_S4_",
+      "addr": 16576,
+      "size": 494
+    },
+    {
+      "name": "_ZN9benchmark8heapsortI14PointerWrapperI12ValueWrapperIdEES3_EEvT_S5_",
+      "addr": 17072,
+      "size": 494
+    },
+    {
+      "name": "_ZN9benchmark8heapsortIP12ValueWrapperIS1_IS1_IS1_IS1_IS1_IS1_IS1_IS1_IS1_IdEEEEEEEEEESB_EEvT_SD_",
+      "addr": 17568,
+      "size": 494
+    },
+    {
+      "name": "_ZN9benchmark8heapsortI14PointerWrapperI12ValueWrapperIS2_IS2_IS2_IS2_IS2_IS2_IS2_IS2_IS2_IdEEEEEEEEEEESC_EEvT_SE_",
+      "addr": 18064,
+      "size": 494
+    }
+  ]
+}

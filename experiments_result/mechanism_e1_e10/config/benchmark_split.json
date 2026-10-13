@@ -1,0 +1,2260 @@
+{
+  "split_seed": 20260903,
+  "algorithm": "programs stratified by category; within category sorted by .text size; round-robin deal to tuning/validation/test with random.Random(split_seed) category shuffle; security_subset = 4x{low,mid,high} branch_density terciles of test, ordered by activation_total desc",
+  "assignments": {
+    "ss__SingleSource__Benchmarks__Shootout__ary3": "tuning",
+    "ss__SingleSource__Benchmarks__Shootout__hash": "validation",
+    "ss__SingleSource__Benchmarks__Shootout__hello": "test",
+    "ss__SingleSource__Benchmarks__Shootout__lists": "tuning",
+    "ss__SingleSource__Benchmarks__Shootout__matrix": "validation",
+    "ss__SingleSource__Benchmarks__Shootout__methcall": "test",
+    "ss__SingleSource__Benchmarks__Shootout__objinst": "tuning",
+    "ss__SingleSource__Benchmarks__Shootout__random": "validation",
+    "ms__MultiSource__Benchmarks__NPB-serial__dc": "test",
+    "ms__MultiSource__Benchmarks__NPB-serial__is": "tuning",
+    "ms__MultiSource__Benchmarks__Prolangs-C++__NP": "validation",
+    "ms__MultiSource__Benchmarks__Prolangs-C++__deriv1": "test",
+    "ms__MultiSource__Benchmarks__Prolangs-C++__deriv2": "tuning",
+    "ms__MultiSource__Benchmarks__Prolangs-C++__family": "validation",
+    "ms__MultiSource__Benchmarks__Prolangs-C++__fsm": "test",
+    "ms__MultiSource__Benchmarks__Prolangs-C++__garage": "tuning",
+    "ms__MultiSource__Benchmarks__Prolangs-C++__life": "validation",
+    "ms__MultiSource__Benchmarks__Prolangs-C++__objects": "test",
+    "ms__MultiSource__Benchmarks__Prolangs-C++__ocean": "tuning",
+    "ms__MultiSource__Benchmarks__Prolangs-C++__office": "validation",
+    "ms__MultiSource__Benchmarks__Prolangs-C++__primes": "test",
+    "ms__MultiSource__Benchmarks__Prolangs-C++__shapes": "tuning",
+    "ms__MultiSource__Benchmarks__Prolangs-C++__simul": "validation",
+    "ms__MultiSource__Benchmarks__Prolangs-C++__trees": "test",
+    "ms__MultiSource__Benchmarks__Prolangs-C++__vcirc": "tuning",
+    "ms__MultiSource__Benchmarks__mediabench__mpeg2__mpeg2dec": "validation",
+    "ms__MultiSource__Benchmarks__ASC_Sequoia__AMGmk": "test",
+    "ms__MultiSource__Benchmarks__ASC_Sequoia__CrystalMk": "tuning",
+    "ss__SingleSource__Benchmarks__CoyoteBench__almabench": "validation",
+    "ss__SingleSource__Benchmarks__CoyoteBench__fftbench": "test",
+    "ss__SingleSource__Benchmarks__CoyoteBench__lpbench": "tuning",
+    "ss__SingleSource__Benchmarks__McGill__chomp": "validation",
+    "ss__SingleSource__Benchmarks__McGill__exptree": "test",
+    "ss__SingleSource__Benchmarks__McGill__misr": "tuning",
+    "ss__SingleSource__Benchmarks__McGill__queens": "validation",
+    "ms__MultiSource__Benchmarks__TSVC__Searching-dbl": "test",
+    "ms__MultiSource__Benchmarks__TSVC__Searching-flt": "tuning",
+    "ms__MultiSource__Benchmarks__Fhourstones-3.1": "validation",
+    "ms__MultiSource__Benchmarks__BitBench__drop3": "test",
+    "ms__MultiSource__Benchmarks__BitBench__five11": "tuning",
+    "ms__MultiSource__Benchmarks__llubenchmark": "validation",
+    "ss__SingleSource__Benchmarks__Linpack__linpack-pc": "test",
+    "ss__SingleSource__Benchmarks__Shootout-C++__ackermann": "tuning",
+    "ss__SingleSource__Benchmarks__Shootout-C++__ary3": "validation",
+    "ss__SingleSource__Benchmarks__Shootout-C++__fibo": "test",
+    "ss__SingleSource__Benchmarks__Shootout-C++__hello": "tuning",
+    "ss__SingleSource__Benchmarks__Shootout-C++__lists": "validation",
+    "ss__SingleSource__Benchmarks__Shootout-C++__lists1": "test",
+    "ss__SingleSource__Benchmarks__Shootout-C++__matrix": "tuning",
+    "ss__SingleSource__Benchmarks__Shootout-C++__moments": "validation",
+    "ss__SingleSource__Benchmarks__Shootout-C++__nestedloop": "test",
+    "ss__SingleSource__Benchmarks__Shootout-C++__random": "tuning",
+    "ss__SingleSource__Benchmarks__Shootout-C++__reversefile": "validation",
+    "ss__SingleSource__Benchmarks__Shootout-C++__sieve": "test",
+    "ss__SingleSource__Benchmarks__Shootout-C++__spellcheck": "tuning",
+    "ss__SingleSource__Benchmarks__Shootout-C++__strcat": "validation",
+    "ss__SingleSource__Benchmarks__Shootout-C++__sumcol": "test",
+    "ss__SingleSource__Benchmarks__Shootout-C++__wordfreq": "tuning",
+    "ms__MultiSource__Benchmarks__DOE-ProxyApps-C__CoMD": "validation",
+    "ms__MultiSource__Benchmarks__DOE-ProxyApps-C__Pathfinder": "test",
+    "ms__MultiSource__Benchmarks__MiBench__automotive-basicmath": "tuning",
+    "ms__MultiSource__Benchmarks__MiBench__security-blowfish": "validation",
+    "ms__MultiSource__Benchmarks__MiBench__security-sha": "test",
+    "ms__MultiSource__Benchmarks__MiBench__telecomm-adpcm": "tuning",
+    "ss__SingleSource__Benchmarks__Stanford__Bubblesort": "validation",
+    "ss__SingleSource__Benchmarks__Stanford__FloatMM": "test",
+    "ss__SingleSource__Benchmarks__Stanford__IntMM": "tuning",
+    "ss__SingleSource__Benchmarks__Stanford__Perm": "validation",
+    "ss__SingleSource__Benchmarks__Stanford__Puzzle": "test",
+    "ss__SingleSource__Benchmarks__Stanford__Queens": "tuning",
+    "ss__SingleSource__Benchmarks__Stanford__Quicksort": "validation",
+    "ss__SingleSource__Benchmarks__Stanford__RealMM": "test",
+    "ss__SingleSource__Benchmarks__Stanford__Towers": "tuning",
+    "ss__SingleSource__Benchmarks__Stanford__Treesort": "validation",
+    "ss__SingleSource__Benchmarks__Misc__dt": "test",
+    "ss__SingleSource__Benchmarks__Misc__evalloop": "tuning",
+    "ss__SingleSource__Benchmarks__Misc__ffbench": "validation",
+    "ss__SingleSource__Benchmarks__Misc__flops-1": "test",
+    "ss__SingleSource__Benchmarks__Misc__flops-2": "tuning",
+    "ss__SingleSource__Benchmarks__Misc__flops-3": "validation",
+    "ss__SingleSource__Benchmarks__Misc__flops-4": "test",
+    "ss__SingleSource__Benchmarks__Misc__flops-5": "tuning",
+    "ss__SingleSource__Benchmarks__Misc__flops-6": "validation",
+    "ss__SingleSource__Benchmarks__Misc__flops-7": "test",
+    "ss__SingleSource__Benchmarks__Misc__flops-8": "tuning",
+    "ss__SingleSource__Benchmarks__Misc__fp-convert": "validation",
+    "ss__SingleSource__Benchmarks__Misc__lowercase": "test",
+    "ss__SingleSource__Benchmarks__Misc__mandel": "tuning",
+    "ss__SingleSource__Benchmarks__Misc__mandel-2": "validation",
+    "ss__SingleSource__Benchmarks__Misc__matmul_f64_4x4": "test",
+    "ss__SingleSource__Benchmarks__Misc__oourafft": "tuning",
+    "ss__SingleSource__Benchmarks__Misc__pi": "validation",
+    "ss__SingleSource__Benchmarks__Misc__revertBits": "test",
+    "ss__SingleSource__Benchmarks__Misc__richards_benchmark": "tuning",
+    "ss__SingleSource__Benchmarks__Misc__salsa20": "validation",
+    "ms__MultiSource__Benchmarks__Trimaran__enc-3des": "test",
+    "ms__MultiSource__Benchmarks__Trimaran__enc-md5": "tuning",
+    "ms__MultiSource__Benchmarks__Trimaran__enc-rc4": "validation",
+    "ms__MultiSource__Benchmarks__Trimaran__netbench-crc": "test",
+    "ss__SingleSource__Benchmarks__BenchmarkGame__Large__fasta": "tuning",
+    "ss__SingleSource__Benchmarks__BenchmarkGame__n-body": "validation",
+    "ss__SingleSource__Benchmarks__BenchmarkGame__nsieve-bits": "test",
+    "ss__SingleSource__Benchmarks__BenchmarkGame__partialsums": "tuning",
+    "ss__SingleSource__Benchmarks__BenchmarkGame__puzzle": "validation",
+    "ss__SingleSource__Benchmarks__BenchmarkGame__recursive": "test",
+    "ss__SingleSource__Benchmarks__BenchmarkGame__spectral-norm": "tuning",
+    "ms__MultiSource__Benchmarks__Olden__bisort": "validation",
+    "ms__MultiSource__Benchmarks__Olden__health": "test",
+    "ms__MultiSource__Benchmarks__Olden__mst": "tuning",
+    "ms__MultiSource__Benchmarks__Olden__power": "validation",
+    "ms__MultiSource__Benchmarks__Olden__voronoi": "test",
+    "ss__SingleSource__Benchmarks__Misc-C++__Large__ray": "tuning",
+    "ss__SingleSource__Benchmarks__Misc-C++__Large__sphereflake": "validation",
+    "ss__SingleSource__Benchmarks__Misc-C++__bigfib": "test",
+    "ss__SingleSource__Benchmarks__Misc-C++__mandel-text": "tuning",
+    "ss__SingleSource__Benchmarks__Misc-C++__oopack_v1p8": "validation",
+    "ss__SingleSource__Benchmarks__Misc-C++__stepanov_container": "test",
+    "ss__SingleSource__Benchmarks__Misc-C++__stepanov_v1p2": "tuning",
+    "ms__MultiSource__Benchmarks__McCat__01-qbsort": "validation",
+    "ms__MultiSource__Benchmarks__McCat__03-testtrie": "test",
+    "ms__MultiSource__Benchmarks__McCat__05-eks": "tuning",
+    "ms__MultiSource__Benchmarks__McCat__08-main": "validation",
+    "ms__MultiSource__Benchmarks__McCat__12-IOtest": "test",
+    "ms__MultiSource__Benchmarks__Prolangs-C__allroots": "tuning",
+    "ss__SingleSource__Benchmarks__Adobe-C++__functionobjects": "validation",
+    "ss__SingleSource__Benchmarks__Adobe-C++__loop_unroll": "test",
+    "ss__SingleSource__Benchmarks__Adobe-C++__simple_types_constant_folding": "tuning",
+    "ss__SingleSource__Benchmarks__Adobe-C++__simple_types_loop_invariant": "validation",
+    "ss__SingleSource__Benchmarks__Adobe-C++__stepanov_abstraction": "test",
+    "ss__SingleSource__Benchmarks__Adobe-C++__stepanov_vector": "tuning"
+  },
+  "security_subset": [
+    "ms__MultiSource__Benchmarks__NPB-serial__dc",
+    "ms__MultiSource__Benchmarks__ASC_Sequoia__AMGmk",
+    "ms__MultiSource__Benchmarks__TSVC__Searching-dbl",
+    "ss__SingleSource__Benchmarks__Linpack__linpack-pc",
+    "ms__MultiSource__Benchmarks__DOE-ProxyApps-C__Pathfinder",
+    "ss__SingleSource__Benchmarks__Stanford__Puzzle",
+    "ms__MultiSource__Benchmarks__MiBench__security-sha",
+    "ss__SingleSource__Benchmarks__Stanford__FloatMM",
+    "ms__MultiSource__Benchmarks__Olden__voronoi",
+    "ms__MultiSource__Benchmarks__McCat__12-IOtest",
+    "ss__SingleSource__Benchmarks__Misc-C++__stepanov_container",
+    "ss__SingleSource__Benchmarks__Adobe-C++__stepanov_abstraction"
+  ],
+  "sets": {
+    "tuning": [
+      "ss__SingleSource__Benchmarks__Shootout__ary3",
+      "ss__SingleSource__Benchmarks__Shootout__lists",
+      "ss__SingleSource__Benchmarks__Shootout__objinst",
+      "ms__MultiSource__Benchmarks__NPB-serial__is",
+      "ms__MultiSource__Benchmarks__Prolangs-C++__deriv2",
+      "ms__MultiSource__Benchmarks__Prolangs-C++__garage",
+      "ms__MultiSource__Benchmarks__Prolangs-C++__ocean",
+      "ms__MultiSource__Benchmarks__Prolangs-C++__shapes",
+      "ms__MultiSource__Benchmarks__Prolangs-C++__vcirc",
+      "ms__MultiSource__Benchmarks__ASC_Sequoia__CrystalMk",
+      "ss__SingleSource__Benchmarks__CoyoteBench__lpbench",
+      "ss__SingleSource__Benchmarks__McGill__misr",
+      "ms__MultiSource__Benchmarks__TSVC__Searching-flt",
+      "ms__MultiSource__Benchmarks__BitBench__five11",
+      "ss__SingleSource__Benchmarks__Shootout-C++__ackermann",
+      "ss__SingleSource__Benchmarks__Shootout-C++__hello",
+      "ss__SingleSource__Benchmarks__Shootout-C++__matrix",
+      "ss__SingleSource__Benchmarks__Shootout-C++__random",
+      "ss__SingleSource__Benchmarks__Shootout-C++__spellcheck",
+      "ss__SingleSource__Benchmarks__Shootout-C++__wordfreq",
+      "ms__MultiSource__Benchmarks__MiBench__automotive-basicmath",
+      "ms__MultiSource__Benchmarks__MiBench__telecomm-adpcm",
+      "ss__SingleSource__Benchmarks__Stanford__IntMM",
+      "ss__SingleSource__Benchmarks__Stanford__Queens",
+      "ss__SingleSource__Benchmarks__Stanford__Towers",
+      "ss__SingleSource__Benchmarks__Misc__evalloop",
+      "ss__SingleSource__Benchmarks__Misc__flops-2",
+      "ss__SingleSource__Benchmarks__Misc__flops-5",
+      "ss__SingleSource__Benchmarks__Misc__flops-8",
+      "ss__SingleSource__Benchmarks__Misc__mandel",
+      "ss__SingleSource__Benchmarks__Misc__oourafft",
+      "ss__SingleSource__Benchmarks__Misc__richards_benchmark",
+      "ms__MultiSource__Benchmarks__Trimaran__enc-md5",
+      "ss__SingleSource__Benchmarks__BenchmarkGame__Large__fasta",
+      "ss__SingleSource__Benchmarks__BenchmarkGame__partialsums",
+      "ss__SingleSource__Benchmarks__BenchmarkGame__spectral-norm",
+      "ms__MultiSource__Benchmarks__Olden__mst",
+      "ss__SingleSource__Benchmarks__Misc-C++__Large__ray",
+      "ss__SingleSource__Benchmarks__Misc-C++__mandel-text",
+      "ss__SingleSource__Benchmarks__Misc-C++__stepanov_v1p2",
+      "ms__MultiSource__Benchmarks__McCat__05-eks",
+      "ms__MultiSource__Benchmarks__Prolangs-C__allroots",
+      "ss__SingleSource__Benchmarks__Adobe-C++__simple_types_constant_folding",
+      "ss__SingleSource__Benchmarks__Adobe-C++__stepanov_vector"
+    ],
+    "validation": [
+      "ss__SingleSource__Benchmarks__Shootout__hash",
+      "ss__SingleSource__Benchmarks__Shootout__matrix",
+      "ss__SingleSource__Benchmarks__Shootout__random",
+      "ms__MultiSource__Benchmarks__Prolangs-C++__NP",
+      "ms__MultiSource__Benchmarks__Prolangs-C++__family",
+      "ms__MultiSource__Benchmarks__Prolangs-C++__life",
+      "ms__MultiSource__Benchmarks__Prolangs-C++__office",
+      "ms__MultiSource__Benchmarks__Prolangs-C++__simul",
+      "ms__MultiSource__Benchmarks__mediabench__mpeg2__mpeg2dec",
+      "ss__SingleSource__Benchmarks__CoyoteBench__almabench",
+      "ss__SingleSource__Benchmarks__McGill__chomp",
+      "ss__SingleSource__Benchmarks__McGill__queens",
+      "ms__MultiSource__Benchmarks__Fhourstones-3.1",
+      "ms__MultiSource__Benchmarks__llubenchmark",
+      "ss__SingleSource__Benchmarks__Shootout-C++__ary3",
+      "ss__SingleSource__Benchmarks__Shootout-C++__lists",
+      "ss__SingleSource__Benchmarks__Shootout-C++__moments",
+      "ss__SingleSource__Benchmarks__Shootout-C++__reversefile",
+      "ss__SingleSource__Benchmarks__Shootout-C++__strcat",
+      "ms__MultiSource__Benchmarks__DOE-ProxyApps-C__CoMD",
+      "ms__MultiSource__Benchmarks__MiBench__security-blowfish",
+      "ss__SingleSource__Benchmarks__Stanford__Bubblesort",
+      "ss__SingleSource__Benchmarks__Stanford__Perm",
+      "ss__SingleSource__Benchmarks__Stanford__Quicksort",
+      "ss__SingleSource__Benchmarks__Stanford__Treesort",
+      "ss__SingleSource__Benchmarks__Misc__ffbench",
+      "ss__SingleSource__Benchmarks__Misc__flops-3",
+      "ss__SingleSource__Benchmarks__Misc__flops-6",
+      "ss__SingleSource__Benchmarks__Misc__fp-convert",
+      "ss__SingleSource__Benchmarks__Misc__mandel-2",
+      "ss__SingleSource__Benchmarks__Misc__pi",
+      "ss__SingleSource__Benchmarks__Misc__salsa20",
+      "ms__MultiSource__Benchmarks__Trimaran__enc-rc4",
+      "ss__SingleSource__Benchmarks__BenchmarkGame__n-body",
+      "ss__SingleSource__Benchmarks__BenchmarkGame__puzzle",
+      "ms__MultiSource__Benchmarks__Olden__bisort",
+      "ms__MultiSource__Benchmarks__Olden__power",
+      "ss__SingleSource__Benchmarks__Misc-C++__Large__sphereflake",
+      "ss__SingleSource__Benchmarks__Misc-C++__oopack_v1p8",
+      "ms__MultiSource__Benchmarks__McCat__01-qbsort",
+      "ms__MultiSource__Benchmarks__McCat__08-main",
+      "ss__SingleSource__Benchmarks__Adobe-C++__functionobjects",
+      "ss__SingleSource__Benchmarks__Adobe-C++__simple_types_loop_invariant"
+    ],
+    "test": [
+      "ss__SingleSource__Benchmarks__Shootout__hello",
+      "ss__SingleSource__Benchmarks__Shootout__methcall",
+      "ms__MultiSource__Benchmarks__NPB-serial__dc",
+      "ms__MultiSource__Benchmarks__Prolangs-C++__deriv1",
+      "ms__MultiSource__Benchmarks__Prolangs-C++__fsm",
+      "ms__MultiSource__Benchmarks__Prolangs-C++__objects",
+      "ms__MultiSource__Benchmarks__Prolangs-C++__primes",
+      "ms__MultiSource__Benchmarks__Prolangs-C++__trees",
+      "ms__MultiSource__Benchmarks__ASC_Sequoia__AMGmk",
+      "ss__SingleSource__Benchmarks__CoyoteBench__fftbench",
+      "ss__SingleSource__Benchmarks__McGill__exptree",
+      "ms__MultiSource__Benchmarks__TSVC__Searching-dbl",
+      "ms__MultiSource__Benchmarks__BitBench__drop3",
+      "ss__SingleSource__Benchmarks__Linpack__linpack-pc",
+      "ss__SingleSource__Benchmarks__Shootout-C++__fibo",
+      "ss__SingleSource__Benchmarks__Shootout-C++__lists1",
+      "ss__SingleSource__Benchmarks__Shootout-C++__nestedloop",
+      "ss__SingleSource__Benchmarks__Shootout-C++__sieve",
+      "ss__SingleSource__Benchmarks__Shootout-C++__sumcol",
+      "ms__MultiSource__Benchmarks__DOE-ProxyApps-C__Pathfinder",
+      "ms__MultiSource__Benchmarks__MiBench__security-sha",
+      "ss__SingleSource__Benchmarks__Stanford__FloatMM",
+      "ss__SingleSource__Benchmarks__Stanford__Puzzle",
+      "ss__SingleSource__Benchmarks__Stanford__RealMM",
+      "ss__SingleSource__Benchmarks__Misc__dt",
+      "ss__SingleSource__Benchmarks__Misc__flops-1",
+      "ss__SingleSource__Benchmarks__Misc__flops-4",
+      "ss__SingleSource__Benchmarks__Misc__flops-7",
+      "ss__SingleSource__Benchmarks__Misc__lowercase",
+      "ss__SingleSource__Benchmarks__Misc__matmul_f64_4x4",
+      "ss__SingleSource__Benchmarks__Misc__revertBits",
+      "ms__MultiSource__Benchmarks__Trimaran__enc-3des",
+      "ms__MultiSource__Benchmarks__Trimaran__netbench-crc",
+      "ss__SingleSource__Benchmarks__BenchmarkGame__nsieve-bits",
+      "ss__SingleSource__Benchmarks__BenchmarkGame__recursive",
+      "ms__MultiSource__Benchmarks__Olden__health",
+      "ms__MultiSource__Benchmarks__Olden__voronoi",
+      "ss__SingleSource__Benchmarks__Misc-C++__bigfib",
+      "ss__SingleSource__Benchmarks__Misc-C++__stepanov_container",
+      "ms__MultiSource__Benchmarks__McCat__03-testtrie",
+      "ms__MultiSource__Benchmarks__McCat__12-IOtest",
+      "ss__SingleSource__Benchmarks__Adobe-C++__loop_unroll",
+      "ss__SingleSource__Benchmarks__Adobe-C++__stepanov_abstraction"
+    ]
+  },
+  "features": {
+    "ss__SingleSource__Benchmarks__Shootout-C++__hello": {
+      "category": "SingleSource/Shootout-C++",
+      "features": {
+        "file_size": 16584,
+        "text_size": 0,
+        "func_count": 7,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 6,
+      "median_runtime_s": 0.0106,
+      "baseline_sha256": "550a0d7f2b9330ea3505835d7fc1e4b48f2367cb6e4ea5ca7cc5958325827fd4"
+    },
+    "ss__SingleSource__Benchmarks__Shootout-C++__moments": {
+      "category": "SingleSource/Shootout-C++",
+      "features": {
+        "file_size": 16944,
+        "text_size": 0,
+        "func_count": 9,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 10,
+      "median_runtime_s": 0.0819,
+      "baseline_sha256": "c467f12da48aac290dde0060256a87c71a5b49f0d8cf17d124ff55f50f0db143"
+    },
+    "ss__SingleSource__Benchmarks__Shootout-C++__nestedloop": {
+      "category": "SingleSource/Shootout-C++",
+      "features": {
+        "file_size": 16568,
+        "text_size": 0,
+        "func_count": 7,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 4,
+      "median_runtime_s": 0.0106,
+      "baseline_sha256": "1b3a40e4de600d36d1ff730a901c627d06fe672b7979bf309b88af6997b6e061"
+    },
+    "ss__SingleSource__Benchmarks__Shootout-C++__lists1": {
+      "category": "SingleSource/Shootout-C++",
+      "features": {
+        "file_size": 17600,
+        "text_size": 0,
+        "func_count": 8,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 14,
+      "median_runtime_s": 0.1114,
+      "baseline_sha256": "c3e56a3c09b26778444205eb26b2f4abc8060d4e7a5e01143b9cf714c831a389"
+    },
+    "ss__SingleSource__Benchmarks__Shootout-C++__reversefile": {
+      "category": "SingleSource/Shootout-C++",
+      "features": {
+        "file_size": 18824,
+        "text_size": 0,
+        "func_count": 15,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 7,
+      "median_runtime_s": 0.0109,
+      "baseline_sha256": "e2e79e6164dbfd8b789b5de455424d926807453d243b2b5a04cbec4aab8bbc22"
+    },
+    "ss__SingleSource__Benchmarks__Shootout-C++__ary3": {
+      "category": "SingleSource/Shootout-C++",
+      "features": {
+        "file_size": 17208,
+        "text_size": 0,
+        "func_count": 7,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 13,
+      "median_runtime_s": 0.5856,
+      "baseline_sha256": "ce36965619a84cf5ac742b6900e241bb6d7da7b13c91fcfe6fa950acaa476de4"
+    },
+    "ss__SingleSource__Benchmarks__Shootout-C++__spellcheck": {
+      "category": "SingleSource/Shootout-C++",
+      "features": {
+        "file_size": 19056,
+        "text_size": 0,
+        "func_count": 15,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 6,
+      "median_runtime_s": 0.011,
+      "baseline_sha256": "9bc67943415825a872f4a024e4290694912b0b3b8868eb0f3ee2b5bdec16da08"
+    },
+    "ss__SingleSource__Benchmarks__Shootout-C++__sumcol": {
+      "category": "SingleSource/Shootout-C++",
+      "features": {
+        "file_size": 16680,
+        "text_size": 0,
+        "func_count": 7,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 6,
+      "median_runtime_s": 0.0106,
+      "baseline_sha256": "1a32bc2c185f2f86318d220e88257729e54dd313cbf5586b14dac590641947a7"
+    },
+    "ss__SingleSource__Benchmarks__Shootout-C++__strcat": {
+      "category": "SingleSource/Shootout-C++",
+      "features": {
+        "file_size": 17224,
+        "text_size": 0,
+        "func_count": 7,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 8,
+      "median_runtime_s": 0.071,
+      "baseline_sha256": "5f4656bbe604966d9a221e8a3447f928488c0a29e7007bfbd647cfa7c4e5c700"
+    },
+    "ss__SingleSource__Benchmarks__Shootout-C++__wordfreq": {
+      "category": "SingleSource/Shootout-C++",
+      "features": {
+        "file_size": 23112,
+        "text_size": 0,
+        "func_count": 17,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 17,
+      "median_runtime_s": 0.0106,
+      "baseline_sha256": "5813d40ebeba2adc4e7f05ca63ad525448fa7899972df94b8b30f76f489b5c12"
+    },
+    "ss__SingleSource__Benchmarks__Shootout-C++__ackermann": {
+      "category": "SingleSource/Shootout-C++",
+      "features": {
+        "file_size": 16720,
+        "text_size": 0,
+        "func_count": 8,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 9,
+      "median_runtime_s": 1.2427,
+      "baseline_sha256": "97703b8fd7f81aeb931e488b9df7ba8d2cb6da3833406c738bffe02de3bbf379"
+    },
+    "ss__SingleSource__Benchmarks__McGill__exptree": {
+      "category": "SingleSource/McGill",
+      "features": {
+        "file_size": 17208,
+        "text_size": 0,
+        "func_count": 18,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 82,
+      "median_runtime_s": 0.0111,
+      "baseline_sha256": "11c464f387a3e072b8c171dd180fae4b687447cf1dd08b7a11c62a1048c109c7"
+    },
+    "ss__SingleSource__Benchmarks__McGill__misr": {
+      "category": "SingleSource/McGill",
+      "features": {
+        "file_size": 16512,
+        "text_size": 0,
+        "func_count": 10,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 36,
+      "median_runtime_s": 0.1718,
+      "baseline_sha256": "a566b10aa08ef92ca49f01dd17a45c64943e8fe7b522f8e65960a34f613a7ddf"
+    },
+    "ss__SingleSource__Benchmarks__Stanford__Bubblesort": {
+      "category": "SingleSource/Stanford",
+      "features": {
+        "file_size": 17088,
+        "text_size": 0,
+        "func_count": 10,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 26,
+      "median_runtime_s": 0.0106,
+      "baseline_sha256": "077aad0f5a90b5d2f2ff519e7b6ce676d11951bc2b31d755b4a934ab35a4f9d5"
+    },
+    "ss__SingleSource__Benchmarks__Shootout-C++__fibo": {
+      "category": "SingleSource/Shootout-C++",
+      "features": {
+        "file_size": 16608,
+        "text_size": 0,
+        "func_count": 8,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 10,
+      "median_runtime_s": 1.9484,
+      "baseline_sha256": "97d5d631644acab9ec64606f99c4ae39ded8521825b7df570cf464d99840d962"
+    },
+    "ss__SingleSource__Benchmarks__Stanford__IntMM": {
+      "category": "SingleSource/Stanford",
+      "features": {
+        "file_size": 17072,
+        "text_size": 0,
+        "func_count": 11,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 31,
+      "median_runtime_s": 0.0105,
+      "baseline_sha256": "494b40398fb5e124016f4a089c73de83627d4ba39717a719987a6f69803550de"
+    },
+    "ss__SingleSource__Benchmarks__Stanford__Perm": {
+      "category": "SingleSource/Stanford",
+      "features": {
+        "file_size": 17144,
+        "text_size": 0,
+        "func_count": 12,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 26,
+      "median_runtime_s": 0.0209,
+      "baseline_sha256": "0f7c0b21b31db7b0a9b0a32235908635dfd53808f8c32162aa7da66448b89790"
+    },
+    "ss__SingleSource__Benchmarks__Stanford__FloatMM": {
+      "category": "SingleSource/Stanford",
+      "features": {
+        "file_size": 17072,
+        "text_size": 0,
+        "func_count": 11,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 32,
+      "median_runtime_s": 0.3029,
+      "baseline_sha256": "56510e38fa346143ecae0d0d8d3fb7fc01ba62618780b2e7253c999f197d94d2"
+    },
+    "ss__SingleSource__Benchmarks__Stanford__Queens": {
+      "category": "SingleSource/Stanford",
+      "features": {
+        "file_size": 17112,
+        "text_size": 0,
+        "func_count": 11,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 42,
+      "median_runtime_s": 0.0104,
+      "baseline_sha256": "31ed3b40feb81a8b1e9df3ad67129cf3d85653fd9c4750699dc9f3def5500763"
+    },
+    "ss__SingleSource__Benchmarks__Stanford__Quicksort": {
+      "category": "SingleSource/Stanford",
+      "features": {
+        "file_size": 17120,
+        "text_size": 0,
+        "func_count": 11,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 31,
+      "median_runtime_s": 0.0305,
+      "baseline_sha256": "fcf2e9ca8f6d039fcaa0be806e271fcf5cd3dff1152460b0b72d561f5d71c5b8"
+    },
+    "ss__SingleSource__Benchmarks__Stanford__Puzzle": {
+      "category": "SingleSource/Stanford",
+      "features": {
+        "file_size": 21320,
+        "text_size": 0,
+        "func_count": 13,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 66,
+      "median_runtime_s": 0.1122,
+      "baseline_sha256": "f58f9fb583605b4795b0e4cb9914a8d7ab2f21ed3a975560fd75b606f3bcd64d"
+    },
+    "ss__SingleSource__Benchmarks__Stanford__RealMM": {
+      "category": "SingleSource/Stanford",
+      "features": {
+        "file_size": 17072,
+        "text_size": 0,
+        "func_count": 11,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 31,
+      "median_runtime_s": 0.0105,
+      "baseline_sha256": "94253841a978f85223cb3317b92beb0fbaedeb8d80c8c420d2a7a12c3d5f4c3d"
+    },
+    "ss__SingleSource__Benchmarks__Stanford__Towers": {
+      "category": "SingleSource/Stanford",
+      "features": {
+        "file_size": 17296,
+        "text_size": 0,
+        "func_count": 17,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 47,
+      "median_runtime_s": 0.0106,
+      "baseline_sha256": "0488502961d39a1adb7b06aaa69f307d80d7f80ab7962e1a7d61da64845e1537"
+    },
+    "ss__SingleSource__Benchmarks__Stanford__Treesort": {
+      "category": "SingleSource/Stanford",
+      "features": {
+        "file_size": 17232,
+        "text_size": 0,
+        "func_count": 13,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 34,
+      "median_runtime_s": 0.0609,
+      "baseline_sha256": "d27c223e0869bd3a63084336417e0b66ac6a5c3e3d887d7ceb159e725ff79880"
+    },
+    "ss__SingleSource__Benchmarks__McGill__chomp": {
+      "category": "SingleSource/McGill",
+      "features": {
+        "file_size": 21216,
+        "text_size": 0,
+        "func_count": 27,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 143,
+      "median_runtime_s": 1.0821,
+      "baseline_sha256": "18a8e137afcad332bb1c62e48f33069ba4a35ae2b662720a67a923a0165333c6"
+    },
+    "ss__SingleSource__Benchmarks__Shootout-C++__sieve": {
+      "category": "SingleSource/Shootout-C++",
+      "features": {
+        "file_size": 17480,
+        "text_size": 0,
+        "func_count": 8,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 16,
+      "median_runtime_s": 2.1952,
+      "baseline_sha256": "05bb25596f8d330bebd8d9265b9a5a5c6247858aeb3ee6a165bfaafbbafbda13"
+    },
+    "ss__SingleSource__Benchmarks__Shootout-C++__random": {
+      "category": "SingleSource/Shootout-C++",
+      "features": {
+        "file_size": 16632,
+        "text_size": 0,
+        "func_count": 7,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 10,
+      "median_runtime_s": 4.6778,
+      "baseline_sha256": "aa075b8930372291acdf74a3ba298a65e62f5a1a6d41fd958800b9cce11eb103"
+    },
+    "ss__SingleSource__Benchmarks__Misc-C++__bigfib": {
+      "category": "SingleSource/Misc-C++",
+      "features": {
+        "file_size": 28072,
+        "text_size": 0,
+        "func_count": 19,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 55,
+      "median_runtime_s": 0.2023,
+      "baseline_sha256": "bb7738731af2e193cebf89a71e6d93cb4010022e3c650430e4047df83d7008cb"
+    },
+    "ss__SingleSource__Benchmarks__Misc-C++__oopack_v1p8": {
+      "category": "SingleSource/Misc-C++",
+      "features": {
+        "file_size": 19280,
+        "text_size": 0,
+        "func_count": 30,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 105,
+      "median_runtime_s": 0.1015,
+      "baseline_sha256": "cb5a7a31a9cc6fde5782fab87e60eecbfb541e398780144b6a4b591cdbe7faff"
+    },
+    "ss__SingleSource__Benchmarks__Shootout-C++__matrix": {
+      "category": "SingleSource/Shootout-C++",
+      "features": {
+        "file_size": 17008,
+        "text_size": 0,
+        "func_count": 11,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 43,
+      "median_runtime_s": 1.4202,
+      "baseline_sha256": "53937c60dd1f1002c64ab73bf0623e7344b876bd77a8120faa8d54e987ea0e29"
+    },
+    "ss__SingleSource__Benchmarks__Shootout-C++__lists": {
+      "category": "SingleSource/Shootout-C++",
+      "features": {
+        "file_size": 17288,
+        "text_size": 0,
+        "func_count": 8,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 17,
+      "median_runtime_s": 4.5032,
+      "baseline_sha256": "d6328d89a73cf76e12a332eb9270152727774cb383c542cc136633d042b0b6b0"
+    },
+    "ss__SingleSource__Benchmarks__CoyoteBench__fftbench": {
+      "category": "SingleSource/CoyoteBench",
+      "features": {
+        "file_size": 22672,
+        "text_size": 0,
+        "func_count": 15,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 12,
+      "median_runtime_s": 0.8284,
+      "baseline_sha256": "05ad524857d6a03fe2fd2106c9adece5b9db83b783e4780f5129fc295481bf55"
+    },
+    "ss__SingleSource__Benchmarks__Misc-C++__mandel-text": {
+      "category": "SingleSource/Misc-C++",
+      "features": {
+        "file_size": 15984,
+        "text_size": 0,
+        "func_count": 6,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 11,
+      "median_runtime_s": 0.7977,
+      "baseline_sha256": "d5405604cfb9d2c261c8ceb0efdc359efa3793dba79afaf7cb9848225a112d11"
+    },
+    "ss__SingleSource__Benchmarks__McGill__queens": {
+      "category": "SingleSource/McGill",
+      "features": {
+        "file_size": 16720,
+        "text_size": 0,
+        "func_count": 8,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 22,
+      "median_runtime_s": 3.8313,
+      "baseline_sha256": "d14e4835728a2d8506d100b112e524f99940099bbca5c9d62a8f9650d6af9280"
+    },
+    "ss__SingleSource__Benchmarks__Misc-C++__Large__ray": {
+      "category": "SingleSource/Misc-C++",
+      "features": {
+        "file_size": 22296,
+        "text_size": 0,
+        "func_count": 21,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 41,
+      "median_runtime_s": 4.1121,
+      "baseline_sha256": "795610f093b64e84b0f9756c66071908fc265ab5a25467c643959bc8af7fd02b"
+    },
+    "ss__SingleSource__Benchmarks__BenchmarkGame__n-body": {
+      "category": "SingleSource/BenchmarkGame",
+      "features": {
+        "file_size": 16352,
+        "text_size": 0,
+        "func_count": 9,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 29,
+      "median_runtime_s": 0.3881,
+      "baseline_sha256": "1918cae81a30af5e354be3809a83adbbdb3170abd1cf0c86cc6bcc7b98f2c252"
+    },
+    "ss__SingleSource__Benchmarks__BenchmarkGame__partialsums": {
+      "category": "SingleSource/BenchmarkGame",
+      "features": {
+        "file_size": 16200,
+        "text_size": 0,
+        "func_count": 8,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 9,
+      "median_runtime_s": 0.0815,
+      "baseline_sha256": "718fb6e3c488e8056e16449845c3e85edb26791dfb73abb2b770ab76871e401d"
+    },
+    "ss__SingleSource__Benchmarks__BenchmarkGame__puzzle": {
+      "category": "SingleSource/BenchmarkGame",
+      "features": {
+        "file_size": 16272,
+        "text_size": 0,
+        "func_count": 12,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 43,
+      "median_runtime_s": 0.0914,
+      "baseline_sha256": "111c4429d8c897eaec51449b66b417b7de8f724d26cb11634d82a13740eae333"
+    },
+    "ss__SingleSource__Benchmarks__Misc-C++__Large__sphereflake": {
+      "category": "SingleSource/Misc-C++",
+      "features": {
+        "file_size": 21168,
+        "text_size": 0,
+        "func_count": 11,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 18,
+      "median_runtime_s": 6.0038,
+      "baseline_sha256": "e19cc8451360770601dab94f7254fc847e1e7a43ffb83f8d74ad57fe675b5692"
+    },
+    "ss__SingleSource__Benchmarks__Misc-C++__stepanov_container": {
+      "category": "SingleSource/Misc-C++",
+      "features": {
+        "file_size": 33824,
+        "text_size": 0,
+        "func_count": 43,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 70,
+      "median_runtime_s": 5.6197,
+      "baseline_sha256": "189f116415ee4246e2b4034c83f02c8734e3cc198029ef056dfddb497149c021"
+    },
+    "ss__SingleSource__Benchmarks__BenchmarkGame__spectral-norm": {
+      "category": "SingleSource/BenchmarkGame",
+      "features": {
+        "file_size": 16192,
+        "text_size": 0,
+        "func_count": 10,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 35,
+      "median_runtime_s": 0.203,
+      "baseline_sha256": "ab62b68a249675c4d9a3cecffb8fa407258ff271507cfe1bb57b28c1188163ad"
+    },
+    "ss__SingleSource__Benchmarks__CoyoteBench__lpbench": {
+      "category": "SingleSource/CoyoteBench",
+      "features": {
+        "file_size": 20552,
+        "text_size": 0,
+        "func_count": 12,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 80,
+      "median_runtime_s": 1.6841,
+      "baseline_sha256": "9f2c9f0c063ca1c526fbbdbc57544bf16f66d0a8d9d6bb77ea5dd2ba9fbbefd5"
+    },
+    "ss__SingleSource__Benchmarks__BenchmarkGame__recursive": {
+      "category": "SingleSource/BenchmarkGame",
+      "features": {
+        "file_size": 16080,
+        "text_size": 0,
+        "func_count": 11,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 23,
+      "median_runtime_s": 0.8089,
+      "baseline_sha256": "4c0845741f6b11e8c92b38b83f864a930c6084bbafd6a0cfb6c9b4e2b9fce461"
+    },
+    "ss__SingleSource__Benchmarks__Shootout__hello": {
+      "category": "SingleSource/Shootout",
+      "features": {
+        "file_size": 15936,
+        "text_size": 0,
+        "func_count": 6,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 3,
+      "median_runtime_s": 0.0106,
+      "baseline_sha256": "b0a076dfcc451c02d2bcb7d2d968a72cc84c0d83eedfd3d04096bdc836de2583"
+    },
+    "ss__SingleSource__Benchmarks__CoyoteBench__almabench": {
+      "category": "SingleSource/CoyoteBench",
+      "features": {
+        "file_size": 24952,
+        "text_size": 0,
+        "func_count": 9,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 17,
+      "median_runtime_s": 6.7229,
+      "baseline_sha256": "9bc5ee24efd270359470662cd76a53a2771b77bb19ac83907c1fa77020764391"
+    },
+    "ss__SingleSource__Benchmarks__BenchmarkGame__nsieve-bits": {
+      "category": "SingleSource/BenchmarkGame",
+      "features": {
+        "file_size": 16096,
+        "text_size": 0,
+        "func_count": 6,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 18,
+      "median_runtime_s": 0.4246,
+      "baseline_sha256": "869820870c5985d1cfa8fe4a9b92cbc36d7be29a5cf4ffefe739c5ffdedb994a"
+    },
+    "ss__SingleSource__Benchmarks__Misc-C++__stepanov_v1p2": {
+      "category": "SingleSource/Misc-C++",
+      "features": {
+        "file_size": 21464,
+        "text_size": 0,
+        "func_count": 8,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 39,
+      "median_runtime_s": 8.3424,
+      "baseline_sha256": "274a3976e91d56e767f957ab514737fb4409d8ea82055ef38286e328b8329309"
+    },
+    "ss__SingleSource__Benchmarks__Shootout__ary3": {
+      "category": "SingleSource/Shootout",
+      "features": {
+        "file_size": 16088,
+        "text_size": 0,
+        "func_count": 6,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 12,
+      "median_runtime_s": 0.4049,
+      "baseline_sha256": "00cd333cf3f127b3b30b529aadd179924453a79db9298d9db4c8e8be93a48368"
+    },
+    "ss__SingleSource__Benchmarks__Shootout__objinst": {
+      "category": "SingleSource/Shootout",
+      "features": {
+        "file_size": 16392,
+        "text_size": 0,
+        "func_count": 13,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 24,
+      "median_runtime_s": 0.0107,
+      "baseline_sha256": "9527f900370081099920bcc58b4feaf9a25249dc72d8c5599dfedd455ce49a25"
+    },
+    "ss__SingleSource__Benchmarks__BenchmarkGame__Large__fasta": {
+      "category": "SingleSource/BenchmarkGame",
+      "features": {
+        "file_size": 16456,
+        "text_size": 0,
+        "func_count": 6,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 12,
+      "median_runtime_s": 0.6578,
+      "baseline_sha256": "734b7d02c35dabd4335070c9137d0ee875f7e77135a8eb931ba6dc242215454c"
+    },
+    "ss__SingleSource__Benchmarks__Shootout__matrix": {
+      "category": "SingleSource/Shootout",
+      "features": {
+        "file_size": 16272,
+        "text_size": 0,
+        "func_count": 10,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 42,
+      "median_runtime_s": 1.0311,
+      "baseline_sha256": "5fa2c29c82651a808be623b93d9ff0cd98b4d9028de1bda767e3e2c86fd3de37"
+    },
+    "ss__SingleSource__Benchmarks__Adobe-C++__loop_unroll": {
+      "category": "SingleSource/Adobe-C++",
+      "features": {
+        "file_size": 308248,
+        "text_size": 0,
+        "func_count": 296,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 38,
+      "median_runtime_s": 0.4753,
+      "baseline_sha256": "a2ef2ff6e7fd893263a41a581985c0514e0f92ff989faf8c427bb24c8fe1311d"
+    },
+    "ss__SingleSource__Benchmarks__Shootout__random": {
+      "category": "SingleSource/Shootout",
+      "features": {
+        "file_size": 16032,
+        "text_size": 0,
+        "func_count": 6,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 10,
+      "median_runtime_s": 2.4074,
+      "baseline_sha256": "f0cbf8348e23efcf776f67d4bce3871ba60ec7dbab23b6d50725e94501ad0511"
+    },
+    "ss__SingleSource__Benchmarks__Shootout__hash": {
+      "category": "SingleSource/Shootout",
+      "features": {
+        "file_size": 16520,
+        "text_size": 0,
+        "func_count": 9,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 24,
+      "median_runtime_s": 1.8291,
+      "baseline_sha256": "eb3418a1fbcb37c22c6b32f699a433b640344fbcc3cb824adba05d447cac6d76"
+    },
+    "ss__SingleSource__Benchmarks__Adobe-C++__simple_types_constant_folding": {
+      "category": "SingleSource/Adobe-C++",
+      "features": {
+        "file_size": 200776,
+        "text_size": 0,
+        "func_count": 299,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 43,
+      "median_runtime_s": 0.4752,
+      "baseline_sha256": "0055a5989ef1d1a9e8272b529a310e4626fb7d24da07a8173d6b994a7ec84f37"
+    },
+    "ss__SingleSource__Benchmarks__Adobe-C++__functionobjects": {
+      "category": "SingleSource/Adobe-C++",
+      "features": {
+        "file_size": 30904,
+        "text_size": 0,
+        "func_count": 29,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 57,
+      "median_runtime_s": 2.6094,
+      "baseline_sha256": "506024f701d317ba2d7be1463285cc3618e306e676e46c68d149b2c991ec7e15"
+    },
+    "ss__SingleSource__Benchmarks__Misc__dt": {
+      "category": "SingleSource/Misc",
+      "features": {
+        "file_size": 16088,
+        "text_size": 0,
+        "func_count": 6,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 7,
+      "median_runtime_s": 0.4441,
+      "baseline_sha256": "1a4216786d236adfbc279a8326110632d642b3139638b6d10f0c30cd00a8ffd3"
+    },
+    "ss__SingleSource__Benchmarks__Shootout__methcall": {
+      "category": "SingleSource/Shootout",
+      "features": {
+        "file_size": 16344,
+        "text_size": 0,
+        "func_count": 13,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 28,
+      "median_runtime_s": 3.3514,
+      "baseline_sha256": "115bc218a11e5605b60e82dcad2d77755777adab19eb9044cbcba20e1f219c8b"
+    },
+    "ss__SingleSource__Benchmarks__Adobe-C++__stepanov_vector": {
+      "category": "SingleSource/Adobe-C++",
+      "features": {
+        "file_size": 35672,
+        "text_size": 0,
+        "func_count": 24,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 77,
+      "median_runtime_s": 1.4445,
+      "baseline_sha256": "c5b91dc4241a58edf3bf00a477b797f9b62732a14c37b08b4882d9a1f73edccd"
+    },
+    "ss__SingleSource__Benchmarks__Adobe-C++__simple_types_loop_invariant": {
+      "category": "SingleSource/Adobe-C++",
+      "features": {
+        "file_size": 155792,
+        "text_size": 0,
+        "func_count": 179,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 48,
+      "median_runtime_s": 1.1983,
+      "baseline_sha256": "8c1fb298ae63eb55acf517a5ece303935508a68eacdf784e601a1e2c4758fffc"
+    },
+    "ss__SingleSource__Benchmarks__Misc__evalloop": {
+      "category": "SingleSource/Misc",
+      "features": {
+        "file_size": 16144,
+        "text_size": 0,
+        "func_count": 8,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 14,
+      "median_runtime_s": 0.6161,
+      "baseline_sha256": "f568e882e1e380ace39b06996226d4fafcfbc25b0dcc1f8f8f304fea72cdd772"
+    },
+    "ss__SingleSource__Benchmarks__Misc__ffbench": {
+      "category": "SingleSource/Misc",
+      "features": {
+        "file_size": 16248,
+        "text_size": 0,
+        "func_count": 7,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 29,
+      "median_runtime_s": 0.535,
+      "baseline_sha256": "3977ea882ee1fb6a6cf5e09388f64b03ee58474d2e9c8596249f8a2b974c223a"
+    },
+    "ss__SingleSource__Benchmarks__Misc__flops-2": {
+      "category": "SingleSource/Misc",
+      "features": {
+        "file_size": 17512,
+        "text_size": 0,
+        "func_count": 6,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 6,
+      "median_runtime_s": 0.6951,
+      "baseline_sha256": "eb6921c140077b82b0bb5cabb664ded83f08aa9f86e375092e497dcfa36401e0"
+    },
+    "ss__SingleSource__Benchmarks__Adobe-C++__stepanov_abstraction": {
+      "category": "SingleSource/Adobe-C++",
+      "features": {
+        "file_size": 31480,
+        "text_size": 0,
+        "func_count": 23,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 69,
+      "median_runtime_s": 2.5929,
+      "baseline_sha256": "dd8536f6aa8ff154380f22e89a50f92fb75d90fe318a3fb99362903865296de4"
+    },
+    "ss__SingleSource__Benchmarks__Misc__flops-1": {
+      "category": "SingleSource/Misc",
+      "features": {
+        "file_size": 17512,
+        "text_size": 0,
+        "func_count": 6,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 7,
+      "median_runtime_s": 0.5655,
+      "baseline_sha256": "3da29647a3a39a7978d2bdec3ba918673983bf9ea7c317ca9b9cce6c2760bf00"
+    },
+    "ss__SingleSource__Benchmarks__Misc__flops-4": {
+      "category": "SingleSource/Misc",
+      "features": {
+        "file_size": 17512,
+        "text_size": 0,
+        "func_count": 6,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 7,
+      "median_runtime_s": 0.3842,
+      "baseline_sha256": "b25c07821d58b8c8c8df585d5679afc8745645686cb948d6a4bc62d45f8f0748"
+    },
+    "ss__SingleSource__Benchmarks__Linpack__linpack-pc": {
+      "category": "SingleSource/Linpack",
+      "features": {
+        "file_size": 33232,
+        "text_size": 0,
+        "func_count": 18,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 158,
+      "median_runtime_s": 0.8417,
+      "baseline_sha256": "77f0711cecd3b9f9ef0a225cdcc19077ed7f5c8c39518e544dd7b1a7bc88f540"
+    },
+    "ss__SingleSource__Benchmarks__Misc__flops-3": {
+      "category": "SingleSource/Misc",
+      "features": {
+        "file_size": 17512,
+        "text_size": 0,
+        "func_count": 6,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 7,
+      "median_runtime_s": 0.7004,
+      "baseline_sha256": "462fc56824831bf0a46dfa062cf974157b038953812558f303eff25daa641496"
+    },
+    "ss__SingleSource__Benchmarks__Misc__flops-5": {
+      "category": "SingleSource/Misc",
+      "features": {
+        "file_size": 17512,
+        "text_size": 0,
+        "func_count": 6,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 7,
+      "median_runtime_s": 0.8876,
+      "baseline_sha256": "99d0204b0701b68e6a8584da156544d3b70d44b75bd2712abfd6524436db4391"
+    },
+    "ss__SingleSource__Benchmarks__Misc__lowercase": {
+      "category": "SingleSource/Misc",
+      "features": {
+        "file_size": 15936,
+        "text_size": 0,
+        "func_count": 6,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 4,
+      "median_runtime_s": 0.0106,
+      "baseline_sha256": "62f42f57df7c4421f957fcf207dc66135c62364f9955204cfe3bab171405994d"
+    },
+    "ss__SingleSource__Benchmarks__Misc__flops-6": {
+      "category": "SingleSource/Misc",
+      "features": {
+        "file_size": 17512,
+        "text_size": 0,
+        "func_count": 6,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 7,
+      "median_runtime_s": 0.6858,
+      "baseline_sha256": "3562c027fe5ab1f6e4b63d8072b26a9dcfa92ee097aa66335b31d076ae1639c5"
+    },
+    "ss__SingleSource__Benchmarks__Misc__flops-7": {
+      "category": "SingleSource/Misc",
+      "features": {
+        "file_size": 17512,
+        "text_size": 0,
+        "func_count": 6,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 7,
+      "median_runtime_s": 0.4239,
+      "baseline_sha256": "9b31171c89e64e283b24948aa7e391c18f2720815d45b506855447c1b3586d0d"
+    },
+    "ss__SingleSource__Benchmarks__Misc__mandel": {
+      "category": "SingleSource/Misc",
+      "features": {
+        "file_size": 16112,
+        "text_size": 0,
+        "func_count": 9,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 16,
+      "median_runtime_s": 0.2528,
+      "baseline_sha256": "5bb1d33e04efef5f72fd5203aa202dd021459e6061ca2ac0d15ee1a92dcc6510"
+    },
+    "ss__SingleSource__Benchmarks__Misc__flops-8": {
+      "category": "SingleSource/Misc",
+      "features": {
+        "file_size": 17512,
+        "text_size": 0,
+        "func_count": 6,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 7,
+      "median_runtime_s": 0.8074,
+      "baseline_sha256": "1ded137af1cf65f2313db47087dfa31661516a30422ea8e0358be778e02f7332"
+    },
+    "ss__SingleSource__Benchmarks__Misc__matmul_f64_4x4": {
+      "category": "SingleSource/Misc",
+      "features": {
+        "file_size": 16032,
+        "text_size": 0,
+        "func_count": 7,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 11,
+      "median_runtime_s": 0.4651,
+      "baseline_sha256": "2e6a1747935cfcf3d5209eaf9997c3b047bfe106fbaf454e704f3ed903a6df65"
+    },
+    "ss__SingleSource__Benchmarks__Misc__revertBits": {
+      "category": "SingleSource/Misc",
+      "features": {
+        "file_size": 16016,
+        "text_size": 0,
+        "func_count": 8,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 12,
+      "median_runtime_s": 0.1117,
+      "baseline_sha256": "012a7ee2728e5e9c805ae831d8880170cb1223533e84538be278289a081d3436"
+    },
+    "ss__SingleSource__Benchmarks__Misc__fp-convert": {
+      "category": "SingleSource/Misc",
+      "features": {
+        "file_size": 15968,
+        "text_size": 0,
+        "func_count": 7,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 13,
+      "median_runtime_s": 0.9358,
+      "baseline_sha256": "503054e8de617695f492a477cdd4c71ef114eae720016133e4af57dce31d51d5"
+    },
+    "ss__SingleSource__Benchmarks__Misc__pi": {
+      "category": "SingleSource/Misc",
+      "features": {
+        "file_size": 16008,
+        "text_size": 0,
+        "func_count": 7,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 11,
+      "median_runtime_s": 0.4856,
+      "baseline_sha256": "18641650fd6e297b3e13c421fbccac608a5bd3faa8e5bda7a6185a44665b054d"
+    },
+    "ss__SingleSource__Benchmarks__Misc__mandel-2": {
+      "category": "SingleSource/Misc",
+      "features": {
+        "file_size": 16144,
+        "text_size": 0,
+        "func_count": 10,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 19,
+      "median_runtime_s": 0.5259,
+      "baseline_sha256": "731ebaf1173822ab6430994d1c2a57507d280ddc3280aa10f3345d9726b76081"
+    },
+    "ss__SingleSource__Benchmarks__Shootout__lists": {
+      "category": "SingleSource/Shootout",
+      "features": {
+        "file_size": 16584,
+        "text_size": 0,
+        "func_count": 17,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 55,
+      "median_runtime_s": 3.2081,
+      "baseline_sha256": "53cfaea4b7d05b258adde431a837b212078d9997f15fd02f9792b498aa97e1ec"
+    },
+    "ss__SingleSource__Benchmarks__Misc__richards_benchmark": {
+      "category": "SingleSource/Misc",
+      "features": {
+        "file_size": 16912,
+        "text_size": 0,
+        "func_count": 20,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 80,
+      "median_runtime_s": 0.505,
+      "baseline_sha256": "e90a5efebcc14d67db738e0e7775b7e98e76fbc56d3187060bfe346f3bcef61b"
+    },
+    "ss__SingleSource__Benchmarks__Misc__oourafft": {
+      "category": "SingleSource/Misc",
+      "features": {
+        "file_size": 33016,
+        "text_size": 0,
+        "func_count": 15,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 80,
+      "median_runtime_s": 1.6577,
+      "baseline_sha256": "f55f44d1b5dfdaddf8dd163768c20721a9f622841cec9488fc7d7d28e845c2dd"
+    },
+    "ss__SingleSource__Benchmarks__Misc__salsa20": {
+      "category": "SingleSource/Misc",
+      "features": {
+        "file_size": 16088,
+        "text_size": 0,
+        "func_count": 8,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 18,
+      "median_runtime_s": 3.962,
+      "baseline_sha256": "fd28e425ca275ca1c9dee85543df403490fd0cfbf137a3c4028e1357a439e75b"
+    },
+    "ms__MultiSource__Benchmarks__ASC_Sequoia__CrystalMk": {
+      "category": "MultiSource/ASC_Sequoia",
+      "features": {
+        "file_size": 20592,
+        "text_size": 0,
+        "func_count": 11,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 77,
+      "median_runtime_s": 1.7492,
+      "baseline_sha256": "6b70c676fcea4d40a3c59ab9bfb1dca3767ebf08b5f6109d27d2c9f15c6bb9d6"
+    },
+    "ms__MultiSource__Benchmarks__MiBench__automotive-basicmath": {
+      "category": "MultiSource/MiBench",
+      "features": {
+        "file_size": 16448,
+        "text_size": 0,
+        "func_count": 10,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 28,
+      "median_runtime_s": 0.2429,
+      "baseline_sha256": "c63573232932865f7af29ec8894e6befaa3ab9a2ef31af983275a335874dc2c8"
+    },
+    "ms__MultiSource__Benchmarks__DOE-ProxyApps-C__Pathfinder": {
+      "category": "MultiSource/DOE-ProxyApps-C",
+      "features": {
+        "file_size": 50784,
+        "text_size": 0,
+        "func_count": 101,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 507,
+      "median_runtime_s": 0.0106,
+      "baseline_sha256": "cfecfb3ba1499363996926f2beefb1472a7b2f4a370ed7f680b598bd470909d3"
+    },
+    "ms__MultiSource__Benchmarks__MiBench__telecomm-adpcm": {
+      "category": "MultiSource/MiBench",
+      "features": {
+        "file_size": 16448,
+        "text_size": 0,
+        "func_count": 8,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 15,
+      "median_runtime_s": 0.0106,
+      "baseline_sha256": "ab8e6e8ee5196a4b3826714a9f2fe8037d3a19f7831f3dbc07cb2c660f85317d"
+    },
+    "ms__MultiSource__Benchmarks__MiBench__security-blowfish": {
+      "category": "MultiSource/MiBench",
+      "features": {
+        "file_size": 34992,
+        "text_size": 0,
+        "func_count": 15,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 87,
+      "median_runtime_s": 0.0107,
+      "baseline_sha256": "eed41ece5683fe78928e47aba2e422cc624ce2027b322081345531d924fdf4db"
+    },
+    "ms__MultiSource__Benchmarks__MiBench__security-sha": {
+      "category": "MultiSource/MiBench",
+      "features": {
+        "file_size": 16504,
+        "text_size": 0,
+        "func_count": 13,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 46,
+      "median_runtime_s": 0.0107,
+      "baseline_sha256": "e33869cbc6651468244f103e8fcfbe1bfd751f18c26db14b838fff50d575044f"
+    },
+    "ms__MultiSource__Benchmarks__llubenchmark": {
+      "category": "MultiSource/llubenchmark",
+      "features": {
+        "file_size": 16408,
+        "text_size": 0,
+        "func_count": 8,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 28,
+      "median_runtime_s": 0.3038,
+      "baseline_sha256": "d72a7e9fffb0b7c40e55143e8639f50aded9321e37cfa29b2cc37871702acb1d"
+    },
+    "ms__MultiSource__Benchmarks__Prolangs-C__allroots": {
+      "category": "MultiSource/Prolangs-C",
+      "features": {
+        "file_size": 16448,
+        "text_size": 0,
+        "func_count": 11,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 33,
+      "median_runtime_s": 0.0107,
+      "baseline_sha256": "a5f4f2d67e64c7eca950c6f9079933c418516f62dcc1160e278caa60afa6a170"
+    },
+    "ms__MultiSource__Benchmarks__mediabench__mpeg2__mpeg2dec": {
+      "category": "MultiSource/mediabench",
+      "features": {
+        "file_size": 86872,
+        "text_size": 0,
+        "func_count": 62,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 541,
+      "median_runtime_s": 0.0107,
+      "baseline_sha256": "598496fa2b901805f430fdb3316fcb232df44cce17502816f652dd365a3cb976"
+    },
+    "ms__MultiSource__Benchmarks__Olden__bisort": {
+      "category": "MultiSource/Olden",
+      "features": {
+        "file_size": 16672,
+        "text_size": 0,
+        "func_count": 18,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 53,
+      "median_runtime_s": 0.0207,
+      "baseline_sha256": "7fb60d1292af9fa3181dc14f55df305ec019724079d1d7a3b7698e1cb7fdc0b1"
+    },
+    "ms__MultiSource__Benchmarks__Olden__voronoi": {
+      "category": "MultiSource/Olden",
+      "features": {
+        "file_size": 27008,
+        "text_size": 0,
+        "func_count": 50,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 188,
+      "median_runtime_s": 0.0107,
+      "baseline_sha256": "c796707d237e7ef0a84563ea9ca3c3a37834537dd0f4e006745b617df14d991f"
+    },
+    "ms__MultiSource__Benchmarks__Olden__mst": {
+      "category": "MultiSource/Olden",
+      "features": {
+        "file_size": 16712,
+        "text_size": 0,
+        "func_count": 15,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 51,
+      "median_runtime_s": 0.0105,
+      "baseline_sha256": "2418a09c7a6297965762dfb698612612713c25c9e0aaafd5a2a0df9e3a80f2a2"
+    },
+    "ms__MultiSource__Benchmarks__Olden__health": {
+      "category": "MultiSource/Olden",
+      "features": {
+        "file_size": 16784,
+        "text_size": 0,
+        "func_count": 18,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 63,
+      "median_runtime_s": 0.0107,
+      "baseline_sha256": "f533eb97ccb75f00640834adbffffba5a530a4b92d1a1c2f5dea2a489259ddbb"
+    },
+    "ms__MultiSource__Benchmarks__Prolangs-C++__fsm": {
+      "category": "MultiSource/Prolangs-C++",
+      "features": {
+        "file_size": 17272,
+        "text_size": 0,
+        "func_count": 20,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 37,
+      "median_runtime_s": 0.0106,
+      "baseline_sha256": "9338e9c6cb7512d7f366a29b900cec39c61514b3bba54315026d54f06197fe02"
+    },
+    "ms__MultiSource__Benchmarks__Prolangs-C++__objects": {
+      "category": "MultiSource/Prolangs-C++",
+      "features": {
+        "file_size": 18832,
+        "text_size": 0,
+        "func_count": 41,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 83,
+      "median_runtime_s": 0.0107,
+      "baseline_sha256": "72a21c30816da4341102c726122b6b8c94aab512dd8b7d1dfb9251a459e9fec2"
+    },
+    "ms__MultiSource__Benchmarks__Prolangs-C++__simul": {
+      "category": "MultiSource/Prolangs-C++",
+      "features": {
+        "file_size": 19064,
+        "text_size": 0,
+        "func_count": 51,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 55,
+      "median_runtime_s": 0.0106,
+      "baseline_sha256": "729e301f8ba806e2f635c9182929c489c3699936159129b4e5f0dd22cbce0f6f"
+    },
+    "ms__MultiSource__Benchmarks__Prolangs-C++__deriv2": {
+      "category": "MultiSource/Prolangs-C++",
+      "features": {
+        "file_size": 22824,
+        "text_size": 0,
+        "func_count": 23,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 38,
+      "median_runtime_s": 0.0107,
+      "baseline_sha256": "cd2a4959bd4097217718ac7070f478b5d8e727531ed28e32fbb96c4001f0df33"
+    },
+    "ms__MultiSource__Benchmarks__Prolangs-C++__garage": {
+      "category": "MultiSource/Prolangs-C++",
+      "features": {
+        "file_size": 17768,
+        "text_size": 0,
+        "func_count": 18,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 25,
+      "median_runtime_s": 0.0108,
+      "baseline_sha256": "95484590cb46e2214b234972f9064126fc2b24ac935c25f7aafb0e4189625f22"
+    },
+    "ms__MultiSource__Benchmarks__Prolangs-C++__deriv1": {
+      "category": "MultiSource/Prolangs-C++",
+      "features": {
+        "file_size": 18624,
+        "text_size": 0,
+        "func_count": 20,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 38,
+      "median_runtime_s": 0.0107,
+      "baseline_sha256": "425ddd53f0f9a0d90522affddd1792635e15e748985110c5423d8f5d6ac64625"
+    },
+    "ms__MultiSource__Benchmarks__Prolangs-C++__shapes": {
+      "category": "MultiSource/Prolangs-C++",
+      "features": {
+        "file_size": 23008,
+        "text_size": 0,
+        "func_count": 40,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 76,
+      "median_runtime_s": 0.0106,
+      "baseline_sha256": "26032c4ee9e11f3a0d10568ac03499580dfcdf017b1b881ce240c1e3084cca82"
+    },
+    "ms__MultiSource__Benchmarks__Olden__power": {
+      "category": "MultiSource/Olden",
+      "features": {
+        "file_size": 21552,
+        "text_size": 0,
+        "func_count": 22,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 64,
+      "median_runtime_s": 0.4263,
+      "baseline_sha256": "e851b944937aac153c36ad4212dffee5d078bb9261a22c1359cc5986c3b85970"
+    },
+    "ms__MultiSource__Benchmarks__Prolangs-C++__office": {
+      "category": "MultiSource/Prolangs-C++",
+      "features": {
+        "file_size": 18080,
+        "text_size": 0,
+        "func_count": 19,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 39,
+      "median_runtime_s": 0.0108,
+      "baseline_sha256": "aeeb24f988633e9e58accc45b7f4d30fd470f9693e02f1e20ebc9cdbc93e165a"
+    },
+    "ms__MultiSource__Benchmarks__Prolangs-C++__vcirc": {
+      "category": "MultiSource/Prolangs-C++",
+      "features": {
+        "file_size": 16880,
+        "text_size": 0,
+        "func_count": 17,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 25,
+      "median_runtime_s": 0.0107,
+      "baseline_sha256": "e947555b7c60af8b375662d275bfa798fb8260f88390333c023bde66b3d1ca58"
+    },
+    "ms__MultiSource__Benchmarks__Prolangs-C++__NP": {
+      "category": "MultiSource/Prolangs-C++",
+      "features": {
+        "file_size": 16712,
+        "text_size": 0,
+        "func_count": 8,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 7,
+      "median_runtime_s": 0.0107,
+      "baseline_sha256": "3aeebe2cd747e8c0359eea0c8a2c10c4c6921bccfca5cebc6e578c6c468eaf95"
+    },
+    "ms__MultiSource__Benchmarks__Prolangs-C++__life": {
+      "category": "MultiSource/Prolangs-C++",
+      "features": {
+        "file_size": 17304,
+        "text_size": 0,
+        "func_count": 19,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 51,
+      "median_runtime_s": 0.7482,
+      "baseline_sha256": "537c6082e89f6a56986aacd21e265c6bc0444d0bce80dd25bb41f2e3fc1f5647"
+    },
+    "ms__MultiSource__Benchmarks__Prolangs-C++__family": {
+      "category": "MultiSource/Prolangs-C++",
+      "features": {
+        "file_size": 17320,
+        "text_size": 0,
+        "func_count": 12,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 6,
+      "median_runtime_s": 0.0105,
+      "baseline_sha256": "0524741461615a6732df3a9c16ed52c55ac57ec1988401427fc57dd314b3fcea"
+    },
+    "ms__MultiSource__Benchmarks__Prolangs-C++__ocean": {
+      "category": "MultiSource/Prolangs-C++",
+      "features": {
+        "file_size": 23224,
+        "text_size": 0,
+        "func_count": 41,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 110,
+      "median_runtime_s": 0.0616,
+      "baseline_sha256": "8895683c70afe64de0fb82e29b113ce41f097eb197f76c089f500e07bcdf9b78"
+    },
+    "ms__MultiSource__Benchmarks__Prolangs-C++__trees": {
+      "category": "MultiSource/Prolangs-C++",
+      "features": {
+        "file_size": 18504,
+        "text_size": 0,
+        "func_count": 38,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 86,
+      "median_runtime_s": 0.0107,
+      "baseline_sha256": "c5ca6aef64d8ae2356c2c9f4376bdd5fb70b6c6b162c71d936491fe603b6e8e6"
+    },
+    "ms__MultiSource__Benchmarks__Prolangs-C++__primes": {
+      "category": "MultiSource/Prolangs-C++",
+      "features": {
+        "file_size": 16784,
+        "text_size": 0,
+        "func_count": 9,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 16,
+      "median_runtime_s": 0.6459,
+      "baseline_sha256": "7af1e09b261b9fef7871d03f6728324cce4cf040b62a883effdf3a869ed13c33"
+    },
+    "ms__MultiSource__Benchmarks__ASC_Sequoia__AMGmk": {
+      "category": "MultiSource/ASC_Sequoia",
+      "features": {
+        "file_size": 39632,
+        "text_size": 0,
+        "func_count": 49,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 330,
+      "median_runtime_s": 4.3805,
+      "baseline_sha256": "668d62781d171e4a7caf04a40d5c2e4db81e3a546647f5ec006fb8a04312ec54"
+    },
+    "ms__MultiSource__Benchmarks__NPB-serial__dc": {
+      "category": "MultiSource/NPB-serial",
+      "features": {
+        "file_size": 59088,
+        "text_size": 0,
+        "func_count": 79,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 501,
+      "median_runtime_s": 0.0511,
+      "baseline_sha256": "eb8be7741a3c43fdd6cec71e1c817b7519cfbf36d5106e8ec31f5e8873f57319"
+    },
+    "ms__MultiSource__Benchmarks__BitBench__five11": {
+      "category": "MultiSource/BitBench",
+      "features": {
+        "file_size": 16720,
+        "text_size": 0,
+        "func_count": 16,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 58,
+      "median_runtime_s": 0.0106,
+      "baseline_sha256": "9b05adcde921c8fd784c44c2e476b44078ccc5a23ee4b9e086c0226d2b27b399"
+    },
+    "ms__MultiSource__Benchmarks__BitBench__drop3": {
+      "category": "MultiSource/BitBench",
+      "features": {
+        "file_size": 16368,
+        "text_size": 0,
+        "func_count": 7,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 29,
+      "median_runtime_s": 0.0107,
+      "baseline_sha256": "4b497382bcc794fbbb4f6e7d3ca27d239f32138cc0f3148323bcff477cf836b7"
+    },
+    "ms__MultiSource__Benchmarks__NPB-serial__is": {
+      "category": "MultiSource/NPB-serial",
+      "features": {
+        "file_size": 17608,
+        "text_size": 0,
+        "func_count": 11,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 39,
+      "median_runtime_s": 4.7778,
+      "baseline_sha256": "ee38618915849e2e73c21fbf7944a639faed24ae9971665d273d4b094c3edb4d"
+    },
+    "ms__MultiSource__Benchmarks__DOE-ProxyApps-C__CoMD": {
+      "category": "MultiSource/DOE-ProxyApps-C",
+      "features": {
+        "file_size": 66576,
+        "text_size": 0,
+        "func_count": 83,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 465,
+      "median_runtime_s": 5.0118,
+      "baseline_sha256": "a07494522d6cd11db085733f5fd0546d58bad3833d901d7fea2b5eadcb754d9b"
+    },
+    "ms__MultiSource__Benchmarks__McCat__01-qbsort": {
+      "category": "MultiSource/McCat",
+      "features": {
+        "file_size": 16752,
+        "text_size": 0,
+        "func_count": 13,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 41,
+      "median_runtime_s": 0.0107,
+      "baseline_sha256": "550b08177ce96115ff7bef098306f7350df04a55e59e6244fec7a98a05ff488e"
+    },
+    "ms__MultiSource__Benchmarks__McCat__08-main": {
+      "category": "MultiSource/McCat",
+      "features": {
+        "file_size": 27024,
+        "text_size": 0,
+        "func_count": 45,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 160,
+      "median_runtime_s": 0.0612,
+      "baseline_sha256": "f2e57fcdcafcad29f35c89bc9f1d081a24238e6bc2e2cb8d9fe9c2505cfce18c"
+    },
+    "ms__MultiSource__Benchmarks__McCat__03-testtrie": {
+      "category": "MultiSource/McCat",
+      "features": {
+        "file_size": 17120,
+        "text_size": 0,
+        "func_count": 16,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 48,
+      "median_runtime_s": 0.0106,
+      "baseline_sha256": "b87e7a6f8aafcdf4e4d9a4462034e812dfdac7723f9ce92312948fbb673f799d"
+    },
+    "ms__MultiSource__Benchmarks__McCat__05-eks": {
+      "category": "MultiSource/McCat",
+      "features": {
+        "file_size": 29952,
+        "text_size": 0,
+        "func_count": 34,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 243,
+      "median_runtime_s": 0.0106,
+      "baseline_sha256": "975e98bd37b7357c65dca476fa390fe9cf2419d72df8f4935818046bf8056f5c"
+    },
+    "ms__MultiSource__Benchmarks__McCat__12-IOtest": {
+      "category": "MultiSource/McCat",
+      "features": {
+        "file_size": 17024,
+        "text_size": 0,
+        "func_count": 36,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 94,
+      "median_runtime_s": 0.1825,
+      "baseline_sha256": "8f692efa5557ddda5ce97f6bdbbff05a1e7daac7b20868f599de4a6a40ee6378"
+    },
+    "ms__MultiSource__Benchmarks__Fhourstones-3.1": {
+      "category": "MultiSource/Fhourstones-3.1",
+      "features": {
+        "file_size": 21256,
+        "text_size": 0,
+        "func_count": 27,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 124,
+      "median_runtime_s": 0.0106,
+      "baseline_sha256": "f30b1183e3cebbf9016b40981957cb8022f543a7ca5d664784eec3ef5c8b2756"
+    },
+    "ms__MultiSource__Benchmarks__Trimaran__netbench-crc": {
+      "category": "MultiSource/Trimaran",
+      "features": {
+        "file_size": 60160,
+        "text_size": 0,
+        "func_count": 10,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 32,
+      "median_runtime_s": 0.0107,
+      "baseline_sha256": "ce7d8d724c0b4c2e641b4c2eeb92f6f9afc521cf994132a2f9d44b5f589791c2"
+    },
+    "ms__MultiSource__Benchmarks__Trimaran__enc-rc4": {
+      "category": "MultiSource/Trimaran",
+      "features": {
+        "file_size": 16584,
+        "text_size": 0,
+        "func_count": 8,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 18,
+      "median_runtime_s": 1.1811,
+      "baseline_sha256": "1b32c337a370eba7940826a8f0dd16af446ef758f90ac89e6d6e694c0e81631e"
+    },
+    "ms__MultiSource__Benchmarks__Trimaran__enc-3des": {
+      "category": "MultiSource/Trimaran",
+      "features": {
+        "file_size": 33856,
+        "text_size": 0,
+        "func_count": 16,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 48,
+      "median_runtime_s": 1.5939,
+      "baseline_sha256": "d69ab8e233eeade6eba9057808652961c947fb72a8307e652db55a9c006b9cc1"
+    },
+    "ms__MultiSource__Benchmarks__Trimaran__enc-md5": {
+      "category": "MultiSource/Trimaran",
+      "features": {
+        "file_size": 20464,
+        "text_size": 0,
+        "func_count": 11,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 46,
+      "median_runtime_s": 0.1622,
+      "baseline_sha256": "25028be334ee7bdcc78f0df966a4abb7a4a2d52365a9b6dc87f93a0d61731426"
+    },
+    "ms__MultiSource__Benchmarks__TSVC__Searching-flt": {
+      "category": "MultiSource/TSVC",
+      "features": {
+        "file_size": 58320,
+        "text_size": 0,
+        "func_count": 18,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 261,
+      "median_runtime_s": 8.3721,
+      "baseline_sha256": "b6c1a04e1ac9e59fc62e3c39c73cd087bcf23f14c2a8251eb64a1ddeab837ec2"
+    },
+    "ms__MultiSource__Benchmarks__TSVC__Searching-dbl": {
+      "category": "MultiSource/TSVC",
+      "features": {
+        "file_size": 58320,
+        "text_size": 0,
+        "func_count": 18,
+        "branch_count": 0,
+        "indirect_call_count": 0,
+        "branch_density": 0.0,
+        "cyclomatic_proxy": 3
+      },
+      "activation_total": 261,
+      "median_runtime_s": 8.0829,
+      "baseline_sha256": "02a4bf08c7ff9a2502e113474a17ace66fecd806981966fe315cbd265c2daa6b"
+    }
+  },
+  "version": 2,
+  "amendment": {
+    "utc": "2026-09-04T00:12:35Z",
+    "gate": "G7",
+    "rule": "programs with llvm-baseline median runtime > 10.0s excluded as performance_outlier; same split_seed and algorithm re-applied to remaining admitted pool (security_subset re-picked objectively)",
+    "excluded": [
+      "ms__MultiSource__Benchmarks__DOE-ProxyApps-C__miniGMG",
+      "ms__MultiSource__Benchmarks__TSVC__Equivalencing-flt",
+      "ms__MultiSource__Benchmarks__TSVC__IndirectAddressing-dbl",
+      "ms__MultiSource__Benchmarks__TSVC__IndirectAddressing-flt",
+      "ms__MultiSource__Benchmarks__TSVC__NodeSplitting-dbl",
+      "ms__MultiSource__Benchmarks__TSVC__Recurrences-dbl",
+      "ms__MultiSource__Benchmarks__TSVC__Recurrences-flt",
+      "ms__MultiSource__Benchmarks__TSVC__StatementReordering-dbl",
+      "ms__MultiSource__Benchmarks__TSVC__StatementReordering-flt",
+      "ms__MultiSource__Benchmarks__TSVC__Symbolics-dbl",
+      "ms__MultiSource__Benchmarks__TSVC__Symbolics-flt"
+    ],
+    "user_approved": "2026-09-03 choice: G7>10s+timeout300+measure5"
+  }
+}

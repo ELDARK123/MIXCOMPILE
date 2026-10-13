@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.65
+  },
+  "BCF": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.45,
+   "CorrectnessRisk": 0.6
+  },
+  "FLA": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.6
+  },
+  "SPLIT": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.55,
+   "CorrectnessRisk": 0.65
+  },
+  "IBR": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.6
+  },
+  "ICALL": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.65
+  },
+  "IGV": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.6
+  }
+ },
+ "rationale": "Round 1 failed with a compiler internal error on extreme weights, so this candidate flattens all weights into a conservative 0.35-0.65 band with no value at either extreme, which the harness hint indicates improves internal pass-pipeline stability. All seven passes remain enabled so per-function feature-driven selection can still differentiate, but none is pushed aggressively. The workload is a small numeric kernel (Cholesky, division, power in hot loops), so RuntimeCost weights sit slightly below the other dimensions to bias selection away from transformations that would bloat inner-loop execution, while SecurityGain and DiversityGain stay at the top of the band (~0.55-0.6) to keep meaningful obfuscation pressure. SUB and FLA get the highest SecurityGain since arithmetic and control-flow restructuring give the best resistance-per-cost on this code shape. SizeCost values around 0.5 tolerate the modest text growth of a 5 KB binary, and CorrectnessRisk weights near 0.6-0.65 favor passes with well-tested, semantics-preserving implementations, prioritizing a clean build this round over peak obfuscation.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__ASC_Sequoia__CrystalMk",
+  "run_id": "e10D_glm_agent_CrystalMk_2_42384",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-05T23:20:05Z"
+ }
+}

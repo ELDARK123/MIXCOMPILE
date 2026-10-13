@@ -67,3 +67,8 @@ vcpkg_installed/
 # test output & cache
 Testing/
 .cache/
+
+experiments_result/mechanism_e1_e10/config/experiment_matrix_tuning.json
+experiments_result/mechanism_e1_e10/config/experiment_matrix_test.json
+experiments_result/mechanism_e1_e10/config/experiment_matrix_validation.json
+experiments_result/mechanism_e1_e10/raw/pass_activation.csv

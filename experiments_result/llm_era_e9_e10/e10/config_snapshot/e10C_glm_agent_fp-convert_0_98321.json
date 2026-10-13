@@ -1,0 +1,54 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.3
+  },
+  "BCF": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.2
+  },
+  "SPLIT": {
+   "SecurityGain": 0.3,
+   "DiversityGain": 0.4,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.1,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.3
+  },
+  "ICALL": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.4,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.3
+  },
+  "IGV": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.3,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  }
+ },
+ "rationale": "This is a tiny (584 text bytes, 3 functions) floating-point-heavy benchmark whose hot loops make heavy control-flow transforms unacceptable: FLA is omitted entirely because flattening the FP-intensive kernels in fbench/whetstone/flops would impose severe runtime cost for little gain on such small bodies, while BCF gets the highest SecurityGain weight as the primary deterrent since its opaque predicates obfuscate the branch structure at tolerable overhead. SUB is favored for DiversityGain because arithmetic substitution multiplies static variety cheaply, but its CorrectnessRisk is kept moderate since substitutions must strictly preserve IEEE FP semantics in this compute-bound code. SPLIT, IBR, and ICALL receive mid-range security weights with low cost weights, contributing structural diversity (basic-block splitting, indirect branches/calls) without compounding overhead, and IGV is included at modest weight because the program's few globals limit its payoff. Overall the table biases selection toward low-cost, semantics-preserving transforms (SUB, SPLIT, BCF) and against structural rewrites (FLA) that would break the benchmark's runtime profile.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Misc__fp-convert",
+  "run_id": "e10C_glm_agent_fp-convert_0_98321",
+  "arm": "C",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T14:52:33Z"
+ }
+}

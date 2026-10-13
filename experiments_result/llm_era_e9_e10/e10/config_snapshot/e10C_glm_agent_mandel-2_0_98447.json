@@ -1,0 +1,47 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.55,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.85
+  },
+  "BCF": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.95,
+   "SizeCost": 0.9,
+   "CorrectnessRisk": 0.7
+  },
+  "SPLIT": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  },
+  "IBR": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.65,
+   "SizeCost": 0.55,
+   "CorrectnessRisk": 0.4
+  },
+  "IGV": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.3
+  }
+ },
+ "rationale": "This sample is a floating-point compute benchmark (mandel, flops, whetstone, fbench, oourafft) with extremely hot arithmetic loops, a tiny 1427-byte text section, and only 6 functions, so runtime and size overhead must dominate pass selection while FP semantics make correctness the top constraint. SUB is allowed but with the highest CorrectnessRisk weight (0.85) so it is steered away from FP-arithmetic-dominated functions like __muldc3, cnorm2, and the flops kernels where substitutions could perturb rounding or NaN handling, while still applying to integer/control helper code. BCF is heavily penalized on RuntimeCost (0.95) and SizeCost (0.90) because opaque-predicate checks inside the flops/whetstone inner loops would badly skew benchmark timing and bloat a sub-1.5KB binary, effectively confining it to cold code like main's setup. SPLIT and IGV are favored: they are near-zero runtime/size cost, and IGV's DiversityGain of 0.80 exploits the multi-function structure to make per-function transformations inconsistent and harder to correlate. IBR gets moderate weights \u2014 it meaningfully hardens branch structure in the mandel/fft loop nests but its indirect-branch machinery carries measurable branch-predictor cost on this branchy FP code. FLA and ICALL are omitted entirely: control-flow flattening's per-iteration dispatcher overhead is unacceptable in the hot numeric loops, and with only 6 functions and few call sites there is little indirect-call surface for ICALL to protect.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Misc__mandel-2",
+  "run_id": "e10C_glm_agent_mandel-2_0_98447",
+  "arm": "C",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T14:54:41Z"
+ }
+}

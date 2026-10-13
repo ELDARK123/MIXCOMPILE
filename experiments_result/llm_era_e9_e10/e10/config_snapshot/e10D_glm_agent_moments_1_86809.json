@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.3
+  },
+  "FLA": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.3
+  },
+  "SPLIT": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.3
+  },
+  "ICALL": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.2
+  },
+  "IGV": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.2
+  }
+ },
+ "rationale": "The moments benchmark is a Shootout-C++ numeric program: a handful of small functions dominated by tight floating-point loops over input data, so nearly all execution time concentrates in a very hot inner loop while static code size and function count are tiny. To maximize reverse-engineering resistance without wrecking the hot loop, I weight heavily toward low-cost, high-diversity passes: SUB (arithmetic substitution) and SPLIT (which also improves the effectiveness of downstream passes) get strong Security/Diversity weights with generous cost tolerance, and IGV and ICALL are kept moderately enabled since indirect globals and calls add static-analysis friction at modest runtime price. Conversely, BCF, FLA, and IBR are the expensive control-flow passes \u2014 bogus branches and flattening multiply basic blocks inside precisely the loops this benchmark re-executes millions of times, and IBR's indirect branches pressure the branch predictor \u2014 so their RuntimeCost/SizeCost weights are deliberately kept low (0.2-0.3) to throttle their selection. CorrectnessRisk weights stay low across the board (0.1-0.3) because the program is straight-line scalar/FP computation with no volatile access, inline asm, setjmp, or unusual ABI surface, so even aggressive transformation is unlikely to break semantics; the slightly elevated risk on BCF/FLA/IBR simply reflects extra control-flow rewriting on FP-heavy code.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Shootout-C++__moments",
+  "run_id": "e10D_glm_agent_moments_1_86809",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T11:40:36Z"
+ }
+}

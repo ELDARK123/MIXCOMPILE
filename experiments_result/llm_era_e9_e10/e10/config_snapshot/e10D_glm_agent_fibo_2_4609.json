@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.9,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.1,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.9,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "FLA": {
+   "SecurityGain": 0.95,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.15
+  },
+  "SPLIT": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.05
+  },
+  "IBR": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.85,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.15,
+   "CorrectnessRisk": 0.1
+  },
+  "ICALL": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.25,
+   "SizeCost": 0.15,
+   "CorrectnessRisk": 0.15
+  },
+  "IGV": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.25,
+   "SizeCost": 0.15,
+   "CorrectnessRisk": 0.2
+  }
+ },
+ "rationale": "Round 1 built and ran cleanly with no ICE or correctness failures, so this round escalates obfuscation across all seven passes. The binary is tiny (292 text bytes, 4 functions), making size overhead essentially free, hence very low SizeCost weights everywhere; fibo is a small compute-bound kernel so RuntimeCost weights stay moderate-low but not zero, letting the feature-driven selector skip heavy flattening on the hottest recursive path if its features argue against it. FLA and BCF get the highest SecurityGain to maximize control-flow recovery resistance, ICALL and IGV obscure call structure and inter-block transitions to break static analysis of the recursive call graph, and IBR's high DiversityGain exploits the many basic blocks FLA/BCF create. SPLIT seeds fragmentation so downstream passes have more material to transform. CorrectnessRisk weights stay low since the prior build showed this program tolerates aggressive transformation; IGV keeps a slightly higher risk weight as the most fragile pass on globals/init code (_GLOBAL__sub_I_fibo.cpp).",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Shootout-C++__fibo",
+  "run_id": "e10D_glm_agent_fibo_2_4609",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T16:37:18Z"
+ }
+}

@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.9,
+   "SizeCost": 0.9,
+   "CorrectnessRisk": 0.9
+  },
+  "SPLIT": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.9,
+   "SizeCost": 0.8,
+   "CorrectnessRisk": 0.9
+  },
+  "ICALL": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.8
+  },
+  "IGV": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.8
+  },
+  "IBR": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.7
+  },
+  "BCF": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.5
+  },
+  "FLA": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.4,
+   "RuntimeCost": 0.15,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.3
+  }
+ },
+ "rationale": "This sample is a small (~2KB text, 8 functions) numeric benchmark consisting of tight, hot kernels (fannkuch permutation loops, spectral-norm and n-body inner products, nsieve bit loops) plus recursion (recursive.c), so runtime cost dominates the risk profile. SUB and SPLIT are near-free at runtime and size and carry minimal correctness risk, so they get the highest weights and can be applied broadly across all functions to build a base layer of instruction-level diversity. ICALL and IGV are also inexpensive and add meaningful static-analysis friction (hiding call targets and data references) without perturbing the hot arithmetic loops, so they are enabled with moderately high weights. IBR is kept at a middle weight: indirect branching adds real RE resistance but inserts dispatch overhead directly inside the hot loops, so it should only attach to functions whose features indicate they can absorb the cost (e.g., the small helpers randInt/shuffle rather than the main kernels). BCF and FLA are strongly down-weighted: bogus control flow inflates the already-measurable loop bodies and flattening destroys the branch-predictability structure of the numeric kernels, giving multi-x slowdowns and size growth for modest static-analysis benefit; they remain enabled only at low weight so the feature-driven selector may apply them to cold functions (e.g., setup code in main) where cost is negligible. All CorrectnessRisk weights are kept moderate-to-high since the profile includes recursion and bit-manipulation where aggressive transformation is most likely to introduce subtle breakage.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__BenchmarkGame__puzzle",
+  "run_id": "e10C_glm_agent_puzzle_0_95949",
+  "arm": "C",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T14:13:12Z"
+ }
+}

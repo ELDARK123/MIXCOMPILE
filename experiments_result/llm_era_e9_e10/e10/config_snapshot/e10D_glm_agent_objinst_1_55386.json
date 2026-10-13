@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.2
+  },
+  "BCF": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.3
+  },
+  "FLA": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.3
+  },
+  "SPLIT": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.2
+  },
+  "ICALL": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.2
+  },
+  "IGV": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  }
+ },
+ "rationale": "Round 0 compiled and ran correctly with no ICE, so this round raises the security-oriented weights across the board to trade the demonstrated correctness headroom for stronger resistance on this tiny 634-byte, 9-function benchmark whose reverse-engineering value is concentrated in main's dispatch logic over the shootout kernels. SUB stays the workhorse (high security, low risk) since arithmetic substitution is cheap and correct on these small integer-heavy functions; BCF and FLA are raised to obscure main's control flow and loop structure, with their runtime weights held near mid-range because the harness loops (ary3, matrix, objinst instantiation) are the hot paths and we cannot afford aggressive bogus-control-flow amplification there. SPLIT is kept cheap and low-risk as a structure-complexing enabler for FLA; IBR and ICALL get elevated security and diversity weights to disrupt the dense call/branch graph of this compact binary, accepting modest indirect-call overhead since total code volume is small; IGV remains a moderate global variable-complexing layer. All CorrectnessRisk weights stay low-mid so the tuner still prefers applying passes rather than dropping them, consistent with the clean round-0 result.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Shootout__objinst",
+  "run_id": "e10D_glm_agent_objinst_1_55386",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T02:56:42Z"
+ }
+}

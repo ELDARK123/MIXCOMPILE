@@ -1,0 +1,26 @@
+{
+  "optimized_pass_weights.json": {
+    "source": "experiments_mixcompile_cybersecurity/config/optimized_pass_weights.json",
+    "mtime_utc": "2026-07-20T23:07:25Z",
+    "sha256": "8b23633cef3c",
+    "role": "frozen optimized main-config seed (E1 candidate: optimized)"
+  },
+  "baseline_pass_weights.json": {
+    "source": "experiments_mixcompile_cybersecurity/config/baseline_pass_weights.json",
+    "mtime_utc": "2026-07-17T15:26:42Z",
+    "sha256": "8f94ee3880b6",
+    "role": "frozen balanced historical baseline (independent, separate tables)"
+  },
+  "candidates/expert_optimized_20260604.json": {
+    "source": "experiments_mixcompile_final/config/optimized_pass_weights.json",
+    "mtime_utc": "2026-06-04T09:00:41Z",
+    "sha256": "d3c6a203df97",
+    "role": "E1 expert/fitted candidate (historical final-experiment optimized)"
+  },
+  "candidates/expert_balanced_20260604.json": {
+    "source": "experiments_mixcompile_final/config/baseline_pass_weights.json",
+    "mtime_utc": "2026-06-04T08:40:57Z",
+    "sha256": "dcf5502440d8",
+    "role": "E1 expert candidate (equals historical default_balanced.json)"
+  }
+}

@@ -1,0 +1,54 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.2
+  },
+  "BCF": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.4,
+   "RuntimeCost": 0.85,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.3
+  },
+  "FLA": {
+   "SecurityGain": 0.65,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.95,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.4
+  },
+  "SPLIT": {
+   "SecurityGain": 0.3,
+   "DiversityGain": 0.4,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.2
+  },
+  "IBR": {
+   "SecurityGain": 0.35,
+   "DiversityGain": 0.3,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.3
+  },
+  "ICALL": {
+   "SecurityGain": 0.2,
+   "DiversityGain": 0.2,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  }
+ },
+ "rationale": "flops-3 is a tiny (613 bytes, 2 functions) FP-arithmetic kernel whose single hot loop makes runtime overhead the dominant constraint, so the weight table leans heavily on RuntimeCost/SizeCost to penalize control-flow-heavy passes: FLA (0.95) and BCF (0.85) are strongly discouraged because flattening and opaque predicates executed every loop iteration would destroy the benchmark's performance profile while adding little real resistance to such a small function, and IBR (0.70) is similarly damped since there are few branches to indirect. SUB gets the highest benefit weights (0.85/0.75) because arithmetic substitution is exactly suited to FP-heavy code, is essentially free at runtime, and preserves correctness when applied conservatively (low CorrectnessRisk 0.20). SPLIT and ICALL are retained at low benefit weights so they may fire only where features genuinely favor them, adding cheap diversity without meaningful overhead; IGV is omitted entirely because this program has essentially no globals for it to act on.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Misc__flops-3",
+  "run_id": "e10C_glm_agent_flops-3_0_97863",
+  "arm": "C",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T14:44:55Z"
+ }
+}

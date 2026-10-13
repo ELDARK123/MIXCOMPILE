@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.15,
+   "SizeCost": 0.15,
+   "CorrectnessRisk": 0.05
+  },
+  "BCF": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.45,
+   "CorrectnessRisk": 0.1
+  },
+  "FLA": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.15
+  },
+  "SPLIT": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.15,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.05
+  },
+  "IBR": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.1
+  },
+  "ICALL": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.2
+  },
+  "IGV": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.15
+  }
+ },
+ "rationale": "Round 1 built and validated cleanly with no ICE fallback, so this round raises obfuscation pressure across the board while keeping cost weights moderate. SUB gets the highest SecurityGain because sha_transform is dominated by add/xor/rotate arithmetic that instruction substitution obscures cheaply and safely. IGV and ICALL are boosted to fragment the SHA-256 round constants/state accesses and hide the digest-update call structure, which are the primary anchors a reverser uses to recognize the algorithm. FLA and BCF sit at moderate security weights: sha_transform's 64-round loop and sha_stream's block loop are hot, so aggressive flattening or bogus control flow would inflate runtime, but the successful first build suggests headroom to let these fire on the larger functions. SPLIT remains a cheap diversity multiplier that compounds with FLA's state-machine form. RuntimeCost and SizeCost stay below the security weights so the selector prefers applying passes on feature-favorable functions (the top five by text size), while CorrectnessRisk stays low across all passes since the reference build already proved the toolchain handles this workload.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__MiBench__security-sha",
+  "run_id": "e10D_glm_agent_security-sha_2_96997",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T14:30:12Z"
+ }
+}

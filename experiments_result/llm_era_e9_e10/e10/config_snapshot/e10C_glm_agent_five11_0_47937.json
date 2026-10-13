@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "FLA": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.2
+  },
+  "SPLIT": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.8,
+   "CorrectnessRisk": 0.2
+  },
+  "IBR": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.3
+  },
+  "ICALL": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.3
+  },
+  "IGV": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.2
+  }
+ },
+ "rationale": "five11 is a tiny (1259 text bytes, 12 functions) bit-stream decoding benchmark whose hot loops (read_x_bits, read_11_bits, five11) make it runtime-sensitive, while its small size makes every byte of bloat proportionally visible; therefore SUB gets the strongest pull (cheap, correct, high diversity for arithmetic-heavy bit manipulation), SPLIT is favored on the multi-block functions (five11, main) since it is nearly free and amplifies FLA/SUB coverage, and FLA is the primary structural defense with a moderate runtime penalty so the selector applies it to the larger control-flow-dense functions rather than the tiny list helpers. BCF is deliberately down-weighted via high RuntimeCost (0.7) and SizeCost (0.8) because bogus blocks would explode a 361-byte function and tax the tight bit-reading loops, so it only triggers where features indicate non-hot, security-critical regions. IBR and ICALL carry elevated RuntimeCost/CorrectnessRisk since indirect branches and calls in inner loops cost disproportionate performance on this benchmark and its linked-list traversal (free_list2) is pointer-sensitive, while IGV is a mild complement (few globals in this program) kept at low risk so it can diversify data references without meaningful overhead. This combination maximizes control-flow and data-transform diversity where it is cheap, and throttles the expensive passes so total runtime and size overhead stay within acceptable bounds for a MultiSource benchmark while correctness risk remains uniformly low.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__BitBench__five11",
+  "run_id": "e10C_glm_agent_five11_0_47937",
+  "arm": "C",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T00:52:43Z"
+ }
+}

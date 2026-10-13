@@ -1,0 +1,44 @@
+{
+ "frozen_utc": "2026-10-06",
+ "decision": "user approved D6 freeze 2026-10-06",
+ "candidate_budget": {
+  "C": 1,
+  "D_rounds": 2,
+  "B_random": 2,
+  "B_rule": 1,
+  "E": 1,
+  "per_program_total": 7
+ },
+ "token_limits": {
+  "per_program_queries": 8,
+  "per_program_out_tokens": 50000,
+  "glm_total_usd": 15.0,
+  "over_50pct_stop": true
+ },
+ "retry_timeout": {
+  "api_backoff": "exp x5",
+  "agent_timeout_s": 600,
+  "api_timeout_s": 120,
+  "build_timeout_s": 300
+ },
+ "primary_endpoints": [
+  "correctness_preservation (hard gate, oracle 3-run sha)",
+  "runtime/size cost (cost pipeline)",
+  "security via E9 attack chain (T1/T2/P)",
+  "D-C feedback increment",
+  "D-B planning vs search",
+  "D-A TOST equivalence |delta|<=0.05 at 80% power",
+  "C-RandomPass",
+  "E semantic preservation rate"
+ ],
+ "multiple_comparisons": {
+  "family": 5,
+  "correction": "Holm"
+ },
+ "decoding": {
+  "glm": "temperature 0 (harness defaults otherwise)",
+  "deepseek": "temperature 0 (corroborator, if enabled)"
+ },
+ "blinding": "test 43 programs revealed ONCE after validation freeze check; no post-hoc changes; violations = protocol new version + validation rerun",
+ "pilot_evidence": "paper_text/e10_pilot_summary_20261006.md (288 candidates)"
+}

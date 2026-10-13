@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.9,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.9,
+   "SizeCost": 0.9,
+   "CorrectnessRisk": 0.2
+  },
+  "FLA": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 1.0,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.3
+  },
+  "SPLIT": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.8,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.3
+  },
+  "ICALL": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.4
+  },
+  "IGV": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.4,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.3
+  }
+ },
+ "rationale": "enc-rc4 is a Trimaran kernel: a tiny set of very hot functions dominated by a tight byte-manipulation loop (RC4 PRGA/KSA) with no function-pointer usage and negligible code size, so the priority is arithmetic-level transformation with minimal loop-body overhead. SUB gets the highest SecurityGain/DiversityGain and the lowest cost/risk weights because instruction substitution obscures the byte-wise XOR/swap arithmetic at near-zero runtime and size cost with essentially no correctness risk \u2014 ideal for a hot loop. FLA and BCF are strongly penalized (RuntimeCost 1.0/0.9): flattening the single dominant loop and injecting bogus branches would multiply execution time on the program's hottest code path and bloat a deliberately tiny kernel, outweighing their good security scores. IBR is kept low-moderate for the same hot-path reason, applied only where branch density justifies it. SPLIT is favored as a cheap enabler that increases basic-block granularity and improves the yield of other transformations at negligible cost. ICALL and IGV are weakly weighted since the benchmark has few indirect-call or global-variable sites, so feature matching would rarely trigger them anyway, and both carry nonzero indirect-dispatch overhead in the tight loop.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__Trimaran__enc-rc4",
+  "run_id": "e10C_glm_agent_enc-rc4_0_84650",
+  "arm": "C",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T11:04:40Z"
+ }
+}

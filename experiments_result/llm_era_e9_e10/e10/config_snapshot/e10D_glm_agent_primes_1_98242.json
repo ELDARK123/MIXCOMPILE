@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.1
+  },
+  "FLA": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.2
+  },
+  "SPLIT": {
+   "SecurityGain": 0.3,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.1
+  },
+  "ICALL": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  },
+  "IGV": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  }
+ },
+ "rationale": "Round 0 built and ran correctly with no ICE, so the weights are shifted from conservative to moderately aggressive to raise resistance. SUB stays high (0.8 security/diversity) since arithmetic substitution is cheap and safe for the sieve's integer math. FLA and BCF are raised to flatten main's control flow and add opaque predicates, with RuntimeCost kept mid-range because the sieve/filter loop is the program's hot path and heavy flattening there is the main runtime risk. IBR, ICALL, and IGV are boosted to add indirect branching, indirect calls (the sieve-chain classes' virtual-style out() calls are good indirect-call targets), and global-variable encoding, which give diversity at low correctness risk. SPLIT is lowered because the functions are tiny (10-145 bytes), so splitting adds little semantic confusion but pads the already-small text section; keeping its weight low limits size growth while it still fires on main if features favor it. All CorrectnessRisk weights remain low so the feature driver still favors applying passes, since round 0 showed this program tolerates transformation well.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__Prolangs-C++__primes",
+  "run_id": "e10D_glm_agent_primes_1_98242",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T14:51:01Z"
+ }
+}

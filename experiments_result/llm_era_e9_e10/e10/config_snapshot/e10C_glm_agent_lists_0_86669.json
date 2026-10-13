@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.3
+  },
+  "BCF": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.1,
+   "CorrectnessRisk": 0.4
+  },
+  "FLA": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.3
+  },
+  "SPLIT": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.8,
+   "SizeCost": 0.8,
+   "CorrectnessRisk": 0.2
+  },
+  "IBR": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.4
+  },
+  "ICALL": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.3
+  },
+  "IGV": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.3
+  }
+ },
+ "rationale": "The Shootout lists benchmark is a small, memory-bound C++ program dominated by pointer-chasing through linked lists, short functions, and moderate-count iteration loops, with negligible arithmetic intensity; this makes cheap data- and call-oriented transforms nearly free at runtime, so SUB, SPLIT, and ICALL get high weights across security and diversity dimensions and are allowed to apply broadly (high RuntimeCost/SizeCost tolerance since instruction substitution and splitting add negligible latency versus cache-miss-dominated execution). FLA receives a strong SecurityGain weight because flattening the list-traversal and merge loops yields the largest reverse-engineering payoff on this control-flow-simple workload, but its RuntimeCost and SizeCost weights are kept low so the selector restricts it to functions whose hot-loop profiles can absorb the dispatch overhead; BCF is similarly constrained (lowest RuntimeCost/SizeCost weights) since bogus predicates bloat a tiny binary and tax hot loops for limited marginal gain beyond FLA. IBR is given a moderate profile to add branch indirection on the pointer-heavy call/return patterns without compounding loop overhead. CorrectnessRisk weights stay modest for all passes: the workload is plain C++ with no exception-heavy or floating-point-sensitive code, so risk is low, but FLA/BCF/IBR retain slightly elevated risk weights so the selector avoids functions with complex CFGs or opaque predicates interacting with C++ object lifetime paths. IGV is included at moderate weight to obscure global state access, though this benchmark has few globals so its expected application is limited.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Shootout-C++__lists",
+  "run_id": "e10C_glm_agent_lists_0_86669",
+  "arm": "C",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T11:38:33Z"
+ }
+}

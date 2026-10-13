@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.9,
+   "DiversityGain": 0.85,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.65,
+   "CorrectnessRisk": 0.2
+  },
+  "FLA": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.3
+  },
+  "SPLIT": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.55,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.25
+  },
+  "ICALL": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.2
+  },
+  "IGV": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.45,
+   "CorrectnessRisk": 0.25
+  }
+ },
+ "rationale": "Round 0 compiled and ran correctly, so this candidate raises security pressure across all seven passes while keeping cost weights moderate for this small (416-line, 7-function) numeric benchmark whose hot paths are the tight loops in Crystal_Cholesky, Crystal_div, and Crystal_pow. SUB is weighted highest and safest (low cost/risk weights) since arithmetic substitution is cheap and composes with every other transform; FLA and BCF carry the strongest control-flow security weights but retain elevated RuntimeCost/SizeCost weights (0.6-0.7) so cost-sensitive loop-heavy functions dampen their selection; SPLIT stays a low-cost complement that breaks up the larger Cholesky/div bodies cheaply; IBR is kept at mid security with a raised runtime weight given branch-heavy numeric kernels; ICALL and IGV add diversity at low cost on a program with few indirect sites and globals, so they are applied broadly without meaningful risk. DiversityGain is uniformly high to maximize structural variance across the seven functions, and CorrectnessRisk weights stay \u22640.3 everywhere since round 0 showed clean behavior with headroom for a more aggressive mix.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__ASC_Sequoia__CrystalMk",
+  "run_id": "e10D_glm_agent_CrystalMk_1_47836",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T00:51:19Z"
+ }
+}

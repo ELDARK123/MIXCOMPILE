@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.15
+  },
+  "BCF": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.2
+  },
+  "FLA": {
+   "SecurityGain": 0.65,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  },
+  "SPLIT": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  },
+  "ICALL": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.3
+  },
+  "IGV": {
+   "SecurityGain": 0.45,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.25,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.3
+  }
+ },
+ "rationale": "Round 1 built and ran cleanly with no ICE fallback, so this round shifts weights toward stronger obfuscation: SUB and BCF get the highest SecurityGain/DiversityGain weights since arithmetic substitution and bogus control flow give the best resistance-per-byte on this small (6KB text) benchmark whose hot code is recursive game-search loops (make_list, make_wanted, make_play); their RuntimeCost/SizeCost weights are kept near 0.35-0.4 so cost-sensitive features still gate application in the deep recursion paths. FLA and SPLIT remain enabled at moderate strength to flatten and fragment the few larger functions without compounding BCF's size growth. IBR is raised (0.7/0.65) to insert opaque branching between blocks, accepting slightly higher runtime weight since chomp's runtime is dominated by search rather than per-block overhead. ICALL and IGV stay enabled but with the highest CorrectnessRisk weights (0.3) because indirect calls and global-variable encoding are the passes most likely to break pointer-heavy C code like melt_data/exptree; keeping their risk weight elevated lets correctness-sensitive features veto them where unsafe, preserving the clean correctness record from round 1 while still adding diversity.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__McGill__chomp",
+  "run_id": "e10D_glm_agent_chomp_2_96463",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T14:21:27Z"
+ }
+}

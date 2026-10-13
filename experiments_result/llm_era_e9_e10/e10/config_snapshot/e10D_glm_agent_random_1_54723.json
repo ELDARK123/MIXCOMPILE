@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  },
+  "FLA": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.2
+  },
+  "SPLIT": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.05
+  },
+  "IBR": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.1
+  },
+  "ICALL": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.25
+  },
+  "IGV": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  }
+ },
+ "rationale": "Round 0 built and ran correctly, so this candidate escalates obfuscation across all seven passes while keeping cost tolerances moderate. The program is a tiny Shootout binary (3 functions, ~481 bytes of text) dominated by one main() containing the pseudo-random-number hot loop, so FLA gets the highest SecurityGain (0.8) to flatten and obscure the loop/state machine that is the program's core logic, paired with a moderate RuntimeCost weight (0.4) rather than a high one so the compiler does not aggressively stack control-flow transforms onto the hottest code path; BCF similarly stays enabled but cost-capped (0.35/0.3) since bogus control flow multiplies both runtime and size quickly on a single-function binary. SUB and IBR carry high SecurityGain with low risk because arithmetic substitution and indirect branching are cheap, correct, and strongly diversify a binary this small where static pattern-matching against the reference build is the main reverse-engineering threat; ICALL (0.7 security, highest CorrectnessRisk tolerance only 0.25 since it converts direct calls through pointers, the riskiest transform here given C++ runtime/startup code) and IGV (highest DiversityGain 0.7 to vary global initialization of _GLOBAL__sub_I_random) round out coverage. SPLIT stays light (0.2 costs, 0.05 risk) purely as a diversity booster that feeds FLA/IBR more basic blocks to work with, and all SizeCost weights stay in the 0.2-0.4 band because with 481 bytes of text there is enormous size headroom before overhead becomes unacceptable.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Shootout-C++__random",
+  "run_id": "e10D_glm_agent_random_1_54723",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T02:45:51Z"
+ }
+}

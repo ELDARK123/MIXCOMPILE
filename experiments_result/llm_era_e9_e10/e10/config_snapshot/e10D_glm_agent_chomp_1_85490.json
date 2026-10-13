@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.15,
+   "SizeCost": 0.1,
+   "CorrectnessRisk": 0.05
+  },
+  "BCF": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.55,
+   "CorrectnessRisk": 0.1
+  },
+  "FLA": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.15
+  },
+  "SPLIT": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.05
+  },
+  "IBR": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.2
+  },
+  "ICALL": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.25
+  },
+  "IGV": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.3
+  }
+ },
+ "rationale": "Chomp is a game-tree/search-heavy McGill benchmark with small integer-oriented functions, hot recursion, and no static function or line metadata available, so the table favors high-gain, low-risk passes and only moderately tolerates overhead: FLA and BCF get the highest SecurityGain/DiversityGain since control-flow obscuring of game-tree search and move loops gives the strongest reverse-engineering resistance, with moderate RuntimeCost/SizeCost weights so they apply where features indicate acceptable hot-loop cost; SUB and SPLIT are kept strongly favored because they are cheap, correctness-safe transforms that add instruction-level diversity at negligible runtime/size penalty; IBR and ICALL get mid-range security gains with higher CorrectnessRisk weights so indirect branching/call lowering is applied selectively on non-recursive, cold functions rather than chomp's recursive search path; IGV receives the lowest security value and highest CorrectnessRisk since global-variable indirection offers marginal benefit on a mostly local-variable game-logic program and risks breaking pointer/global interactions, making it apply only where diversity features strongly favor it.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__McGill__chomp",
+  "run_id": "e10D_glm_agent_chomp_1_85490",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T11:18:37Z"
+ }
+}

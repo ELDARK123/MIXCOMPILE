@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  },
+  "BCF": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.3
+  },
+  "FLA": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.4
+  },
+  "SPLIT": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.4
+  },
+  "ICALL": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.3
+  },
+  "IGV": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.3
+  }
+ },
+ "rationale": "The program profile is empty (no function or size data), so this McCat 08-main benchmark is treated as a small, likely hot-loop test program where runtime and size overhead must stay modest. Cheap, low-risk passes are favored: SUB and SPLIT get low Runtime/Size/CorrectnessCost weights so they apply broadly, providing steady instruction-level and block-level diversity at negligible cost, and IGV adds global-variable indirection cheaply. FLA and BCF offer the strongest reverse-engineering resistance but carry high runtime and size costs, so their cost dimensions are weighted high (0.7) to restrict them to functions whose features clearly favor security/diversity; FLA's CorrectnessRisk (0.4) also guards against flattening breaking complex control flow. IBR and ICALL sit in the middle: moderate cost weights with elevated CorrectnessRisk (0.4 for IBR) since indirect branches/calls can interact badly with exception handling or calling conventions. Overall the table biases selection toward low-cost diversity (small binary = small attack surface, so breadth of cheap transformations beats a few expensive ones) while gating the expensive control-flow passes behind function-level features.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__McCat__08-main",
+  "run_id": "e10C_glm_agent_08-main_0_83876",
+  "arm": "C",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T10:51:40Z"
+ }
+}

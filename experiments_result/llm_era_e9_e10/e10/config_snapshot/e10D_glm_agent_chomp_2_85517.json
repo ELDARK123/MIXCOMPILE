@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.15,
+   "SizeCost": 0.1,
+   "CorrectnessRisk": 0.05
+  },
+  "BCF": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.25,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.1
+  },
+  "FLA": {
+   "SecurityGain": 0.65,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.15
+  },
+  "SPLIT": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.15,
+   "CorrectnessRisk": 0.05
+  },
+  "IBR": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.2
+  },
+  "ICALL": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.15,
+   "CorrectnessRisk": 0.2
+  },
+  "IGV": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.15,
+   "CorrectnessRisk": 0.25
+  }
+ },
+ "rationale": "The chomp benchmark is a small integer/game-tree search program from the McGill suite: it has small hot recursive search loops, no large data structures, and an empty profile indicating minimal static insight, so the weight table favors cheap, low-risk transformations and tempers aggressive ones. SUB and SPLIT get the highest SecurityGain/DiversityGain weights with near-zero cost/risk weights because they degrade pattern matching at negligible runtime/size penalty, ideal for small hot functions. FLA and BCF get moderate weights \u2014 they add strong control-flow resistance, but their runtime/size weights are kept elevated enough that the selector will de-prioritize them on hot recursive game-search functions where the cost dimension dominates. IBR and ICALL have solid security value (breaking branch/call-target static analysis, which is very effective against small binaries) but carry higher CorrectnessRisk and indirect-call overhead, so they are enabled at moderate weights. IGV is enabled moderately to hide the game board/global state access patterns, with its CorrectnessRisk weight raised slightly since global indirection can interact badly with linkage if applied too liberally. Overall: maximize structural obfuscation on cold functions, restrict heavyweight transforms on hot paths.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__McGill__chomp",
+  "run_id": "e10D_glm_agent_chomp_2_85517",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T11:19:01Z"
+ }
+}

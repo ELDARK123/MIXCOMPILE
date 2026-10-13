@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.2
+  },
+  "BCF": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.3
+  },
+  "FLA": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.55,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.35
+  },
+  "SPLIT": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.15
+  },
+  "IBR": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.45,
+   "CorrectnessRisk": 0.25
+  },
+  "ICALL": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.3
+  },
+  "IGV": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.2
+  }
+ },
+ "rationale": "Round 0 built and ran correctly with no ICE fallback, so this candidate pushes obfuscation strength up while keeping risk-weighted transforms bounded. methcall is dominated by short polymorphic dispatch through Toggle/NthToggle activate methods, making ICALL the highest-value pass here \u2014 it hides the virtual-call structure that a reverse engineer would use to recover the class hierarchy, so it gets the highest SecurityGain/DiversityGain with a moderately raised RuntimeCost allowance (0.60) since indirect dispatch overhead in this tiny 490-byte binary is negligible relative to its loop-driven workload. FLA is next (0.85) because the few small functions are trivially readable without control-flow destruction, and round 0's success suggests the compiler handles flattening here; SPLIT is kept active at moderate weight as a cheap enabler that increases FLA's effectiveness on these small function bodies. IBR is raised to further obscure branch targets left visible after flattening. BCF and SUB stay at solid but not maximal security weights because BCF's bogus-block bloat is expensive on a binary with only 490 text bytes (size overhead would be proportionally glaring) and SUB is a well-trodden transform; their cost weights stay mid-range to let the selector apply them where features favor it. IGV rounds out coverage by obscuring the small global state (toggle counters/state fields) at low correctness risk. CorrectnessRisk weights are capped at 0.35 everywhere to preserve the correct-execution record from round 0, since the benchmark's correctness check depends on exact numeric output.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Shootout__methcall",
+  "run_id": "e10D_glm_agent_methcall_1_5188",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T16:47:08Z"
+ }
+}

@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.55,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.2
+  },
+  "FLA": {
+   "SecurityGain": 0.9,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.45,
+   "CorrectnessRisk": 0.25
+  },
+  "SPLIT": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.15,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.05
+  },
+  "IBR": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.2
+  },
+  "ICALL": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.25
+  },
+  "IGV": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.15
+  }
+ },
+ "rationale": "Round 1 compiled, ran correctly, and hit no ICE fallback, so this round escalates obfuscation strength while respecting the profile's hot numeric core. planetpv (3500 of 4417 text bytes) is a dense floating-point loop, so control-flow passes get the highest security weights: FLA (0.90) and BCF (0.75) to break the loop-structure an analyst would target first, with SUB at 0.85 since arithmetic-expression substitution is cheap and especially effective on the constant-heavy numeric code in almabench/fftbench/lpbench. IBR (0.80) and ICALL (0.75) add indirection to obscure branch and call targets, and IGV (0.70) plus a strong DiversityGain (0.75) diversifies global access patterns at low runtime cost. SPLIT stays moderate \u2014 it is nearly free and amplifies FLA/BCF by enlarging the region they scramble. Runtime and size costs are kept moderately weighted (BCF/FLA highest at 0.55-0.60) so the selector still hesitates to stack the expensive passes inside the hottest inner loops, and correctness risk stays \u22640.25 everywhere given the correctness-sensitive reference outputs of these benchmark kernels.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__CoyoteBench__almabench",
+  "run_id": "e10D_glm_agent_almabench_2_96193",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T14:16:45Z"
+ }
+}

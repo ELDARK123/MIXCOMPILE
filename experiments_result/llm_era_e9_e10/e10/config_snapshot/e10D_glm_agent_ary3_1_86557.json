@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.4,
+   "RuntimeCost": 0.9,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.3
+  },
+  "FLA": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.8,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.4
+  },
+  "SPLIT": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  },
+  "IBR": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.3
+  },
+  "ICALL": {
+   "SecurityGain": 0.3,
+   "DiversityGain": 0.3,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.3
+  },
+  "IGV": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  }
+ },
+ "rationale": "The ary3 Shootout benchmark is a small, compute-bound program consisting of a few hot functions that run tight loops over integer arrays, so runtime overhead is the dominant constraint while code size is nearly irrelevant and the static profile (no source metadata, unknown function count) argues for conservative defaults. SUB and SPLIT are prioritized (high Security/Diversity weights, low cost weights) because they add algebraic and structural diversity with minimal loop-body overhead; IBR and IGV are kept at moderate weight since indirect branching and global indirection still obscure control flow and data provenance at acceptable cost for loop kernels. BCF and FLA are strongly de-prioritized (high RuntimeCost/SizeCost weights acting as penalties) because bogus control flow and loop flattening catastrophically slow hot array-walk loops while contributing little against static analysis of straight-line numeric code; FLA also carries the highest CorrectnessRisk weight since flattening loop-carried index dependencies risks breaking the kernel. ICALL is lowest priority because ary3 makes very few indirect-callable targets (dispatch is loop-dominated, not call-dominated), so its obfuscation value is marginal relative to even modest dispatch overhead.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Shootout-C++__ary3",
+  "run_id": "e10D_glm_agent_ary3_1_86557",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T11:36:50Z"
+ }
+}

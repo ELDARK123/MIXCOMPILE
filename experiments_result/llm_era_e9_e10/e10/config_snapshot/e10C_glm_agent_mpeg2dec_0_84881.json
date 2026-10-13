@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.2
+  },
+  "BCF": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.85,
+   "SizeCost": 0.8,
+   "CorrectnessRisk": 0.4
+  },
+  "FLA": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.9,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.6
+  },
+  "SPLIT": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  },
+  "IBR": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.5
+  },
+  "ICALL": {
+   "SecurityGain": 0.65,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.55,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.45
+  },
+  "IGV": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.35
+  }
+ },
+ "rationale": "mpeg2dec is a media decoder dominated by hot integer loops (IDCT, motion compensation, VLC parsing) where runtime overhead is the binding constraint, so cost dimensions carry high weights for the expensive passes: FLA and BCF get strong RuntimeCost/SizeCost weights so they are applied selectively to security-critical non-hot functions (e.g., stream/headers/slice decode setup) rather than blanket-applied, and FLA's higher CorrectnessRisk weight reflects that flattening loops with complex CFGs risks miscompilation of decoder state machines. SUB is nearly free and semantics-preserving, so it gets high gain weights and low cost weights for broad application across arithmetic-heavy code. SPLIT is cheap and composes well with FLA, so moderate gain with low cost weights. IBR and ICALL provide good diversity against static analysis of the decode dispatch paths but add indirect-call/branch overhead on hot paths, hence mid-range cost weights; IGV is kept at moderate levels since decoder tables (VLC/quantization matrices) benefit from data hiding but are read per-block, making aggressive transforms costly. This biases the pipeline toward low-overhead, high-diversity passes everywhere and reserves expensive passes for functions whose features indicate high security payoff at acceptable runtime cost.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__mediabench__mpeg2__mpeg2dec",
+  "run_id": "e10C_glm_agent_mpeg2dec_0_84881",
+  "arm": "C",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T11:08:34Z"
+ }
+}

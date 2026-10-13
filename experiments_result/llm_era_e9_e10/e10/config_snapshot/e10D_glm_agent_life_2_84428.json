@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.8,
+   "SizeCost": 0.8,
+   "CorrectnessRisk": 0.2
+  },
+  "FLA": {
+   "SecurityGain": 0.9,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.4
+  },
+  "SPLIT": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.3
+  },
+  "ICALL": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.2
+  },
+  "IGV": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  }
+ },
+ "rationale": "The Prolangs-C++ 'life' benchmark is a small, compute-bound cellular-automata simulation with tight, hot inner loops over a fixed grid, so per-instruction and per-block expansions (BCF) are heavily cost-penalized (high RuntimeCost/SizeCost weights) to keep them off the hottest functions while still being available where features justify them; control-flow flattening (FLA) offers the strongest reverse-engineering resistance for the short, branchy update/neighbor-count routines, so it gets the highest SecurityGain with a moderate runtime penalty to reserve it for the most security-favored functions; SUB is cheap and effective on the arithmetic-heavy neighbor counting and gets strong weights with minimal cost penalties; SPLIT and ICALL are low-overhead diversity multipliers that also amplify FLA/SUB effectiveness, so DiversityGain is prioritized; IBR provides good resistance via indirect branching but carries moderate overhead and correctness risk on the hot simulation loop, so it is balanced; IGV adds cheap global-access indirection suitable for the grid/state arrays. Overall the table biases toward high SecurityGain/DiversityGain on low-cost passes while using elevated RuntimeCost/SizeCost weights to gate the expensive structural passes away from the hot loops, keeping total overhead acceptable with low correctness risk across the board.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__Prolangs-C++__life",
+  "run_id": "e10D_glm_agent_life_2_84428",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T11:00:54Z"
+ }
+}

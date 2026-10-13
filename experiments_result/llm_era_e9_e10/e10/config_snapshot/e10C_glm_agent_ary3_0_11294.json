@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.15,
+   "SizeCost": 0.1,
+   "CorrectnessRisk": 0.05
+  },
+  "BCF": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.85,
+   "SizeCost": 0.8,
+   "CorrectnessRisk": 0.15
+  },
+  "FLA": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.8,
+   "SizeCost": 0.55,
+   "CorrectnessRisk": 0.35
+  },
+  "SPLIT": {
+   "SecurityGain": 0.45,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.15,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.55,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.15
+  },
+  "ICALL": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.3
+  },
+  "IGV": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.1
+  }
+ },
+ "rationale": "ary3 is a tiny (512-byte text, 2 functions) Shootout benchmark dominated by a single hot integer array-index loop, so the table strongly favors cheap, loop-safe transformations and suppresses expensive control-flow ones: SUB and IGV get high SecurityGain/DiversityGain with low RuntimeCost/SizeCost weights because instruction substitution and constant/global-value masking obscure the arithmetic core with minimal steady-state overhead, and SPLIT adds basic-block diversity almost for free on this micro-sized function set. BCF and FLA carry high RuntimeCost and SizeCost weights so the selector effectively disables or minimizes them \u2014 bogus control flow and flattening would balloon a 512-byte binary and devastate a benchmark whose entire body is a hot loop. IBR sits at moderate weights since indirect-branch rewriting hinders static analysis but adds indirect-branch predictor pressure in the hot loop, while ICALL gets moderate weights with an elevated CorrectnessRisk given the sparse call structure where indirect-call conversion yields little and risks visibility into the few existing calls. CorrectnessRisk is kept low across the board except for FLA/ICALL because this program's correctness hinges on tight loop semantics with few places for restructuring to go wrong.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Shootout__ary3",
+  "run_id": "e10C_glm_agent_ary3_0_11294",
+  "arm": "C",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-05T14:41:46Z"
+ }
+}

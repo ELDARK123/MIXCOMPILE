@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.85,
+   "RuntimeCost": 0.25,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.05
+  },
+  "BCF": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.1
+  },
+  "FLA": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.25
+  },
+  "SPLIT": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.15,
+   "SizeCost": 0.15,
+   "CorrectnessRisk": 0.05
+  },
+  "IBR": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.55,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.15
+  },
+  "ICALL": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  },
+  "IGV": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.2
+  }
+ },
+ "rationale": "Round 0 compiled and ran correctly, so this candidate shifts moderately toward stronger obfuscation. SUB and SPLIT carry low real-world cost and risk, so their Security/Diversity weights stay high to ensure broad application across the 13 small functions; their Runtime/Size weights are kept low so hot or compact functions are not excluded. BCF and FLA provide the bulk of control-flow resistance: BCF gets high security/diversity with a moderate SizeCost weight since the reference text is only ~1.5 KB and absorbing some growth is acceptable, while FLA targets the larger recursive functions (Towers, Move, tower) with a slightly higher RuntimeCost weight and an elevated CorrectnessRisk weight so the selector avoids flattening fragile recursive or exception-like CFGs where it could alter behavior. IBR and ICALL add dynamic-analysis friction but cost indirect dispatch at runtime, so their RuntimeCost weights are kept near the middle to concentrate them on non-hot functions like Init, Push, and Puzzle setup. IGV remains enabled at moderate weights to obscure global state access cheaply. Overall, cheap structural passes dominate while expensive dispatch-transformations are gated by runtime sensitivity, preserving correctness (risk weights all <= 0.25) after a clean round-0 run.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Stanford__Towers",
+  "run_id": "e10D_glm_agent_Towers_1_55645",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T03:01:13Z"
+ }
+}

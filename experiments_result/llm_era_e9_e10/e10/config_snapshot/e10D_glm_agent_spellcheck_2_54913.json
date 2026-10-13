@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.55,
+   "SizeCost": 0.45,
+   "CorrectnessRisk": 0.15
+  },
+  "FLA": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.45,
+   "CorrectnessRisk": 0.2
+  },
+  "SPLIT": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.05
+  },
+  "IBR": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.15
+  },
+  "ICALL": {
+   "SecurityGain": 0.65,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.2
+  },
+  "IGV": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.55,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.25
+  }
+ },
+ "rationale": "Round 1 built, ran correctly, and hit no ICE fallback, so this round shifts the table decisively toward resistance: FLA and BCF get the highest SecurityGain because the program's core work lives in a few tree-walk/string-scan loops (_Rb_tree lookups, spell_checker::process, wordfreq tokenizing) whose control flow is exactly what flattening and bogus-flow obscure, and at 2215 total text bytes even aggressive size blowup is cheap in absolute terms, so SizeCost stays moderate rather than punitive. SUB is cheap and always-safe, so it gets high SecurityGain with minimal cost weights to blanket every function in instruction substitution. SPLIT is nearly free and boosts structural diversity, so its DiversityGain is the highest of any pass while its cost weights stay low. ICALL and IGV diversify call and global-variable reference patterns, which matters here because the C++ sources share heavy libc++/Rb_tree idiom across functions; both keep elevated RuntimeCost/CorrectnessRisk sensitivity so hot lookup paths and fragile global lowering are not over-applied. RuntimeCost weights hover around 0.5 across the loop-heavy passes (BCF, FLA, IBR, IGV) so the shootout-style hot loops retain acceptable throughput while cold setup/teardown functions still receive full treatment, and CorrectnessRisk never exceeds 0.25 given last round's clean correctness result.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Shootout-C++__spellcheck",
+  "run_id": "e10D_glm_agent_spellcheck_2_54913",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T02:48:57Z"
+ }
+}

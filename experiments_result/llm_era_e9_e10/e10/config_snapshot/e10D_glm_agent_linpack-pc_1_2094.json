@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.65,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.25,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.1
+  },
+  "FLA": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.25,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "SPLIT": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.15,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.05
+  },
+  "IBR": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.15
+  },
+  "ICALL": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.15
+  },
+  "IGV": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.1
+  }
+ },
+ "rationale": "Round 0 built and ran correctly, so this candidate escalates obfuscation while respecting linpack-pc's profile: 14 functions dominated by FP-hot kernels (daxpy, dmxpy, dgesl, dgefa) where loop-body overhead directly multiplies into runtime. SUB gets the highest Security/Diversity weights because arithmetic substitution is cheap, composes with dense FP/integer code, and carries near-zero correctness risk; its RuntimeCost weight is kept low-moderate so hot loops are not over-saturated. IGV is pushed high (0.75/0.70) as a low-cost, high-diversity global transform well suited to linpack's shared globals (mma, ops, esa). IBR is raised moderately since indirect branching adds strong static-analysis resistance across the large dmxpy/main bodies, with a modestly elevated RuntimeCost weight reflecting tolerance in cold regions only. BCF and FLA stay mid-range: they add real loop overhead, so they should attach selectively where features indicate large cold blocks (main, dmxpy) rather than inner kernels. SPLIT is cheap and complements FLA/BCF by enlarging the surface they scatter, so it gets solid diversity weight with minimal risk. ICALL remains mid-range because this benchmark has few call sites (main, timer wrappers), limiting both benefit and exposure. All CorrectnessRisk weights are kept at or below 0.15 since round 0 showed clean correctness, leaving headroom for this more aggressive configuration while still biasing selection away from risky placements in tight FP loops.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Linpack__linpack-pc",
+  "run_id": "e10D_glm_agent_linpack-pc_1_2094",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T15:55:29Z"
+ }
+}

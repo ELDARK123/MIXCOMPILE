@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.9,
+   "DiversityGain": 0.9,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.1,
+   "CorrectnessRisk": 0.05
+  },
+  "BCF": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.1
+  },
+  "FLA": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.2
+  },
+  "SPLIT": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.1,
+   "CorrectnessRisk": 0.05
+  },
+  "IBR": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.25,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.1
+  },
+  "ICALL": {
+   "SecurityGain": 0.65,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.3
+  },
+  "IGV": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.15,
+   "CorrectnessRisk": 0.15
+  }
+ },
+ "rationale": "The profile is empty but the sample is Prolangs-C++/office, a small object-oriented C++ simulation with many small class methods and little numeric/hot-loop code, so size and compile-time correctness matter more than peak runtime. SUB is nearly free and highly disruptive to pattern matching, so it gets maximum security/diversity weight with negligible cost weights to fire broadly. SPLIT and IBR are cheap structural diversifiers that also increase the effectiveness of downstream passes, so they are strongly enabled. BCF and FLA carry the highest runtime and size overhead, so their cost dimensions are weighted high enough (0.4-0.5) to keep them off hot paths while still permitting them on cold, control-flow-heavy functions. ICALL fits the virtual-call-heavy C++ style but is the riskiest pass for correct dispatch and indirect-call targets, so its CorrectnessRisk weight is the highest in the table (0.3) to confine it to favorable functions. IGV is low cost and adds data-access diversity in a class-heavy program, enabled moderately. All passes remain considered; none are omitted since the program's small size and low performance sensitivity make even the expensive passes acceptable in aggregate.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__Prolangs-C++__office",
+  "run_id": "e10C_glm_agent_office_0_84459",
+  "arm": "C",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T11:01:45Z"
+ }
+}

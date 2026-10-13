@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.1,
+   "CorrectnessRisk": 0.05
+  },
+  "BCF": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.55,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.15
+  },
+  "FLA": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.45,
+   "CorrectnessRisk": 0.2
+  },
+  "SPLIT": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.2
+  },
+  "ICALL": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.25
+  },
+  "IGV": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.2
+  }
+ },
+ "rationale": "Round 1 built and ran correctly with no ICE fallback, so this candidate raises obfuscation pressure across the board while keeping correctness risk bounded: BCF and FLA get the highest security/diversity weights since this tiny sieve (5 functions, 293 bytes of text, main at only 145 bytes) has trivially analyzable straight-line control flow that flattening and bogus-path inflation disrupt most per byte of code; IBR and ICALL are pushed high next because indirecting branches and calls defeats static CFG recovery and call-graph recovery in a program this small where a disassembler would otherwise reconstruct everything in minutes; SPLIT and IGV get moderate weights as low-cost multipliers that increase structural diversity and hide data references; and SUB stays active with a solid security weight since arithmetic substitution is nearly free on this compute-bound prime-counting workload. Runtime and size costs are held below the security weights (BCF highest at 0.55) to keep overhead acceptable on the hot sieve loop, and no pass is disabled since the round-1 result showed the toolchain handles the full pass set on this target.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__Prolangs-C++__primes",
+  "run_id": "e10D_glm_agent_primes_2_98261",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T14:51:18Z"
+ }
+}

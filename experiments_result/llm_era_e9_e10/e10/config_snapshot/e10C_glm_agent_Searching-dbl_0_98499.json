@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "SPLIT": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "FLA": {
+   "SecurityGain": 0.9,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.4
+  },
+  "BCF": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.8,
+   "CorrectnessRisk": 0.2
+  },
+  "IBR": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.3
+  },
+  "ICALL": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.3
+  },
+  "IGV": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.3
+  }
+ },
+ "rationale": "Searching-dbl is a tiny (14 functions, ~44KB text) double-precision TSVC loop kernel whose hot path is dominated by the search loop in s332 plus large initialization routines (init ~40KB), so cheap, low-risk transformations should be applied broadly while expensive ones must be selective: SUB and SPLIT get high SecurityGain/DiversityGain weights with low cost weights because arithmetic substitution and block splitting are nearly free and compose well over the abundant index/arithmetic code; FLA keeps the highest SecurityGain but elevated RuntimeCost/SizeCost weights so it concentrates on the large, less iteration-critical functions (init, set) rather than the hot search loops; BCF is capped by a high SizeCost weight since its code bloat is dangerous at this binary size and its opaque-predicate checks sit on every loop iteration; IBR, ICALL, and IGV get moderate weights reflecting limited applicability (few call sites, globals are large data arrays rather than high-value pointers) while still adding indirection diversity, with their cost weights tuned so they are only applied where the per-function features tolerate the overhead; all CorrectnessRisk weights stay low-to-moderate to preserve the exact FP control flow and early-exit semantics the benchmark's correctness check depends on.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__TSVC__Searching-dbl",
+  "run_id": "e10C_glm_agent_Searching-dbl_0_98499",
+  "arm": "C",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T14:55:31Z"
+ }
+}

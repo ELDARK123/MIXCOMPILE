@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.85,
+   "SizeCost": 0.85,
+   "CorrectnessRisk": 0.9
+  },
+  "BCF": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.55,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.85
+  },
+  "FLA": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.7
+  },
+  "SPLIT": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.85,
+   "SizeCost": 0.8,
+   "CorrectnessRisk": 0.9
+  },
+  "IBR": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.65,
+   "CorrectnessRisk": 0.85
+  },
+  "ICALL": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.75
+  },
+  "IGV": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.85,
+   "RuntimeCost": 0.55,
+   "SizeCost": 0.65,
+   "CorrectnessRisk": 0.7
+  }
+ },
+ "rationale": "Round 1 compiled and ran correctly with no ICE fallback, so this round escalates obfuscation strength across all seven passes. FLA and BCF get the highest SecurityGain weights since bisort's hot recursive kernels (RandTree, Bimerge, bitonic.c control flow) benefit most from control-flow flattening and bogus-edge insertion, but their RuntimeCost weights are held near 0.5 because this is a compute-bound benchmark where dispatch/loop overhead directly hits runtime; BCF's runtime weight is kept lower than its size weight since bogus edges cost size cheaply but execute rarely. IBR gets a lower RuntimeCost weight (0.45) because indirect branch rewriting perturbs the hot dispatch loops in the sort kernels. IGV and ICALL are pushed up for diversity \u2014 global variable indirection and indirect calls frustrate static analysis of the small 1697-byte text section where cross-references are easy to follow. SPLIT and SUB are cheap, low-risk transformations given high RuntimeCost/SizeCost/CorrectnessRisk weights, letting them apply broadly across all 14 functions to maximize diversity without meaningful overhead. CorrectnessRisk weights stay at or above 0.70 everywhere since round 1 demonstrated the toolchain handles this program cleanly, but none hit 1.0 to preserve a margin on the recursive kernels where aggressive restructuring is most fragile.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__Olden__bisort",
+  "run_id": "e10D_glm_agent_bisort_2_93786",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T13:36:47Z"
+ }
+}

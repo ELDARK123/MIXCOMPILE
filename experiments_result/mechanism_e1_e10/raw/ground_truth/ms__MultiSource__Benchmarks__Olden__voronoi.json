@@ -1,0 +1,236 @@
+{
+  "sample_id": "ms__MultiSource__Benchmarks__Olden__voronoi",
+  "rule": "k-th .text function (sorted by entry) of llvm reference pairs with k-th recovered function of target; offsets relative to first entry",
+  "functions": [
+    {
+      "name": "_start",
+      "addr": 4304,
+      "size": 38
+    },
+    {
+      "name": "mylog",
+      "addr": 4544,
+      "size": 25
+    },
+    {
+      "name": "dealwithargs",
+      "addr": 4576,
+      "size": 208
+    },
+    {
+      "name": "connect_left",
+      "addr": 4784,
+      "size": 341
+    },
+    {
+      "name": "connect_right",
+      "addr": 5136,
+      "size": 338
+    },
+    {
+      "name": "deleteedge",
+      "addr": 5488,
+      "size": 216
+    },
+    {
+      "name": "free_edge",
+      "addr": 5712,
+      "size": 23
+    },
+    {
+      "name": "build_delaunay_triangulation",
+      "addr": 5744,
+      "size": 5
+    },
+    {
+      "name": "build_delaunay",
+      "addr": 5760,
+      "size": 1018
+    },
+    {
+      "name": "get_low",
+      "addr": 6784,
+      "size": 13
+    },
+    {
+      "name": "do_merge",
+      "addr": 6800,
+      "size": 1993
+    },
+    {
+      "name": "ccw",
+      "addr": 8800,
+      "size": 69
+    },
+    {
+      "name": "delete_all_edges",
+      "addr": 8880,
+      "size": 23
+    },
+    {
+      "name": "myalign",
+      "addr": 8912,
+      "size": 41
+    },
+    {
+      "name": "alloc_edge",
+      "addr": 8960,
+      "size": 102
+    },
+    {
+      "name": "incircle",
+      "addr": 9072,
+      "size": 184
+    },
+    {
+      "name": "makeedge",
+      "addr": 9264,
+      "size": 152
+    },
+    {
+      "name": "splice",
+      "addr": 9424,
+      "size": 67
+    },
+    {
+      "name": "swapedge",
+      "addr": 9504,
+      "size": 427
+    },
+    {
+      "name": "valid",
+      "addr": 9936,
+      "size": 86
+    },
+    {
+      "name": "dump_quad",
+      "addr": 10032,
+      "size": 128
+    },
+    {
+      "name": "in_order",
+      "addr": 10160,
+      "size": 88
+    },
+    {
+      "name": "mult",
+      "addr": 10256,
+      "size": 113
+    },
+    {
+      "name": "skiprand",
+      "addr": 10384,
+      "size": 112
+    },
+    {
+      "name": "myrandom",
+      "addr": 10496,
+      "size": 93
+    },
+    {
+      "name": "print_extra",
+      "addr": 10592,
+      "size": 23
+    },
+    {
+      "name": "main",
+      "addr": 10624,
+      "size": 429
+    },
+    {
+      "name": "get_points",
+      "addr": 11056,
+      "size": 458
+    },
+    {
+      "name": "allocate_stack",
+      "addr": 11520,
+      "size": 68
+    },
+    {
+      "name": "free_all",
+      "addr": 11600,
+      "size": 22
+    },
+    {
+      "name": "pop_edge",
+      "addr": 11632,
+      "size": 17
+    },
+    {
+      "name": "push_edge",
+      "addr": 11664,
+      "size": 36
+    },
+    {
+      "name": "push_ring",
+      "addr": 11712,
+      "size": 106
+    },
+    {
+      "name": "push_nonzero_ring",
+      "addr": 11824,
+      "size": 106
+    },
+    {
+      "name": "zero_seen",
+      "addr": 11936,
+      "size": 248
+    },
+    {
+      "name": "plot_dedge",
+      "addr": 12192,
+      "size": 64
+    },
+    {
+      "name": "plot_vedge",
+      "addr": 12256,
+      "size": 175
+    },
+    {
+      "name": "circle_center",
+      "addr": 12432,
+      "size": 742
+    },
+    {
+      "name": "output_voronoi_diagram",
+      "addr": 13184,
+      "size": 1913
+    },
+    {
+      "name": "V2_cprod",
+      "addr": 15104,
+      "size": 29
+    },
+    {
+      "name": "V2_dot",
+      "addr": 15136,
+      "size": 29
+    },
+    {
+      "name": "V2_times",
+      "addr": 15168,
+      "size": 18
+    },
+    {
+      "name": "V2_sum",
+      "addr": 15200,
+      "size": 20
+    },
+    {
+      "name": "V2_sub",
+      "addr": 15232,
+      "size": 24
+    },
+    {
+      "name": "V2_magn",
+      "addr": 15264,
+      "size": 29
+    },
+    {
+      "name": "V2_cross",
+      "addr": 15296,
+      "size": 31
+    }
+  ]
+}

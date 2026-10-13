@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.15
+  },
+  "BCF": {
+   "SecurityGain": 0.9,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.55,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.25
+  },
+  "FLA": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.3
+  },
+  "SPLIT": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.15
+  },
+  "IBR": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.85,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.45,
+   "CorrectnessRisk": 0.2
+  },
+  "ICALL": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.25
+  },
+  "IGV": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.3
+  }
+ },
+ "rationale": "Round 1 built and ran correctly with no ICE fallback, so this round pushes obfuscation strength upward across all seven passes while keeping risk contained. BCF and FLA get the highest security weights since the hot functions (main at 1017 bytes, rectangle::draw at 811) are control-flow-rich and tolerate flattening/bogus-flow well with modest overhead on this small benchmark; IBR is boosted because its block-level diversity compounds with FLA's flattened dispatch. ICALL stays high to hide the virtual draw() dispatch chains characteristic of this C++ shapes benchmark, and IGV remains strong to obscure the global shape/line state that shape_refresh and the drawing routines share. SUB and SPLIT carry lower security weights but act as cheap force multipliers: SPLIT fragments the larger functions so FLA/BCF have more blocks to scramble, and SUB diversifies arithmetic cheaply. Runtime/size cost weights stay moderate (0.20-0.60) so selection is biased toward security but overhead on the 4.3KB text section remains bounded; correctness-risk weights are kept low-to-moderate since round 1 showed the pipeline is stable here, allowing slightly more aggressive selection without jeopardizing the passing build.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__Prolangs-C++__shapes",
+  "run_id": "e10D_glm_agent_shapes_2_50031",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T01:27:32Z"
+ }
+}

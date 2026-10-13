@@ -1,0 +1,1413 @@
+run_id,level,e9_arm,sample_id,function_id,variant_seed,pool_size,prompt_sha256,model,model_version,response_raw,parse_status,top1_hit,rank,tokens_in,tokens_out,latency_s,cost_usd,agent_retry,harness_violation,status
+e9_L0_glm_agent_0000,L0,A0CAL,ms__MultiSource__Benchmarks__NPB-serial__dc,FUN_00104310,0,10,97e31baf6be4962b,glm_agent,claude-opus-5-5(1606out),"## Reasoning
+
+**Step 1 — Direct identity check:** The target is `FUN_00104310(long, FILE*)`, and F007 is also `FUN_00104310(long, FILE*)` at the same address. Beyond the name, the locals match exactly (`local_20c`, `local_208`, `local_1f8[14]`, `local_188[14]`, `local_118[28]`, `local_a8[120]`), so F007 is the original (unobfuscated) version of the target. The obfuscation passes (partial unrolling at `uVar16/uVar16+2`, the odd-iteration tail handling `(uVar4 & 1) != 0`, widened loop counters like `uVar17`) explain the extra noise around an identical core. **F007 = rank 1.**
+
+**Step 2 — Structural twin:** F008 (`FUN_00104870`) shares the same calling context and skeleton: takes `(long param_1, FILE *param_2)`, checks `*(param_1 + 0x1188) == 0`, loops `fread(local_118, *(uint *)(param_1 + 0x248), 1, param_2)` with counter starting at 1, uses `param_1 + 0x21c` and `+0x224`, and declares the same `local_118[28]` buffer. It is clearly a sibling routine (likely the paired read/write function in the same DC-benchmark module). **Rank 2.**
+
+**Step 3 — Same subsystem, same config struct:** The target reads a context struct with offsets `0x21c, 0x224, 0x248, 0x24c, 0x250, 0x10d8 (index table), 0x1178, 0x1188`. Candidates touching the same struct region:
+- F010 (`FUN_00107b30`, PartitionCube) uses `param_1 + 0x1178` — called from F006, works on the same cube/partition state.
+- F009 (`FUN_00105950`) uses `param_1 + 0x1178` and `param_1 + 0x10b0` (FILE*), zeros arrays sized by struct fields, `fseek` — same module, file-position-based rather than sequential-read-based.
+- F006 (`FUN_00102f70`) is a higher-level driver that *calls* F010 and prints DC-benchmark messages — related but no read-loop similarity.
+
+Among these, F010's array/index manipulation is closer to the target's index-table loops than F009's simple zeroing, and F006 is a driver. Order: **F010, F009, F006.**
+
+**Step 4 — Same benchmark, different role:** F004 (`GetNextTuple`) belongs to the same NPB DC benchmark and deals with dimension/message counts (dcdim/mes), conceptually adjacent to reading tuples of data, but it has no shared struct offsets, no fread-loop shape, and different buffers. **After the struct-sharing group.**
+
+**Step 5 — Parameter/file parsing:** F002 (takes a config pointer, mallocs, has FILE* and lots of size_t arithmetic) plausibly builds the config/context structures used by the target — a loose data-relationship tie. F003 (`ParseParFile`) parses the `.par` parameter file — related to setup but with completely different code shape (strchr/fgets/sscanf). F002's heap/array manipulation gives it a slight edge over F003's pure string parsing. **F002, then F003.**
+
+**Step 6 — Unrelated:** F005 is the program entry point (usage messages, argv handling) — no similarity. F001 is a malloc/list-building helper (two mallocs of 0x30/0x10, pointer wiring) with no file I/O or shared structure — least similar.
+
+## Final ranking
+
+{""ranking"": [""F007"", ""F008"", ""F010"", ""F009"", ""F006"", ""F004"", ""F002"", ""F003"", ""F005"", ""F001""]}",ok,1,1,5241,1456,35.1,0.070596,0,none,ok
+e9_L0_glm_agent_0001,L0,A0CAL,ms__MultiSource__Benchmarks__NPB-serial__dc,FUN_00101c40,0,10,3653914d9de79a2d,glm_agent,claude-opus-5-5(2330out),"## Step-by-step reasoning
+
+**Step 1 — Identify the target.** The target function is `FUN_00101c40` from the protected binary. Its decompiled signature and prologue (reads `param_1[0..10]`, `calloc(DAT_0010d410, 8)`, builds a prime table 2, 3, 5, 7 into `__ptr_00`, trial-division loop, `calloc(iVar8, 0x10)` for a `__base` array sized `1 << dims`, then calls `FUN_00101850`) make it a numeric/setup routine — no file or string I/O.
+
+**Step 2 — Exact name/address match.** Candidate **F002** is `FUN_00101c40` from the *original* binary — same symbol, same address, same parameters and local layout. This is the same function pre-obfuscation; the visible differences (truncated body, fewer locals like `local_78`) are artifacts of the obfuscation passes (BCF/SPLIT/FLA inflation in the protected version). Clear #1.
+
+**Step 3 — Direct callee.** The target explicitly calls `FUN_00101850((long)(int)lVar17, __ptr_00, __ptr)` — that is candidate **F001**. It shares the same data domain (malloc'd `ulong` buffers, a linked structure of ulong arrays, nested loops), and address-wise sits immediately before the target (0x1850 vs 0x1c40), i.e., the same compilation unit/feature region. Clear #2.
+
+**Step 4 — Same-program structural relatives.**
+- **F004** (`GetNextTuple`, 0x2510): combinatorial tuple enumeration over dimensions with dense integer loop logic, arithmetic on uints, and FILE use only in error paths. Closest structural neighbor to the target's combination-enumeration switch/loop core.
+- **F010** (`PartitionCube`, 0x7b30): allocates a scaled `ulong` buffer (`malloc(n << 4)`), loops over cube partitions — numerically oriented, same benchmark (NAS DC), moderate similarity despite FILE usage.
+- **F008** (0x4870) and **F007** (0x4310): record-writing helpers with fixed local arrays and fread/fwrite loops; loop/counter texture is somewhat similar but dominated by file I/O.
+- **F009** (0x5950): zero-fills arrays and reads binary records (`fseek`, fread) — numeric loops but strongly I/O-driven.
+
+**Step 5 — Least similar.**
+- **F003** (`ParseParFile`): pure string/file parsing (strchr, fgets, sscanf) — different data domain entirely.
+- **F005**: program entry point (usage messages, ctype checks, argv handling) — control/glue code.
+- **F006**: driver that only dispatches calls and prints error codes (`ParRun.NewAdcViewCntl`) — no algorithmic overlap with the target's numeric core.
+
+**Final ranking (most → least similar):**
+
+{""ranking"": [""F002"", ""F001"", ""F004"", ""F010"", ""F008"", ""F007"", ""F009"", ""F003"", ""F005"", ""F006""]}",ok,1,1,5159,2261,23.2,0.08442,0,none,ok
+e9_L0_glm_agent_0002,L0,A0CAL,ms__MultiSource__Benchmarks__NPB-serial__dc,FUN_00102510,0,10,8d6361ae7b4be34c,glm_agent,claude-opus-5-5(2114out),"## Step-by-step reasoning
+
+**Step 1 — Identify an exact match.**
+The target is `FUN_00102510` (""GetNextTuple""), and candidate **F004** is byte-for-byte the same decompilation: same address (`0x00102510`), same signature `(uint, uint, long, long, undefined1)`, same error strings (""number of dcdim is too large"", ""number of mes is too large""), same switch on `param_5` (`'A'/'B'/'S'/'W'`), same global references (`PTR_stderr_0010cff8`, `DAT_0010d520`, `DAT_0010d420`, `DAT_0010d120`). This function appears to have escaped (or was not selected for) obfuscation, so F004 is unambiguously rank 1.
+
+**Step 2 — Characterize the target's features** for ranking the rest:
+- Dispatches on a class/type character (S/A/B/W) to select one of several global data tables (`DAT_0010d1d0/d270/d2a0/d2f0/d370`) — typical of NPB-style per-class data.
+- Writes errors via `fprintf(*PTR_stderr_0010cff8, fmt, ...)` with a `char __format` variable.
+- Core loop performs repeated 32-bit multiply + modulo over arrays — a seeded LCG/random-tuple generator.
+- No heap allocation, no file I/O itself.
+
+**Step 3 — Rank by structural/format/global overlap and address locality** (nearby addresses in the original binary usually mean the same translation unit, hence similar idioms and shared globals):
+
+- **F005** (`FUN_001028f0`, 0x28f0): immediately adjacent to the target in the original binary; same ""next data"" role (reads `%s.dat.%d`), uses the same NPB-DC globals/state (`DAT`-style tables, class-dependent data), loops over the same kinds of uint arrays. Strongest non-exact match.
+- **F003** (`ParseParFile`, 0x20a0): same file region, same error-reporting idiom (`fprintf(*(FILE**)PTR_stderr_0010cff8, ""ParseParFile: ..."")`), shares the parameter/geometry data the tuple code consumes. Similarity mostly in I/O/error style, not arithmetic.
+- **F002** (0x1c40): large function with malloc/free, file reads, and error prints; shares general utility flavor and likely the same source file, but no switch-on-class or modulo-generation loop.
+- **F001** (0x1850): malloc-heavy list/tuple-building helper (allocates 0x30 / 0x10 nodes); touches tuple-like data structures but has no stderr reporting or RNG arithmetic.
+- **F006** (0x2c80): NPB-DC `main`; prints via `stdout`/`stderr` and parses args — same program, same binary region, but a totally different role (driver, not kernel).
+- **F007** (0x2f70): high-level control (`ParRun.NewAdcViewCntl`), calls other functions, error prints only; little structural overlap.
+- **F010** (`PartitionCube`, 0x7b30): has a stack layout and buffer shapes remarkably close to the target family (local header struct + `auStack_130[32]`), and does partition/tuple-adjacent work with malloc — some data-structure similarity but far in address space and control flow.
+- **F009** (0x5950): zero-fills arrays, `fseek` on a file — generic data-prep loop, weak overlap.
+- **F008** (0x4870): bulk `fread` of records with per-field processing; file-reading kernel but no relation to tuple generation.
+
+**Step 4 — Final ordering.** Exact duplicate first; then same-file neighbors with shared idioms (F005, F003); then other utility functions in the same region (F002, F001); then the driver and distant control functions; last the unrelated file-reading kernels.
+
+```json
+{""ranking"": [""F004"", ""F005"", ""F003"", ""F002"", ""F001"", ""F006"", ""F007"", ""F010"", ""F009"", ""F008""]}
+```",ok,1,1,5328,1990,47.9,0.081452,0,none,ok
+e9_L0_glm_agent_0003,L0,A0CAL,ms__MultiSource__Benchmarks__NPB-serial__dc,FUN_00107b30,0,10,3b5c02d9b775239a,glm_agent,claude-opus-5-5(2012out),"## Step-by-step reasoning
+
+**Step 1 — Identify the target.** The target is `FUN_00107b30` at address `0x00107b30`, and its error string `"" PartitionCube(): memory allocation failure""` identifies it as the **PartitionCube** function of the NPB3.3-SER DC benchmark. Key features: `malloc(count << 4)`, `fscanf` token loop from `*(param_1+0x10a8)`, keyword matching against `""Selection:""` (`0x3a6e6f69746365` / `0x6f697463656c6553`) and `""Size:""` (`0x657a6953` + `':'`), `strtol` parsing into a stack array `auStack_130`, then a bitmask/shift enumeration loop over `_DAT_0010a0f0`, and a call to `FUN_001072a0` on EOF.
+
+**Step 2 — Exact match.** **F010** is literally `FUN_00107b30` — same address, same strings, same stack layout (`local_238`/`cStack_234` token buffer), same shift loop. It is the target itself; rank 1.
+
+**Step 3 — Structural/domain matches.** **F009** (`FUN_00105950`) operates on the same global context struct (`*(param_1 + 0x1178)` loop bound, file at `param_1 + 0x10b0`), zero-fills an array sized by that field, and — critically — contains the *identical fscanf token-buffer stack pattern* (`local_578`, `local_538[64]`, `local_438`, `cStack_434`/`uStack_433`/`uStack_432`/`uStack_430` CONCAT chain), meaning it parses the same ""keyword: value"" text format. It's a sibling DC parsing function; rank 2.
+
+**Step 4 — The caller.** **F007** (`FUN_00102f70`, ""ParRun.NewAdcViewCntl"") calls `FUN_00107b30(lVar4)` directly after `FUN_00104d60`, checks its return code, and shares the same context-struct handling. It lacks the parsing/bitmask logic but has a direct call edge and shared data structures; rank 3.
+
+**Step 5 — Same-benchmark file/tuple functions.** **F004** (`GetNextTuple`) is the DC tuple generator: same domain, stderr error reporting pattern, bounded dimension counts — closely related functionally, though it lacks the fscanf/keyword parsing; rank 4. **F008** (`FUN_00104870`) reads tuples via `fread` into stack arrays using the same context struct fields (`0x224`, `0x21c`, `0x248`) — same struct, but binary reading rather than text parsing; rank 5.
+
+**Step 6 — Generic parser.** **F002** (`FUN_00101c40`) is a large function with FILE I/O, mallocs, and many temporaries, plausibly a general parsing/setup routine, but no shared strings, struct offsets, or the token-buffer idiom; rank 6.
+
+**Step 7 — Parameter-file parser.** **F003** (`ParseParFile`) does `fopen`/`fgets`/`sscanf`/`strchr` text parsing, so it shares the ""parse text file"" flavor, but operates on `.par` files with a totally different structure and no shared context struct; rank 7.
+
+**Step 8 — Weak matches.** **F005** reads `%s.dat.%d` data files with `calloc`/`sprintf` — different I/O model and no shared structures; rank 8. **F001** is a small linked-list constructor (`malloc(0x30)`, `malloc(0x10)`) with no file I/O at all; rank 9. **F006** is the program `main` (banner, argv checks, usage messages) — control-flow wise the least similar to a partition-enumeration worker; rank 10.
+
+{""ranking"": [""F010"", ""F009"", ""F007"", ""F004"", ""F008"", ""F002"", ""F003"", ""F005"", ""F001"", ""F006""]}",ok,1,1,5424,2012,19.7,0.061936,0,none,ok
+e9_L0_glm_agent_0004,L0,A0CAL,ms__MultiSource__Benchmarks__NPB-serial__dc,FUN_00101850,0,10,50811e27c8c61117,glm_agent,claude-opus-5-5(1944out),"## Step-by-step reasoning
+
+**Step 1 — Identify the trivial match.** The target function is `FUN_00101850`, and candidate **F001** has the *exact same name, address, and body* (the `malloc(0x30)` node setup, `puVar6[2] = 2`, the identical variable set). F001 is the same function in the original (unobfuscated) binary — it's the correct match by definition.
+
+**Step 2 — Characterize the target's structure.** The target is a pure-computation, heap-heavy ""structure builder"":
+- Allocates many small nodes (`malloc(0x30)`) each holding two child arrays (`[0]`, `[1]`) plus a count field (`[2]`); no file I/O, no strings, no error prints.
+- Seeds two fixed entries with values 2 and 3 (count 1 each).
+- Main loop: iterates `uVar19` up to `param_2[param_1-1]`, computes the bit-length of the index (the shift-count inner loop → ceil(log2)), allocates two arrays of that size, `memset`s one to zero, and fills the other from constant table data (`_DAT_00109010`, etc.).
+
+**Step 3 — Compare candidates.**
+- **F010 (`PartitionCube`)**: also a pure numeric/heap-allocation routine (mallocs partition structures, memory-failure check, recursive cube partitioning). Same ""allocate small linked nodes + counts, no file I/O"" profile — closest relative, plausibly a caller/sibling in the same DC partitioning pipeline.
+- **F004 (`GetNextTuple`)**: pure computation with nested index loops over dimensions/multiplicities, only two `fprintf` error exits. Shares the loop-enumeration character and lack of file I/O.
+- **F002**: setup-style routine with mallocs but also file reading and printing — mixed profile, moderately similar.
+- **F005**: builds filenames (`sprintf(""%s.dat.%d"")`), reads files — I/O-dominated, low similarity.
+- **F009**: zeroes a table then `fseek`/file reads — I/O-dominated.
+- **F008**: `fread` loop over records — I/O-dominated.
+- **F003 (`ParseParFile`)**: text parameter-file parser with `strchr`/`fgets` — entirely different purpose.
+- **F006**: program main/usage printer (`fwrite` of usage strings) — no algorithmic overlap.
+- **F007**: orchestrator that only calls other functions and prints error messages — least structural overlap with the target's allocation/loop body.
+
+**Step 4 — Final ordering.** F001 (exact match) ≫ F010 (same heap-partitioning style) > F004 (pure loop computation) > F002 > the file-I/O routines F005/F009/F008 > F003 > F006 > F007.
+
+{""ranking"": [""F001"", ""F010"", ""F004"", ""F002"", ""F005"", ""F009"", ""F008"", ""F003"", ""F006"", ""F007""]}",ok,1,1,5160,1811,50.3,0.074276,0,none,ok
+e9_L0_glm_agent_0005,L0,A0CAL,ms__MultiSource__Benchmarks__ASC_Sequoia__AMGmk,FUN_00104810,0,10,1e00438c2a059953,glm_agent,claude-opus-5-5(2695out),"## Step-by-step reasoning
+
+**Step 1 — Identify the target's structure.** The target `FUN_00104810(long*, long*, long*)`:
+- Reads `param_1[0..2]` and a `uint` count at offset 0x18 (`param_1 + 3`) — a 0x20-byte struct `{long, long, long, int}`.
+- Calls `FUN_001038a0(count)` to allocate a buffer.
+- Contains an unrolled-by-4 copy loop (with scalar remainder loop) copying `count` 8-byte elements from `*param_3`'s buffer into the new buffer — a vector copy, then continues to more per-element work (`if (0 < count)`).
+- This matches the Sequoia MATVEC benchmark's sparse matrix-vector kernel operating on a matrix/vector descriptor struct.
+
+**Step 2 — Match against candidates.**
+- **F009**: Same address (`FUN_00104810`), same signature, same variable set, same body. It is the same function — trivially rank 1.
+- **F004** (`FUN_00101860`): Same shape — `(long*, long*, ...)` args, reads the same count field `*(uint*)(param_1+3)`, uses `param_1[1]` as an element array, and has the same flavor of unrolled `ulong`-indexed loop machinery (`uVar13..uVar22`, `lVar19/lVar21`) as the target's copy loop. Strongest non-identical match — likely a sibling kernel over the same struct.
+- **F001** (`FUN_00101380`): Reads the exact same count field at offset 0x18, the array pointer at `param_1+8`, writes `param_1+0x30` — clearly operates on the same struct type with element loops, but different signature (single arg) and purpose.
+- **F010** (`FUN_00104f30`): Allocates a 0x20-byte struct via `FUN_001038a0(1,0x20)` and fills fields at +0x8, +0xc, +0x14, [3] — it's the constructor for the same struct type the target consumes. Related by data type, but no element-copy loop.
+- **F003** (`FUN_00101710`): Reads the same struct (count at +0x18, array at `param_1[1]`), iterates `n+1` int elements — but it's file *output*, structurally dissimilar to the copy/compute loop.
+- **F002** (`FUN_00101500`): Same benchmark family (file reader using `FUN_001038a0(n+1,4)` and int arrays), but no struct-count field at 0x18 in the same way and no copy loop; I/O-heavy, dissimilar.
+- **F008** (`FUN_00104680`): MATVEC benchmark driver — allocates large arrays (`0x1e848`), times a 2000-iteration loop calling other functions. Related domain, but it's a driver, not a kernel.
+- **F007** (`FUN_001044b0`): Another benchmark section driver; allocates a 4-element double array and times sections. Minimal resemblance.
+- **F006** (`FUN_001042c0`): Near-twin of F007 (same pattern); equally dissimilar.
+- **F005** (`FUN_00104150`): `main`-like banner printer that just calls the drivers; least similar.
+
+**Step 3 — Order.** Identity → same-struct kernels with matching loop idioms (F004, F001) → struct constructor (F010) → same-family I/O (F003, F002) → drivers (F008, F007, F006) → top-level banner printer (F005).
+
+{""ranking"": [""F009"", ""F004"", ""F001"", ""F010"", ""F003"", ""F002"", ""F008"", ""F007"", ""F006"", ""F005""]}",ok,1,1,5116,2581,59.4,0.088944,0,none,ok
+e9_L0_glm_agent_0006,L0,A0CAL,ms__MultiSource__Benchmarks__ASC_Sequoia__AMGmk,FUN_00101500,0,10,eb297be895354415,glm_agent,claude-opus-5-5(3560out),"## Step-by-step reasoning
+
+**1. Identify what the target does.**
+`FUN_00101500` opens a file with `fopen(..., ""r"")`, reads a count `n` with `fscanf`, allocates `n+1` ints via the allocator `FUN_001038a0`, reads `n+1` values and decrements each by 1 (1-based → 0-based index conversion), then allocates a 0x38-byte struct with fields: `[0]`=array, `[1]`=int array, `[2]`=second int array, `+0x18`=n, `+0x1c`=n, `+0x20`=m, `+0x30`=n, `+0x34`=1. It then reads `m` more values (again decrementing, tracking a max). This is clearly a **sparse-matrix file reader** that fills a matrix descriptor struct (CSC-style: row ptrs + col indices). The strings in F005 (""Sequoia Benchmark"", ""MATVEC"") confirm the program domain.
+
+**2. F002 — exact match.**
+F002 is the *same function* (`FUN_00101500`) from the original binary, with identical code. Trivially rank 1.
+
+**3. F003 — inverse operation on the same struct.**
+`FUN_00101710` takes that same struct (`*param_1`, `param_1[1]`, `param_1[2]`, `*(uint*)(param_1+3)` — matching layout offsets 0x00/0x08/0x10/0x18), opens a file with `""w""` and `fprintf`s the values **+1** (0-based → 1-based). It is the exact complement of the target (write-back of the matrix), sits at the adjacent address 0x1710, and shares the file-I/O + index-conversion character. Rank 2.
+
+**4. F001 — same struct, consumer side.**
+`FUN_00101380` reads `*(uint*)(param_1 + 0x18)` and `*(int**)(param_1 + 8)` and writes `+0x30` — exactly the target's struct layout (0x18 = n, 0x08 = int array, 0x30 = field). It's the computation that consumes the struct the target builds, at adjacent address 0x1380, but no file I/O. Rank 3.
+
+**5. F004 — same module, struct-pair operation.**
+`FUN_00101860` takes `long*` structs and an int, reads `*(uint*)(param_1 + 3)` (i.e., offset 0x18) and `param_1[1]` — same descriptor layout. Likely the matvec kernel of the same module. Related but less structurally similar than F001/F003. Rank 4.
+
+**6. F010 — similar *shape*, different struct/module.**
+`FUN_00104f30` allocates a small struct (0x20 bytes, vs 0x38 here), zeroes it, sets int fields at +0xc/+0x14, reads fields of the input struct — a struct-building routine like the target, but a different struct layout and different allocator usage pattern (it's in the 0x104xxx benchmark cluster). Rank 5.
+
+**7. F006 / F007 — same allocator, struct setup, but drivers.**
+Both build a struct via `FUN_001038a0(4,8)` and copy global data into it; they share the allocator call and struct-population idiom with the target, but they're timing-driver functions with gettimeofday/clock, no file parsing. Rank 6 and 7 (nearly identical to each other).
+
+**8. F009 — kernel with struct params, doubles.**
+Operates on three `long*` params with heavy double arithmetic — a numeric kernel from the other benchmark section; structurally dissimilar to the reader. Rank 8.
+
+**9. F008 — timing driver, different allocator.**
+Allocates via `FUN_00104a70`, runs a 2000-iteration timed loop; no file I/O, no shared struct. Rank 9.
+
+**10. F005 — benchmark main.**
+Pure banner printing + dispatch to the other functions; least similar. Rank 10.
+
+{""ranking"": [""F002"", ""F003"", ""F001"", ""F004"", ""F010"", ""F006"", ""F007"", ""F009"", ""F008"", ""F005""]}",ok,1,1,5045,1942,42.9,0.10810800000000001,0,none,ok
+e9_L0_glm_agent_0007,L0,A0CAL,ms__MultiSource__Benchmarks__ASC_Sequoia__AMGmk,FUN_001042c0,0,10,c7ff8bcb0f71f9d9,glm_agent,claude-opus-5-5(2701out),"## Step-by-step reasoning
+
+**Step 1: Identify the target's characteristics**
+
+`FUN_001042c0` is a benchmark-style function that:
+1. Allocates a 32-byte struct (`FUN_001038a0(4,8)`) and fills it with constants from `_DAT_00106300.._0010631c`
+2. Calls a setup function `FUN_00103990(0x32,0x32,0x32,...)` producing three handles (`local_58`, `local_50`, `local_48`)
+3. Calls `FUN_00104df0` twice (initialization)
+4. Times a 2000-iteration loop with `gettimeofday` + `clock`, accumulating into globals `_DAT_001090b8` (wall time) and `_DAT_001090c0` (CPU time)
+5. Compares two double arrays element-wise in an unrolled loop (`lVar7` stepping by 2, up to `0x1e849` ≈ 100001), taking the max absolute difference
+6. Prints `"" \n Matvec: error: %e\n""` if error > 0
+7. Frees everything and returns
+
+**Step 2: Match against candidates**
+
+- **F006** — Same name `FUN_001042c0`, same decompiled signature, identical body prefix (allocation of 4×8, same `_DAT_00106300` constants). This is the same function in the original (unobfuscated) binary. **Clear #1.**
+- **F007** — `FUN_001044b0`, a sibling benchmark function with a byte-for-byte matching structure: same 4×8 allocation, same constant loading, same timing locals, same locals layout (only `local_48` differs: `undefined8` vs `long *`). It's the analogous function for a different benchmark kernel (called by F005 right after the target). **#2.**
+- **F008** — `FUN_00104680`: same benchmark skeleton — two allocations, two `FUN_00104df0`-style init calls, `gettimeofday` + `clock`, a 2000-iteration loop calling a kernel (`FUN_001051f0`), `gettimeofday` again. Only the error-check tail differs. **#3.**
+- **F009** — `FUN_00104810(long*, long*, long*)`: takes exactly three handles like the target's `local_50/local_58/local_48`, works over doubles — consistent with the matvec computation kernel whose result the target verifies. **#4.**
+- **F005** — `FUN_00104150`: the benchmark driver that *calls* `FUN_001042c0`. It shares the timing globals `_DAT_001090b8/_DAT_001090c0` and `gettimeofday`/`clock` usage, but its own body is mostly `puts` banner printing — low body similarity despite the direct call relationship. **#5.**
+- **F010** — `FUN_00104f30(long*)`: allocates a 0x20-byte struct with the same field layout pattern (`[1]`=int, `[3]`=array pointer) as the matrix handle used by the target; a matrix utility (clone/convert). Moderate structural overlap. **#6.**
+- **F004** — `FUN_00101860(long*, long*, int)`: operates on the same handle layout (`param_1[3]` = count, `param_1[1]` = uint array), likely a sparse-matrix operation, but no timing/error-check structure. **#7.**
+- **F002** — `FUN_00101500(char*)`: reads a matrix from a file with `fscanf` (1-based→0-based index conversion) — part of the matvec data pipeline but functionally unrelated (file I/O). **#8.**
+- **F001** — `FUN_00101380(long*)`: iterates over the CSR-style structure (`param_1+0x18` count, `param_1+8` array), some computation over the matrix, but no timing/verification resemblance. **#9.**
+- **F003** — `FUN_00101710(long*, char*)`: writes results to a file with `fprintf` — least similar to the target's benchmark/timing/verification behavior. **#10.**
+
+**Step 3: Sanity check**
+
+F005 calling the target might argue for ranking it higher, but similarity here is about function body/semantics; F005 is a banner-printing driver, while F007/F008/F009 share the target's actual computational structure. The order F007 > F008 holds because F007 matches the target nearly line-for-line.
+
+{""ranking"": [""F006"", ""F007"", ""F008"", ""F009"", ""F005"", ""F010"", ""F004"", ""F002"", ""F001"", ""F003""]}",ok,1,1,5197,1998,42.3,0.092144,0,none,ok
+e9_L0_glm_agent_0008,L0,A0CAL,ms__MultiSource__Benchmarks__ASC_Sequoia__AMGmk,FUN_001044b0,0,10,a9f603645557398f,glm_agent,claude-opus-5-5(2053out),"## Step-by-step reasoning
+
+**1. Identify what the target does.**
+`FUN_001044b0` is a *benchmark driver* function (from the Sequoia benchmark, MATVEC test):
+- Allocates a small array via a custom allocator `FUN_001038a0(4,8)` and fills it with constants from globals (`_DAT_00106300.._0010631c`) — building a config/vector struct.
+- Calls a setup routine `FUN_00103990(0x32,0x32,0x32,...)` returning handles (`local_50`, `local_58`, `local_48`).
+- Calls `FUN_00104df0(DAT_00106120, local_58)` (likely a print/report).
+- Times a hot loop: `gettimeofday` → 2000 iterations of `FUN_00104810(uVar4, local_50, local_58)` → `gettimeofday`, plus `clock()` around the same loop.
+- Accumulates wall/CPU time into globals `_DAT_001090b8` / `_DAT_001090c0`.
+- Computes a max error over results (`while (lVar7 != 0x1e849)` — stride-2 scan, matching 50×50 ... actually 0x1e849/2 ≈ 50000, i.e. 100000 elements) and prints `""Relax: error: %e""` if nonzero.
+- Frees everything (`FUN_00103980`, `FUN_00101290`, `FUN_00104af0` ×3).
+
+**2. Compare each candidate.**
+
+- **F007 (`FUN_001044b0`)**: Literally the same function — same address, same signature, same body (allocator call, constant fill, timing globals, 2000-iteration loop). This is an exact/extract match. **Rank 1.**
+- **F006 (`FUN_001042c0`)**: Nearly identical driver — same `FUN_001038a0(4,8)` allocation, same constant fill from the same globals region, same `FUN_00104df0` call, same timing globals, same 2000-iteration timed loop pattern, same error-check structure. This is the sibling benchmark driver (sequoia's other kernel, the ""Relax""-style one). **Rank 2.**
+- **F008 (`FUN_00104680`)**: Another timing driver with the same skeleton: allocations via `FUN_00104a70`, `FUN_00104df0(DAT_00106120, ...)` twice, `gettimeofday` → 2000-iteration loop calling a kernel (`FUN_001051f0`) → `gettimeofday`, `clock()` accumulation. Very similar, but different allocation path and no constant-fill of a 4×8 struct. **Rank 3.**
+- **F005 (`FUN_00104150`)**: The benchmark harness — prints the Sequoioa banners, explicitly calls `FUN_001044b0()` (the target), resets the same timing globals `_DAT_001090b8/_DAT_001090c0`, uses `gettimeofday`/`clock`. Strong semantic relationship (it *contains* the target) but structurally it's a dispatcher, not the driver itself. **Rank 4.**
+- **F010 (`FUN_00104f30`)**: A constructor/allocator helper using the same custom allocator `FUN_001038a0(1,0x20)` and building a result struct (fields at +0xc, +0x14) — plausibly part of the matvec data structures the target consumes. Shares infrastructure, but no timing loop. **Rank 5.**
+- **F004 (`FUN_00101860`)**: Large computational function over structures with many temporaries — plausibly a matrix/vector compute kernel, but no timing, no allocator match visible, different shape. **Rank 6.**
+- **F009 (`FUN_00104cb0`)**: Output routine (`fopen(param_2,""w"")`, `fprintf` of vectors). Same program family but pure I/O. **Rank 7.**
+- **F003 (`FUN_00101710`)**: Writes results to a file (`fopen(...,""w"")`, `fprintf` loops) — unrelated to the driver. **Rank 8.**
+- **F002 (`FUN_00101500`)**: Reads an input file with `fscanf`, uses the allocator but for parsing input — different purpose. **Rank 9.**
+- **F001 (`FUN_00101380`)**: Parameter/struct parsing routine with nested int comparisons — least similar. **Rank 10.**
+
+The top of the ranking is driven by the distinctive fingerprint of the target: custom allocator + constant-struct fill + `gettimeofday`/`clock` timing around a fixed 2000-iteration kernel loop + accumulation into the same globals + max-error scan.
+
+{""ranking"": [""F007"", ""F006"", ""F008"", ""F005"", ""F010"", ""F004"", ""F009"", ""F003"", ""F002"", ""F001""]}",ok,1,1,5230,1967,42.1,0.079448,0,none,ok
+e9_L0_glm_agent_0009,L0,A0CAL,ms__MultiSource__Benchmarks__ASC_Sequoia__AMGmk,FUN_00101860,0,10,bd7b82dc665ccd4f,glm_agent,claude-opus-5-5(1777out),"## Step-by-step reasoning
+
+**1. Identify the target.** The target `FUN_00101860(long*, long*, int)` — even the address `0x1860` and the signature match candidate **F004** exactly (`FUN_00101860(long *param_1, long *param_2, int param_3)`). The opening logic is identical:
+- `uVar4 = *(uint *)(param_1 + 3)` → count field at offset 0x18 (F001 also reads this offset, but has a different signature).
+- `puVar6 = (uint *)param_1[1]` → offset array at +8, `lVar7 = param_2[1]` → destination offset array, `lVar8 = param_1[2]` / `lVar19 = param_2[2]` → payload arrays.
+- The main loop copies values and, for ascending runs, scatters `*(lVar8 + lVar21*4)` into `*(lVar19 + lVar21*4)` — the same structure visible in F004's body. **F004 is the same function** (the target is its obfuscated build), so it ranks first with certainty.
+
+**2. What does the function do?** It walks an adjacency/offset array (`param_1[1]`, CSR-like), and for each vertex with neighbors, copies a block of data from source to destination arrays; the second half (under `param_3` flag) does a wide copy (`0xd < uVar22` threshold, 8-byte vectorized copies, 16-byte head/tail handling) — a bulk recolor/relabel-style update. This is a graph-benchmark kernel (the binary is the Sequoia benchmark, per F005).
+
+**3. Rank the remaining candidates by structural/semantic similarity:**
+
+- **F001** (`FUN_00101380`): reads the same struct (count at +0x18, array at +8), has the same loop shape (iterate over counts, inner copy loops). Very likely a sibling kernel operating on the same graph structure — second most similar.
+- **F003** (`FUN_00101710`): takes the same struct (`*param_1`, `param_1[1]`, `param_1[2]`, `*(uint*)(param_1+3)`), adjacent address (0x1710), iterates the same offset array but writes output to a file. Same data structure, different purpose — third.
+- **F010** (`FUN_00104f30`): *constructs* a struct with the same field layout (fields at +0xc, +0x10, +0x14, +0x18), allocating and initializing — related to the target's data structure but no kernel loop over it.
+- **F002** (`FUN_00101500`): reads graph input from a file into an allocated array (with the `-1` adjustment typical of 1-based graph formats) — related domain (input side), but different structure and no shared loops.
+- **F009** (`FUN_00104cb0`): writes vector data to a file; generic I/O output routine, only loosely related.
+- **F006/F007** (`FUN_001042c0`/`FUN_001044b0`): near-identical benchmark harness drivers (allocate, time, report) for MATVEC etc. — unrelated to the target's logic.
+- **F008** (`FUN_00104680`): another timing harness (2000-iteration loop, gettimeofday) — unrelated.
+- **F005** (`FUN_00104150`): the benchmark banner/main dispatcher — pure I/O, least similar.
+
+**4. Tie-breaks:** F001 over F003 because F001 contains the same compute-loop pattern (nested loops over counts with element copies), while F003 is I/O. F010 over F002 because F010 manipulates the exact same struct layout the target consumes. F006/F007 over F008 only marginally (they at least allocate/initialize the same style of data), and F005 is last (pure printing).
+
+{""ranking"": [""F004"", ""F001"", ""F003"", ""F010"", ""F002"", ""F009"", ""F006"", ""F007"", ""F008"", ""F005""]}",ok,1,1,5180,1710,39.1,0.0706096,0,none,ok
+e9_L0_glm_agent_0010,L0,A0CAL,ms__MultiSource__Benchmarks__TSVC__Searching-dbl,FUN_001013b0,0,10,f3db827a266e7cc2,glm_agent,claude-opus-5-5(1582out),"## Step-by-step reasoning
+
+**Step 1 — Analyze the target function `FUN_001013b0`:**
+- Signature: `(undefined8, long, int)` — takes a pointer to a double array and an int mode selector.
+- Mode `-1`: fills a 64×8 block of doubles (512 doubles = 0x800 bytes per row iteration) with `DAT_0010c120 / i` (i = 1..256).
+- Mode `-2`: same fill but with `DAT_0010c120 / (i*i)`.
+- This is a classic ""loop initialization"" kernel from a benchmark suite (divide by i, divide by i²).
+
+**Step 2 — Compare candidates:**
+
+- **F004**: The decompilation is literally *identical* to the target — same address `FUN_001013b0`, same signature, same nested loops, same division semantics for modes `-1` and `-2`. This is the same function from the original (unprotected) binary. Clear #1.
+
+- **F002**: Same calling convention shape `(undefined8, long, int)`, branches on `param_3 == -1` (and by extension `-2`), performs the same kind of double-array initialization with division by an incrementing counter (`(double)((int)lVar5 + 1)`). Same semantics, just a differently-compiled/vectorized variant. #2.
+
+- **F003**: Same initialization logic and mode branching (`param_4 == -1`), but the signature has an extra parameter `(undefined8, undefined8, long, int)` — the mode selector is param_4 instead of param_3. Functionally nearly identical but the signature diverges. #3.
+
+- **F005**: Operates on the same kind of data (blocks of doubles at similar stack offsets, 8-wide unrolled accumulation) — this is a checksum/sum kernel over the arrays the init function fills. Related to the same benchmark family but different semantics (reads/sums vs. writes/fills). #4.
+
+- **F006**: Verification routine for loop ""s331"" — reads global double arrays, counts sign conditions, prints. Different purpose (verification vs. init) but same benchmark program. #5.
+
+- **F007**: Verification routine for loop ""s332"" — binary-search-like scan over global doubles. Same program, different purpose. Roughly tied with F006; F006's structure (per-element conditional logic) is marginally closer in spirit to per-element writes. #6.
+
+- **F008**: `main` — parses args, allocates, calls init and verification functions. Calls the target's family but does none of its work itself. #7.
+
+- **F001**: Empty no-op function. Unrelated. #8.
+
+- **F009**: `_FINI_0` destructor with `__cxa_finalize`. Unrelated. #9.
+
+- **F010**: Process entry (`__libc_start_main` trampoline). Unrelated. #10.
+
+**Key evidence:** The target's decompilation matches F004 byte-for-byte in structure (same function name/address `FUN_001013b0`), making the match unambiguous; F002/F003 are same-family initialization variants.
+
+{""ranking"": [""F004"", ""F002"", ""F003"", ""F005"", ""F006"", ""F007"", ""F008"", ""F001"", ""F009"", ""F010""]}",ok,1,1,5087,1381,34.1,0.0659656,0,none,ok
+e9_L0_glm_agent_0011,L0,A0CAL,ms__MultiSource__Benchmarks__TSVC__Searching-dbl,FUN_0010b5d0,0,10,6c0ac115dbb69410,glm_agent,claude-opus-5-5(1818out),"## Step-by-step reasoning
+
+**Step 1 — Exact match check.** The target is `FUN_0010b5d0(double)`. Candidate **F007** is decompiled at the exact same address (`FUN_0010b5d0`) with byte-for-byte identical decompilation: the `""s332 ""` print, the `DAT_0010e064` outer loop, the nested unrolled comparisons against `&DAT_0010e0a0`-region doubles, the `0x7d04` loop bound, and the `LAB_0010b630` exit into `FUN_001011a0`. This is the same function — rank 1.
+
+**Step 2 — Structural siblings.** **F006** (`FUN_0010b460`) is the immediately preceding benchmark kernel (""s331 ""): it shares the identical skeleton — print label, outer loop bounded by `DAT_0010e064`, inner scan over the same global double array `(&DAT_0010e0a0)` at stride-8 offsets, index tracking, and double comparisons. It's the closest structural relative after the exact match — rank 2.
+
+**Step 3 — Same data / loop idiom.** **F005** (`FUN_00101530`) walks the same global double array region with the same unrolled 8-wide inner loop idiom and a near-identical odd loop bound (`0x7d07` vs the target's `0x7d04`), but it sums rather than compares. Strong loop-structure similarity, different operation — rank 3.
+
+**Step 4 — Call-graph / shared globals.** **F008** (`FUN_0010bbd0`, effectively `main`) doesn't share the kernel's loop body, but it directly calls the target `FUN_0010b5d0`, its sibling `FUN_0010b460` (F006), and shares the globals `DAT_0010e064` (loop count) and `DAT_0010e060` (printf precision) that the target reads. Strong relational similarity — rank 4.
+
+**Step 5 — Double-array loops, unrelated purpose.** **F004** (`FUN_001013b0`) is an initialization routine doing nested loops storing doubles (`dVar2 / (int)lVar3`) across array rows. It shares the double-array-loop flavor and even touches constant `DAT_0010c120`, near the target's `DAT_0010c128`, but its control flow and purpose differ — rank 5.
+
+**Step 6 — SIMD-style helpers.** **F002** and **F003** (`FUN_001011b0` / `FUN_001012b0`) are near-identical twins of each other: vector-typed (`auVar`) routines gated on a `param == -1` check with a small do-while. They share almost nothing with the target's comparison-scan loop — F002 ranks 6, F003 ranks 7 (F002 has the slightly simpler, closer-matching signature).
+
+**Step 7 — Boilerplate.** **F010** (`processEntry`) only forwards to `__libc_start_main` → F008, so it's transitively related but has no code similarity — rank 8. **F009** (`_FINI_0`) is linker boilerplate, only coincidentally touching `DAT_0010e080` — rank 9. **F001** is an empty function — least similar, rank 10.
+
+{""ranking"": [""F007"", ""F006"", ""F005"", ""F008"", ""F004"", ""F002"", ""F003"", ""F010"", ""F009"", ""F001""]}",ok,1,1,4660,1729,38.6,0.0672696,0,none,ok
+e9_L0_glm_agent_0012,L0,A0CAL,ms__MultiSource__Benchmarks__TSVC__Searching-dbl,FUN_0010b460,0,10,f2d9d484ce862a46,glm_agent,claude-opus-5-5(1610out),"## Step-by-step reasoning
+
+**Step 1 — Identify the exact match.** The target is `FUN_0010b460`. Candidate **F006** is literally `FUN_0010b460` with the identical body: same string `""s331 ""`, same `DAT_0010e064` loop count, same nested loop scanning `(&DAT_0010e0a0)[lVar2]`-style double arrays with the same `iVar5 = -1` init and the same call to `FUN_001011a0`. This is a direct address match — the obfuscation passes apparently did not alter (or barely altered) this function's structure, or the decompilation round-tripped to the same shape. **F006 = rank 1.**
+
+**Step 2 — Same program family, same idiom.** **F007** (`FUN_0010b5d0`, ""s332"") is the immediately neighboring function in the original binary. It shares:
+- Same pattern: prints an ""s33x "" label, loops `DAT_0010e064` times
+- Same core operation: iterating over double arrays (`DAT_0010e080` region) at fixed 8-byte stride offsets with comparisons (`param_1 < local_40`), including the unrolled 4-wide inner loop style seen in the target
+It's the checksum/verification companion of the target. **Rank 2.**
+
+**Step 3 — Direct caller.** **F008** (`FUN_0010bbd0`, the main) calls `FUN_0010b460()` explicitly and shares the globals `DAT_0010e064` (loop count) and `DAT_0010e060` (precision). Semantically tightly coupled, but its own code (arg parsing, `posix_memalign`, `strtol`) doesn't resemble the target's scan loop. **Rank 3.**
+
+**Step 4 — Helper loops over double arrays.** **F004** fills a block of doubles in an unrolled stride loop (`dVar2 / (int)lVar3` stored to `pdVar1[i]`), and **F005** sums doubles from an array with an unrolled 8-wide loop, returning a checksum-like double. Both match the target's ""unrolled loop over an array of doubles producing a scalar"" motif (F005 especially, since the target's final `iVar5+1` is a checksum-like result). F005's pure read-accumulate shape is closer to the target's scan than F004's write-fill. **F004 ≈ rank 4–5, F005 rank 5** (F004's unrolled store pattern with stride mirrors the target's 5-way unrolled load pattern slightly better; either order is defensible — I place F004 ahead on the unrolled inner-body resemblance).
+
+**Step 5 — Remaining loop functions.** **F002/F003** (`FUN_001011b0`/`FUN_001012b0`) are near-identical twins that build a `(double)((int)lVar5 + 1)` accumulator in a do-while loop over constant-table data (`_DAT_0010c0xx`), gated on `param == -1`. They share the ""loop accumulating double from int counter"" flavor and likely correspond to the target's `FUN_001011a0` helper, but no shared globals or array-scan structure with the target. **F002 rank 6, F003 rank 7** (identical to each other; F002 listed first arbitrarily as the earlier address).
+
+**Step 6 — Trivial/unrelated.** **F010** is the process entry (calls `__libc_start_main` with F008), so it's on the target's call path but otherwise unrelated. **F009** is `_FINI_0`, a destructor stub — unrelated logic. **F001** is an empty `return;` stub — zero similarity. **F010 rank 8** (connected via call graph to the target), **F009 rank 9**, **F001 rank 10**.
+
+## Final ranking
+
+Most similar → least similar:
+
+{""ranking"": [""F006"", ""F007"", ""F008"", ""F004"", ""F005"", ""F002"", ""F003"", ""F010"", ""F009"", ""F001""]}",ok,1,1,4717,1452,35.3,0.0635656,0,none,ok
+e9_L0_glm_agent_0013,L0,A0CAL,ms__MultiSource__Benchmarks__TSVC__Searching-dbl,FUN_001011b0,0,10,d445e0fe845fda4d,glm_agent,claude-opus-5-5(1232out),"## Step-by-step reasoning
+
+**Target analysis:** The target `FUN_001011b0` is a loop-initialization function with three branches on `param_3`:
+- `param_3 == -1`: vectorized (`divpd`) loop writing 16 bytes per iteration, filling a double array with values like `1.0 / (i+1)`, unrolled by 2 stores, stride trickery (`lVar4` from 2 to 0x7d02 step 4).
+- `param_3 == -2`: another `divpd`-based loop computing `1.0 / ((i+1)*(i+1))`.
+- else: simple strided fill (`param_2[i*8] = param_1`, step `param_3`) up to 32000.
+It reads constants from a data table (`_DAT_0010c020…0010c058`) — typical of the LF Loop/HS loop kernels (Linpack-style initialization with reciprocals).
+
+**F002:** Decompiled at the *exact same address* `FUN_001011b0`, with byte-for-byte identical structure: same signature, same constants, same `-1`/`-2`/else branches, same `divpd` loops, same loop bounds (0x7d02, 32000). This is effectively the same function. → Rank 1.
+
+**F003:** Nearly identical function at a different address (`FUN_001012b0`) with a shifted signature (`param_1, param_2, param_3, param_4` with the discriminator in `param_4`). Same constants, same three-branch structure, same `divpd` loops. It's the sibling/variant of the target (likely an unobfuscated copy or adjacent kernel init). → Rank 2.
+
+**F004:** Also an initialization function with the same `param_3 == -1` branch pattern, filling a double array with a constant (`dVar2 / (double)i`) using an 8-wide unrolled inner loop, same 32000-element scale. Same family (loop init for the benchmark kernels), scalar rather than SIMD, missing the `-2`/else variants. → Rank 3.
+
+**F005:** A reduction (sum) over the same double arrays with the same 0x7d00-scale bounds and 8x unrolling — it consumes the arrays the target initializes. Same data layout and loop style, but inverse operation (read/accumulate vs. write/init) and no branching on a mode parameter. → Rank 4.
+
+**F006:** Benchmark kernel (""s331"") operating on the same global double arrays (`DAT_0010e0a0` etc.), unrolled by 2 with conditionals — shares the program context, unrolling style, and double-array data flow, but it's a computational kernel, not an initializer, and has no shared structure with the target's branches. → Rank 5.
+
+**F007:** Another benchmark kernel (""s332""), scalar search loop over the same globals. Shares context (same program, double arrays, 8x-style unrolling) but structurally further from the target (data-dependent early exits vs. straight-line init). → Rank 6.
+
+**F008:** The `main` driver — calls the init functions and kernels, does argument parsing. Only loosely connected (calls into the same program); no loop/body similarity. → Rank 7.
+
+**F010:** `processEntry`/`_start` trampoline via `__libc_start_main`. Program scaffolding, no similarity to the target's body. → Rank 8.
+
+**F009:** `_FINI_0` destructor — `__cxa_finalize` boilerplate, unrelated to the target. → Rank 9.
+
+**F001:** Empty/nop function with unreachable blocks removed — least similar possible candidate. → Rank 10.
+
+{""ranking"": [""F002"", ""F003"", ""F004"", ""F005"", ""F006"", ""F007"", ""F008"", ""F010"", ""F009"", ""F001""]}",ok,1,1,4842,1128,27.2,0.057005600000000003,0,none,ok
+e9_L0_glm_agent_0014,L0,A0CAL,ms__MultiSource__Benchmarks__TSVC__Searching-dbl,FUN_001012b0,0,10,bdbf1eb5b64896bb,glm_agent,claude-opus-5-5(1231out),"## Step-by-step reasoning
+
+**1. Exact match check.** The target function is `FUN_001012b0` with signature `(undefined8, undefined8, long, int)`. Comparing the candidate list, **F003** is literally `FUN_001012b0` with the identical signature and identical decompiled body (same globals `_DAT_0010c020`–`_DAT_0010c058`, same `-1`/`-2`/else branches, same divpd loops, same loop bounds `0x7d02` and `32000`). This is an exact decompilation match.
+
+**2. Near-duplicate check.** **F002** (`FUN_001011b0`) is nearly identical: same global constants, same branch structure on the last parameter, same SIMD `divpd` initialization loops. The only difference is the decompiler shows 3 parameters instead of 4 (param_1 unused in both anyway, and the `else` scatter loop in F002's truncated body likely matches). It's a sibling function with the same source-level logic — second closest.
+
+**3. Related but structurally different.** **F004** (`FUN_001013b0`) also branches on `param == -1`/`-2` and fills a double array with a division (`dVar2 / (double)(int)lVar3`), but it's a scalar unrolled version filling 16 doubles per iteration rather than a packed `divpd` pair-based loop, and its loop bound/stride differ. It's clearly the same benchmark family (array init) but a distinct function — third.
+
+**4. Same benchmark family.** **F005** (`FUN_00101530`) is a checksum routine summing doubles over a range ending at `0x7d07` — matching the same array size (32000 doubles = 0xFA00 bytes; the `0x7d02`/`0x7d07` bounds in F003/F005 correspond to the same 4000-iteration loop structure). It shares the data domain and loop shape but computes a reduction, not an initialization. Fourth.
+
+**5. Program-level functions.** **F006** (`s331`) and **F007** (`s332`) operate on the same global double arrays (`DAT_0010e0a0`, `DAT_0010e080`) and `DAT_0010e064` loop counter from the same benchmark program (Linux-style loop kernel timing harness), but their control flow (search/branch logic) is unrelated to the target. F006 touches the same array semantics more directly than F007, so F006 then F007.
+
+**6. Harness/entry points.** **F008** is `main` (argument parsing, `posix_memalign` of 0x3e800 bytes = 256KB, calling the benchmark and the s331/s332 printers) — connected to the target only via the call graph. **F010** is the process entry stub. **F009** is the `.fini`/`__cxa_finalize` stub. **F001** is an empty function — least similar.
+
+Final ranking from most to least similar:
+
+{""ranking"": [""F003"", ""F002"", ""F004"", ""F005"", ""F006"", ""F007"", ""F008"", ""F010"", ""F009"", ""F001""]}",ok,1,1,4848,1157,11.6,0.057033600000000004,0,none,ok
+e9_L0_glm_agent_0015,L0,A0CAL,ss__SingleSource__Benchmarks__Linpack__linpack-pc,FUN_00105840,0,10,c378bc03fbefe577,glm_agent,claude-opus-5-5(2137out),"## Step-by-step reasoning
+
+**Step 1 — Identify what the target does.**
+`FUN_00105840` in the protected binary is a classic SAXPY-style routine: `y[i] = a * x[i] + y[i]`, where `param_1` is the scalar `a`, `param_2` is the element count `n`, `param_3` is the `x` pointer, `param_4` is stride `incx`, `param_5` is the `y` pointer, and `param_6` is stride `incy`. It:
+- Returns early if `n < 1` or `a == 0.0` (with a NaN-aware check).
+- Has a fast path when `incx == 1 && incy == 1`, unrolled 8 floats per iteration (`param_2 & 0xfffffff8`, `0x20` byte step, two 4-float blocks from `param_3`/`param_5` and `param_5 + 0x10`).
+- Falls back to a scalar remainder/strided loop (`uVar17` remainder, `param_2 & 1` check, etc.).
+
+**Step 2 — Match against candidates.**
+
+- **F007** (`FUN_00105840`): Same address, same signature, same variable set (`pfVar26`, `uVar27`, `uVar20`, `param_2 & 0xfffffff8` style logic). This is the *same function* in the original binary — an exact match. Rank 1.
+- **F006** (`FUN_00105790`): Nearly identical structure — scalar float `param_1`, uint count `param_2`, pointer `param_3`, stride `param_4 == 1` check, `param_2 < 8` guard, `param_2 & 0xfffffff8` unrolled loop with the same 4-float block loading pattern. It's the single-array variant (`y = a*y`, no second buffer / no `+ y` add), i.e., a sibling BLAS-level routine. Very high structural and semantic similarity. Rank 2.
+- **F004** (`FUN_001029b0`): Also a float kernel with many float temporaries (`fVar5`–`fVar17`), pointer arithmetic, `uint`/`long` mixed params, and heavy unrolling (`double dVar18`, `ulong` loop counters). Likely another unrolled vector math routine (e.g., strided saxpy or similar) from the same library. Same code style, but different signature and no exact `0xfffffff8`/dual-buffer pattern visible. Rank 3.
+- **F008** (`FUN_00105b20`): A float-reduction kernel — `param_3 == 1 && param_5 == 1` fast-path check (same idiom as the target's `param_4 == 1 && param_6 == 1`), `param_1 < 4` unroll guard, accumulates into `fVar12` and returns a float. Structurally parallel (early-out, unrolled fast path, remainder), but it's a dot-product/reduction, not an elementwise update. Rank 4.
+- **F005** (`FUN_00105660`): Shares some DNA — `(int)param_1 < 1` early-out, a `param_3 == 1` stride check, float loads, and unrolled blocks — but returns a `ulong` status-like value and mixes integer/float logic; it looks like a different kind of helper (possibly a scaled-copy-with-error-check). Moderate similarity. Rank 5.
+- **F003** (`FUN_00101180`): Just a `clock()` wrapper. No float/vector logic at all. Rank 6.
+- **F001 / F002** (`FUN_001010c0`, `FUN_001010f0`): Empty return stubs with unreachable blocks. No similarity in behavior, but they are trivially small library functions (CRA/ctor-like stubs) from the same binary. Ranks 7–8.
+- **F009** (`_FINI_0`): Destructor/finalizer calling `__cxa_finalize`. Different purpose entirely. Rank 9.
+- **F010** (`entry`): `processEntry` calling `__libc_start_main` — program entry trampoline, least related to a float kernel. Rank 10.
+
+**Step 3 — Final ordering.**
+The dominant signals are: (1) exact identity for F007, (2) same saxpy-family unrolled float-loop structure for F006, then F004/F008/F005 as other float kernels with fast-path/unroll idioms, then non-float library utilities at the bottom.
+
+{""ranking"": [""F007"", ""F006"", ""F004"", ""F008"", ""F005"", ""F003"", ""F001"", ""F002"", ""F009"", ""F010""]}",ok,1,1,4044,1643,35.4,0.0687216,0,none,ok
+e9_L0_glm_agent_0016,L0,A0CAL,ss__SingleSource__Benchmarks__Linpack__linpack-pc,FUN_001029b0,0,10,1c7b63c873f62e0e,glm_agent,claude-opus-5-5(3974out),I'll analyze the target function and compare it against each candidate. Let me first check if the build artifacts are available for additional context.,parse_failure,0,,4058,3370,82.3,0.1055736,0,none,ok
+e9_L0_glm_agent_0017,L0,A0CAL,ss__SingleSource__Benchmarks__Linpack__linpack-pc,FUN_00105b20,0,10,d4adb343ddd843df,glm_agent,claude-opus-5-5(1650out),"## Step-by-step reasoning
+
+**1. Identify what the target does.**
+`FUN_00105b20(uint n, long x, int incx, long y, int incy)` is a classic BLAS **sdot** (dot product) shape:
+- Returns 0.0 if `n < 1`.
+- Fast path when `incx == 1 && incy == 1`: contiguous dot product, unrolled by 4 with a scalar tail for `n % 4`.
+- General path: strided loop, unrolled by 2 (processing pairs of elements with stride doubling via `incx*2`/`incy*2`), with a final scalar iteration when `n` is odd.
+- The odd sign-mask expressions (`param_3 >> 0x1f & -(param_1-1)*param_3`) are just compiler idioms producing the starting offsets for the strided loop.
+
+**2. Compare against candidates.**
+
+- **F008** — Byte-for-byte the same decompilation (same address `0x00105b20`, same ""unreachable block"" warning at `0x00105b8d`). This **is** the target function. Clear #1.
+
+- **F007** — `FUN_00105840(float alpha, uint n, ulong x, int incx, ulong y, int incy)`: this is the **saxpy** signature (6 args: scalar + two arrays with two strides). It shows the same structural fingerprint: stride-based pointer walking, unrolled main loop with a 2× stride advance, and tail handling. Very close relative of sdot in the same BLAS family.
+
+- **F006** — `FUN_00105790(float alpha, uint n, long x, int incx)`: **sscal** shape (scalar × strided array). Same idiom set: `if (0 < n)`, `incx == 1` fast path, unroll-by-8 contiguous loop with scalar tail. Shares the loop-skeleton style but only one array/stride.
+
+- **F005** — `FUN_00105660(uint n, uint* x, int incx)`: one strided float array, `incx == 1` special case, unrolled — likely **sasum/isamax**-family. Similar idioms but no second operand, so less similar than F006/F007.
+
+- **F004** — `FUN_001029b0(...)`: heavy float arithmetic with many unrolled loops, but a different argument profile (pointer + int + uint + void* + float*) and presumably a different BLAS routine (e.g., a rotation/combination kernel). Same float-vector style, weaker structural match.
+
+- **F003** — `clock()` thunk: trivial wrapper, no float/loop logic at all, but at least a real function body.
+
+- **F010** — `processEntry` / `__libc_start_main` stub: unrelated startup code.
+
+- **F009** — `_FINI_0`: destructor boilerplate, unrelated.
+
+- **F001 / F002** — Empty `return;` stubs: least content, least similar (order between them is arbitrary).
+
+**3. Rank.** Match identity first, then by shared BLAS stride/unroll structure (two-stride > one-stride > unrelated float kernel), then non-float helpers, then empty stubs.
+
+{""ranking"": [""F008"", ""F007"", ""F006"", ""F005"", ""F004"", ""F003"", ""F010"", ""F009"", ""F001"", ""F002""]}",ok,1,1,4117,1508,35.8,0.062484,0,none,ok
+e9_L0_glm_agent_0018,L0,A0CAL,ss__SingleSource__Benchmarks__Linpack__linpack-pc,FUN_00105660,0,10,29fa735dc2ea8ef5,glm_agent,claude-opus-5-5(1301out),"## Step-by-step reasoning
+
+**Step 1: Identify the target function.** The target `FUN_00105660` is literally present in the candidate list as **F006** — same address (0x00105660), same signature `(uint, uint*, int) -> ulong`, and identical decompilation. This is an exact match, so F006 is trivially rank #1.
+
+**Step 2: Understand the target's semantics.** The function loops over a `uint*` array, masks each element with `_DAT_00106070` (at 0x00106070 — almost certainly the `0x7fffffff` absolute-value mask for floats, since results are cast to `float` and compared), and tracks the index of the maximum value. It has two paths: `param_3 == 1` (contiguous, unrolled by 2) and a strided path indexing `param_2[param_3 + ...]`. This is the classic BLAS **isamax** (index of max |element|) pattern.
+
+**Step 3: Compare the other candidates.**
+
+- **F005** (`FUN_00105640`): immediately adjacent address, references the *same* globals `_DAT_00106070` / `_UNK_00106074` (the abs-mask pair, suggesting a shared helper for `|x|` on a packed value), and does float math. Tiny, but the strongest structural/constant affinity to the target after F006. Rank #2.
+- **F007** (`FUN_00105790`): also directly follows the target in address order. It iterates a float array with a stride parameter (`param_4 == 1` fast path vs. strided), with an 8-way unrolled contiguous loop — same family (BLAS-style stride-based float kernels) and similar loop-with-stride control flow to the target. Rank #3.
+- **F008** (`FUN_00105b20`): float reduction over an array with `(param_3 == 1) && (param_5 == 1)` special-casing, an N<1 guard returning a sentinel, and unrolled contiguous loops. Very similar shape (guard + stride dispatch + unrolled float loop), though it returns a float accumulation rather than an index. Rank #4.
+- **F004** (`FUN_001029b0`): a large function dominated by float operations and pointer walking — same data-type domain (float arrays), but much bigger and without the tight max-index/stride structure of the target. Rank #5.
+- **F003**: a trivial wrapper around `clock()` — no float/array/loop affinity, but at least a real callable function. Rank #6.
+- **F001 / F002**: empty stubs (just `return`), no semantic content whatsoever. Rank #7/#8 (their mutual order is arbitrary).
+- **F009** (`_FINI_0`): destructor/finalizer machinery, unrelated. Rank #9.
+- **F010**: `processEntry` / `__libc_start_main` trampoline with an infinite loop — the least related to anything. Rank #10.
+
+## Final ranking
+
+{""ranking"": [""F006"", ""F005"", ""F007"", ""F008"", ""F004"", ""F003"", ""F001"", ""F002"", ""F009"", ""F010""]}",ok,1,1,3881,1243,28.0,0.053616000000000004,0,none,ok
+e9_L0_glm_agent_0019,L0,A0CAL,ss__SingleSource__Benchmarks__Linpack__linpack-pc,FUN_00105790,0,10,5d915dfca2caffa4,glm_agent,claude-opus-5-5(1011out),"## Step-by-step reasoning
+
+**1. Exact structural match.** The target function is `FUN_00105790`, and candidate **F007** is literally the same function at the same address (`FUN_00105790`) with the same signature `(float, uint, long, int)` and identical decompilation: a bounds check on `param_2`, a `param_4 == 1` fast path with an 8-element (0x20-byte stride) unrolled multiply-by-scalar loop, a scalar tail loop, and a strided fallback loop. This is the obfuscated target's original (unprotected) counterpart — clear #1.
+
+**2. Closest semantic neighbor.** **F006** (`FUN_00105660`) is immediately adjacent in address space (0x105660 vs 0x105790) and shares the core algorithm: it checks `(int)param_1 < 1`, has a `param_3 == 1` (stride == 1) special case, iterates over a `float*` buffer (`param_2`) applying `*param_2 & _DAT_00106070` (bit-cast float mask) with a stride parameter — this looks like the scalar/stride-generic sibling of the target's vectorized loop (likely the same source routine compiled without vectorization, or a related kernel in the same family). Strong #2.
+
+**3. Related float arithmetic.** **F005** (`FUN_00105640`) performs a single float multiply by a global constant (`_DAT_0010600c`) — the same ""scale a float"" primitive the target's loop body performs, and again an adjacent address. It lacks the loop/stride structure entirely, so it ranks below F006 but above unrelated functions.
+
+**4. Everything else.** The remaining candidates share no data-flow or control-flow similarity to the target:
+- **F003** calls `clock()` and returns — a real libc wrapper, so marginally ""more code"" than stubs, but semantically unrelated.
+- **F001, F002, F004** are trivial `return;` stubs (with unreachable-block artifacts) — no similarity.
+- **F008 (`_FINI_0`)** and **F009 (`_INIT_0`)** are module init/fini glue; F008 at least contains branching logic, F009 is a single tail call.
+- **F010** is the process entry (`__libc_start_main` trampoline) — structurally furthest from a compute kernel.
+
+Among the ties (F001/F002/F004 are equivalent; stubs vs. init glue), ordering is essentially arbitrary; I place stubs above init/entry glue since the target is a plain leaf-like compute function, but any order within these groups is defensible.
+
+## Final ranking
+
+Most similar → least similar: exact match (F007), same-family float-stride kernel (F006), scalar float-multiply helper (F005), unrelated libc wrapper (F003), empty stubs, init/fini glue, process entry.
+
+{""ranking"": [""F007"", ""F006"", ""F005"", ""F003"", ""F001"", ""F002"", ""F004"", ""F008"", ""F009"", ""F010""]}",ok,1,1,3360,942,10.6,0.040729600000000005,0,none,ok
+e9_L0_glm_agent_0020,L0,A0CAL,ms__MultiSource__Benchmarks__DOE-ProxyApps-C__Pathfinder,FUN_00101b40,0,10,0dcf1c79a6701eea,glm_agent,claude-opus-5-5(3441out),"## Step-by-step reasoning
+
+**Step 1 — Identify the target.** The target `FUN_00101b40(uint param_1, char **param_2)` is the `main` of the PathFinder mini-app: it prints the Sandia copyright banner, allocates a config structure (`FUN_00101560`), handles `getopt` options (`c:i:x:o:q:huy`), falls back to the default input `s_N_MicroTestData_adj_list`, calls the parser `FUN_00102920`, then dispatches to the leg-counting routines `FUN_00103ad0` / `FUN_00103cd0`, prints ""Total %d legs found"", frees (`FUN_00101610`), and exits.
+
+**Step 2 — Exact match.** **F002** is literally the same function: same name (`FUN_00101b40`), same signature, same banner string, same `getopt` string, same default-filename stack copies, same dispatch to `FUN_00103ad0`/`FUN_00103cd0`. This is the unprotected/original version of the target — rank 1, no ambiguity.
+
+**Step 3 — Same subsystem, shared callees.** **F001** (`FUN_00101750`) operates on the same config structure (fetches it via a global getter like the target does, walks `param_1`'s node/adjacency-list arrays, calls edge functions `FUN_001016d0`), sitting immediately before `main` in the binary and representing the same data model. **F003** (`FUN_00102090`) calls `FUN_00102920` — the exact input parser the target calls — and is one of the interactive branches reachable from the target's option loop. Both are close; F001 shares the config-structure handling and is tightly coupled to main's data flow, F003 shares a direct callee and the I/O-heavy character of main.
+
+**Step 4 — Direct callees of main.** **F005** (`FUN_00103ad0`) and **F006** (`FUN_00103cd0`) are the two leg-computation kernels the target calls directly and prints results from. They're strongly related by call graph, but internally they are parallel compute loops quite different in shape from main. F006 is the alternate dispatch path (signature-based), F005 the label-based one — essentially peers.
+
+**Step 5 — Output/cleanup path.** **F010** (`FUN_00105ef0`) writes the PathFinder YAML report; it's invoked from the tail of main's flow (the `FUN_00106150`/finalization region), so it shares the program-level strings and purpose but is a self-contained I/O routine.
+
+**Step 6 — Generic helpers.** **F004** (`FUN_00103860`) and **F008** (`FUN_00104350`) are a matched pair of SIMD-style null-check/validation helpers used inside the compute kernels — very far from main's structure (no shared strings, callees, or control flow). **F007** (`FUN_001040d0`) is a generic list-deep-copy utility. **F009** (`FUN_001047e0`) is a standalone benchmark/timing harness with histogram output — the least connected to main's logic.
+
+## Final ranking
+
+{""ranking"": [""F002"", ""F001"", ""F003"", ""F005"", ""F006"", ""F010"", ""F004"", ""F008"", ""F007"", ""F009""]}",ok,1,1,5892,2278,49.5,0.10958559999999999,0,none,ok
+e9_L0_glm_agent_0021,L0,A0CAL,ms__MultiSource__Benchmarks__DOE-ProxyApps-C__Pathfinder,FUN_00103cd0,0,10,a1ee3807b3c08c53,glm_agent,claude-opus-5-5(1325out),"## Reasoning
+
+**Step 1: Identify the exact match.** The target function is `FUN_00103cd0` at address `0x00103cd0`. Candidate **F006** is literally `FUN_00103cd0` — same address, same signature `uint(long, long)`, same locals (`local_88`, `local_80`, `local_78`, `local_70`, `local_68`, `uStack_60`, `local_58`, `auStack_8c`), same body. This is a 1:1 match (the excerpt in F006 is truncated, but everything visible is identical).
+
+**Step 2: Look for structural/semantic siblings.**
+- **F005** (`FUN_00103ad0`) shares the distinctive `fwrite(""Immediately before parallel\n"",...)` marker, the `FUN_001015d0()` timer call, the `param_1 + 0x20` graph-structure traversal, and the identical stack layout (`local_68`, `uStack_60`, `local_58`) used to build signature records. It is almost certainly the OpenMP parallel region companion of the target — extremely similar, just missing the second `param_2` argument and the malloc/setup prologue.
+- **F004** (`FUN_00103860`) is *called directly by the target* (`FUN_00103860(..., &uStack_60, auStack_8c, lVar5, uVar6, puVar3, local_80)`), matching all 7 arguments including `puVar3` from `FUN_00105d80(0x40)` and `local_80 = param_2`. It uses the same SIMD-style null-mask (`auVar`) idiom. High call-graph affinity.
+
+**Step 3: Secondary similarity.**
+- **F008** (`FUN_00104350`) shares the identical `auVar` null-check SIMD pattern with F004 and a compatible parameter profile (pointer, long*, undefined8*, undefined8, undefined4*) — likely a sibling kernel of `FUN_00103860`, so indirectly related to the target.
+- **F001** (`FUN_00101750`) traverses the same nested adjacency structure (`*(long *)(piVar6 + 2) + lVar12 * 8` pattern matches the target's `*(long *)(piVar4 + 2) + lVar12 * 8` loops), with a timer call at the top — same loop skeleton, weaker data-flow match.
+- **F007** (`FUN_001040d0`) allocates paired-element arrays (`malloc(n*0x10 + 0x10)`) similar to the target's `malloc(0x10)` node-record pattern, but no graph traversal.
+
+**Step 4: Dissimilar functions.**
+- **F009** is a benchmark/timing harness (histogram, avg/std dev) — allocates but unrelated loops.
+- **F002** is a main-style driver parsing `N_MicroTestData_adj_list` — test-data setup, different shape.
+- **F003** is interactive I/O (node label prompting) — no structural overlap.
+- **F010** is a YAML report writer (PathFinder logging) — completely unrelated.
+
+## Final Ranking
+
+{""ranking"": [""F006"", ""F005"", ""F004"", ""F008"", ""F001"", ""F007"", ""F009"", ""F002"", ""F003"", ""F010""]}",ok,1,1,5853,1169,26.3,0.0669536,0,none,ok
+e9_L0_glm_agent_0022,L0,A0CAL,ms__MultiSource__Benchmarks__DOE-ProxyApps-C__Pathfinder,FUN_001047e0,0,10,7d0fd909fd76da66,glm_agent,claude-opus-5-5(3989out),"## Step-by-step reasoning
+
+**Step 1 — Identify the target's structure.** The target function is a benchmark-driver/""main-like"" routine:
+1. `malloc(0x28)` for a 5-field stats struct, with a null check that `free`s and returns NULL on failure.
+2. Initializes fields: a list pointer (`FUN_00105490(0x10)` — likely an array/vector constructor), min = `0x7fffffff` (INT_MAX), max/avg/stddev/histogram = 0.
+3. A counting loop `iVar2 = 2 … 9` that, per iteration, updates min (`__ptr[1]`) / max (`__ptr + 0xc`) and calls `FUN_00105510` (an ""add value"" helper).
+4. After the loop, more constant adds (1, 4, 5, 6, …) with the same min/max-update pattern.
+5. A stats-computation call (`FUN_00104690`), then `printf(""avg: %f\nstd dev: %f\n"")` and a histogram print loop.
+
+**Step 2 — Exact match.** **F009** is byte-for-byte the same function (`FUN_001047e0`) — identical decompilation. It is trivially rank 1.
+
+**Step 3 — Allocation-pattern similarity.** **F007** (`FUN_001040d0`) shares the target's distinctive allocation idiom: `malloc` of a computed size, null check that yields NULL on failure, and zero-initialization loops over the allocated block. It is plausibly the array-constructor callee (`FUN_00105490`-style) of the same program, making it the closest structural relative.
+
+**Step 4 — Stats/accumulation similarity.** **F006** contains double-precision locals (consistent with avg/std-dev computation, i.e., the `FUN_00104690`-style helper) plus loops and null-guarded entry — moderate overlap with the target's post-loop statistics phase. **F005** has a single counting loop with accumulation and double arithmetic (a benchmark-runner shape), also moderately similar but with more unrelated I/O (`fwrite(""Immediately before parallel…"")`).
+
+**Step 5 — Loop-with-calls similarity.** **F001** is a nested graph-traversal loop that calls helper functions per element — it matches the target's ""loop + per-iteration call"" pattern only weakly, being much deeper in pointer chasing. **F002** looks like the program's actual `main` (argc/argv, file reading of `N_MicroTestData_adj_list`), but its body (stack buffers, string parsing) shares little with the target's body.
+
+**Step 6 — Low similarity.** **F003** is interactive I/O (fgets/exit prompts) — only the do-while loop shape is shared. **F010** is a linear sequence of guarded `fprintf` YAML writes — the repeated formatted-output motif weakly echoes the target's histogram printing, but there are no loops over computed data in the shown body.
+
+**Step 7 — Least similar.** **F004** and **F008** are dominated by SIMD all-ones null-check masks (`auVar` patterns) with no allocation, counting loop, or print logic visible; they resemble each other far more than the target. F008 has slightly more subsequent structure, so F004 ranks last.
+
+## Final ranking
+
+{""ranking"": [""F009"", ""F007"", ""F006"", ""F005"", ""F001"", ""F002"", ""F003"", ""F010"", ""F008"", ""F004""]}",ok,1,1,5814,3443,86.3,0.12284,0,none,ok
+e9_L0_glm_agent_0023,L0,A0CAL,ms__MultiSource__Benchmarks__DOE-ProxyApps-C__Pathfinder,FUN_00103860,0,10,87a19f2b1bff02cd,glm_agent,claude-opus-5-5(2092out),"## Step-by-step reasoning
+
+**Step 1 — Identify the target's distinctive features.**
+The target `FUN_00103860` (from the protected binary) has several strong identifiers:
+- A SSE/AVX vectorized null-check prologue: builds mask vectors from `(int)param_X == 0` for `param_3`, `param_4`, `param_2`, `param_1`, combines with `packssdw`/`movmskps`, then tests `iVar2 == 0`.
+- Signature: `(long, undefined8*, long, int*, undefined4*, long, long)` — 7 args, void return.
+- Body: recursive descent over a linked list (`+0x28` head, `+8`/`+0x10` next links), `strcmp` on a name field, a self-call with `param_2 + 1` / `param_3 + 4`, plus calls to helper functions (`FUN_001013a0`, `FUN_00105b60`, `FUN_00105c00`, `FUN_00105930`, ...).
+
+**Step 2 — Exact match.**
+**F005** is literally `FUN_00103860` from the original binary with the identical 7-parameter signature, identical SIMD null-check prologue, and identical body (recursion, `strcmp`, `param_2+1`/`param_3+4` recursive call, ""CrashAndBURN"" path). The target is the obfuscated build of this same function. Unambiguous #1.
+
+**Step 3 — Same prologue family.**
+**F004** (`FUN_001036b0`) and **F008** (`FUN_00104350`) share the exact same vectorized null-check idiom (identical `auVar` shuffling, `packssdw`, `movmskps` pattern checking `param_1`–`param_4`). These are clearly sibling functions from the same source family (likely related recursive match/traversal routines). Between them, F004's parameter types (`undefined8 *param_2`, `undefined4 *param_4`) match the target's more closely than F008's (`long *param_2`), so F004 ranks above F008.
+
+**Step 4 — Structural similarity without the SIMD prologue.**
+- **F001**: traverses nested linked lists (`piVar6 + 2`, `+8` links) and calls helper functions per node — structurally reminiscent of the target's list-walking, though it builds results rather than matching names.
+- **F002**: walks a linked list (`+0x10`/`+8`), counts nodes, prints stats — list traversal with per-node processing, moderate similarity.
+- **F006**: loop over an array of lists with per-node work (""Immediately before parallel"") — some list-walking similarity.
+
+**Step 5 — Little to no similarity.**
+- **F007**: allocates an array (`malloc(param_2 * 0x10 + 0x10)`) and fills it — array construction, no list traversal or matching.
+- **F003**: interactive stdin prompt loop for node labels — very different control flow and purpose.
+- **F009**: benchmark/timing harness with histogram output — unrelated structure.
+- **F010**: timestamped YAML report writer — completely unrelated.
+
+**Final ranking:** F005 ≫ F004 > F008 > F001 > F002 > F006 > F007 > F003 > F009 > F010
+
+{""ranking"": [""F005"", ""F004"", ""F008"", ""F001"", ""F002"", ""F006"", ""F007"", ""F003"", ""F009"", ""F010""]}",ok,1,1,6497,1779,38.6,0.087932,0,none,ok
+e9_L0_glm_agent_0024,L0,A0CAL,ms__MultiSource__Benchmarks__DOE-ProxyApps-C__Pathfinder,FUN_001040d0,0,10,80a6efdd9bc35602,glm_agent,claude-opus-5-5(2557out),"## Step-by-step reasoning
+
+**Step 1 — Identify the exact match.** The target is `FUN_001040d0` from the protected binary. Scanning the candidates, **F007** is literally `FUN_001040d0` from the original binary with an identical signature (`long *param_1, uint param_2`) and identical body: `uVar15 = (ulong)(param_2 - 1)`, the `malloc(param_2 * 0x10 + 0x10)` allocation, the same linked-list walk. This is the same function pre-obfuscation — clear #1.
+
+**Step 2 — Characterize the target's structure.** Key features:
+- Guards on non-null pointer and non-zero count
+- One big allocation of an array of 2-element pairs (node + buffer slots)
+- Outer loop walking a linked list (`plVar7 = plVar7[1]`)
+- Per-node `malloc` sized from int fields at offsets `0x30`/`0x34` with overflow check (SCARRY4)
+- Inner loop walking a second linked list at offset `0x20`, filling the pair array backwards
+- Field access at offset `0x28`, a consistency check with `printf(""Bummer. outerIdx..."")`
+
+**Step 3 — Compare structural candidates.**
+- **F002** (`FUN_00101970`): walks a linked list at `param_1+0x10`, counts nodes with an index (`(int)uVar5 + 1` pattern like the target's index bookkeeping), accesses field at offset `0x28` on the node structs, iterates node lists. Shares the list-traversal + node-field + index-counting character. Strong #2.
+- **F001** (`FUN_00101750`): two-level nested loops over linked lists (`param_1` outer, inner over per-node lists at `piVar6+2`), same style of nested structure traversal as the target's outer/inner loop pair. #3.
+- **F006** (`FUN_00103ad0`): reads a count from `param_1+0x20`, nested `do` loops over it, per-element work. Superficially loop-shaped but operates on a different structure (int count + arrays, ""parallel"" printing). #4.
+
+**Step 4 — Weaker matches.**
+- **F009** (`FUN_001047e0`): does `malloc`, builds a struct, has loops and index bookkeeping, prints stats — allocation-heavy like the target but the overall purpose (statistics/histogram) differs. #5.
+- **F003** (`FUN_00102090`): interactive prompt loop (`fgets`, labels) — shares only the loop-over-nodes skeleton. #6.
+- **F005, F004, F008**: these three are a family of near-identical functions dominated by vectorized null-check masks (`auVar7/8/9/10` patterns) that the target doesn't have at all; among them F005/F004/F008 differ only trivially. F008 at least takes a `long *` list-like param, so it edges ahead. #7–#9.
+- **F010** (`FUN_00105ef0`): YAML report writer with `localtime`/`sprintf`/`fprintf` — shares nothing with the target's allocation/table-building logic. #10.
+
+{""ranking"": [""F007"", ""F002"", ""F001"", ""F006"", ""F009"", ""F003"", ""F008"", ""F005"", ""F004"", ""F010""]}",ok,1,1,6253,1712,42.2,0.09528,0,none,ok
+e9_L0_glm_agent_0025,L0,A0CAL,ss__SingleSource__Benchmarks__Stanford__Puzzle,FUN_001015b0,0,10,47298e53dee619ba,glm_agent,claude-opus-5-5(2574out),"## Step-by-step reasoning
+
+**Step 1 — Identify the target.** The target function `FUN_001015b0` appears verbatim in the candidate list as **F007** — same signature, same address, identical decompilation. This is an exact match, so F007 is trivially rank 1.
+
+**Step 2 — Analyze the target's structure.** The target:
+1. Increments a global counter (`DAT_0010c0e4`).
+2. Loops over an index array (`DAT_0010c0b0`), reading a flag from `DAT_0010c0a0`.
+3. For active entries, performs a **scalar conflict check** — scanning `DAT_001050a0` (the row selected via `DAT_00105060[lVar11]`) against `DAT_0010b8a0 + param*4`; on conflict it jumps to `LAB_00101638` (skip).
+4. Otherwise performs a **vectorized marking loop** (8-wide unrolled), writing `1` into `DAT_0010b8a0 + lVar1 + ...` for every nonzero entry of the selected row.
+
+This is the classic signature of a caller into which two helper functions were **inlined** (with LLVM vectorizing the byte/marking loop): a conflict-check helper and a mark helper.
+
+**Step 3 — Match helpers.**
+- The scalar check loop in the target is byte-for-byte the body of **F004** (`FUN_00101190`): same arrays, same condition (`DAT_001050a0` entry nonzero AND `DAT_0010b8a0` entry nonzero → return 0), same loop bound `(&DAT_00105060)[param_1] + 1`.
+- **F006** (`FUN_001013f0`) has the identical skeleton as the target's vectorized section: same length array `DAT_00105060`, same row stride `lVar6 * 0x800` into `DAT_001050a0`, same 8-wide unrolled `piVar` reads — and as the *marking* routine it writes into `DAT_0010b8a0`-style state, matching the target's vectorized write loop exactly.
+- **F005** (`FUN_00101200`) shares the same vectorized skeleton and stride as F006 (and the target), but its body is the *check* variant (reads/compares rather than writes 1s). Very close, slightly less than F006 because the target's dominant vectorized block is the write loop.
+- Note the target also shows the signature of obfuscation-inlining: `lVar5 * 0x800` stride replaced by `puVar15 = &DAT_001050a0` pointer walking, and the flat loop over `DAT_0010c0b0` — but the inlined callee bodies remain recognizable.
+
+**Step 4 — Rank remaining candidates.**
+- **F008** (`FUN_00102070`) is `main`: it calls `FUN_001019f0` (which sits between F006 and F007 in address space — the driver the target belongs to) 100 times. It's the caller context of the target's family, so a weak but real connection.
+- **F003** (`FUN_00101170`) touches neighboring global state (`DAT_00105050`, a hash-like update) but shares no structural or data-flow resemblance.
+- **F009** (`_FINI_0`) and **F010** (process entry) are boilerplate CRT/init-destructors with no relation.
+- **F001** / **F002** are empty no-op stubs — least similar (no logic at all); their relative order is arbitrary.
+
+## Final ranking
+
+{""ranking"": [""F007"", ""F006"", ""F005"", ""F004"", ""F008"", ""F003"", ""F009"", ""F010"", ""F001"", ""F002""]}",ok,1,1,4070,2509,58.3,0.080588,0,none,ok
+e9_L0_glm_agent_0026,L0,A0CAL,ss__SingleSource__Benchmarks__Stanford__Puzzle,FUN_00101200,0,10,2e82b375a8b89cea,glm_agent,claude-opus-5-5(1153out),"## Step-by-step reasoning
+
+**Step 1 — Identify the obvious match.** The target function is literally named `FUN_00101200` and F006 is `FUN_00101200` with byte-for-byte identical decompilation (same locals, same vectorized 8-wide loop over `DAT_001050a0` with stride `lVar5 * 0x800`, same scalar tail loop, same writes of `1` into `DAT_0010b8a0`-region, same counter decrement at `DAT_0010c0a0` indexed by `DAT_0010c0b0[param_1]`). F006 is the same function (possibly an unprotected or re-extracted copy). Rank 1.
+
+**Step 2 — Near-structural twin.** F007 (`FUN_001013f0`) shares almost the entire skeleton with the target: reads `(&DAT_00105060)[param_1]` as a count, the `-1 < (int)uVar2` guard, the `uVar2 < 7` vectorization threshold, `& 0xfffffff8` rounding, the 4-int-at-a-time unrolled loop over `DAT_001050a0 + param_1 * 0x800`, writes into the `DAT_0010b8a0` region at `param_2 * 4`. It is the sibling function in the same ""row operations over a bitmap/adjacency matrix"" family — same address range (0x001013f0 immediately follows 0x00101200). Rank 2.
+
+**Step 3 — Same data-structure family.** F005 (`FUN_00101190`) also iterates `(&DAT_001050a0)[lVar1 + param_1 * 0x200]` bounded by `(&DAT_00105060)[param_1] + 1` and touches `DAT_0010b8a0 + param_2 * 4`. It lacks the vectorized 8-wide loop, the counter decrement, and the forward scan, so it is clearly weaker than F007 but still uses the same core state (count array, bitmap, output array). Rank 3.
+
+**Step 4 — Remainder.** Everything else shares no code or data with the target:
+- F004/F003 only write to `DAT_00105050` (a hash-seed/init global near the target's data, but no loop/branch similarity). F004 at least has arithmetic; F003 is a constant store.
+- F008 is `main` calling `FUN_001019f0` 100 times — control flow exists but nothing overlaps.
+- F009 (`_FINI_0`) and F010 (process entry) are runtime boilerplate.
+- F001/F002 are empty stubs — least similar of all.
+
+**Final ranking (most → least similar):**
+
+{""ranking"": [""F006"", ""F007"", ""F005"", ""F004"", ""F003"", ""F008"", ""F009"", ""F010"", ""F002"", ""F001""]}",ok,1,1,3940,1070,11.0,0.051128,0,none,ok
+e9_L0_glm_agent_0027,L0,A0CAL,ss__SingleSource__Benchmarks__Stanford__Puzzle,FUN_001013f0,0,10,14ae79927ad70dad,glm_agent,claude-opus-5-5(1635out),"## Step-by-step reasoning
+
+**Step 1 — Identify the target's semantics.**
+The target function:
+- Reads a count/length from `DAT_00105060[param_1]`
+- Iterates over a 2D int array at `DAT_001050a0` (row stride `0x200` ints = row indexed by `param_1`)
+- For each nonzero element, writes `0` into `DAT_0010b8a0 + param_2*4` (an output/result array)
+- Has an unrolled fast path processing 8 elements at a time (blocks of 4 ints × 2, hence the `& 0xfffffff8` and `0x20` stepping)
+- Ends by incrementing a counter at `DAT_0010c0a0` indexed via `DAT_0010c0b0[param_1]`
+
+**Step 2 — Compare each candidate.**
+
+- **F007** — `FUN_001013f0`: identical function name, identical address, and its decompiled body is the same as the target's (same variables, same unrolled loop, same data references). This is an exact match; the target was extracted from this same binary.
+- **F006** — `FUN_00101200`: shares the entire structural skeleton — same `DAT_00105060[param_1]` length check (`-1 <`), same `uVar1 < 7` / `& 0xfffffff8` 8-wide unrolled loop over `DAT_001050a0` with `param_1 * 0x800` stride (visible in the truncated body), same writes to `DAT_0010b8a0 + param_2*4`. This is almost certainly the same underlying function (nearby address, same semantics — clearing result slots for nonzero elements). Only differences are likely the tail counter update and minor layout.
+- **F005** — `FUN_00101190`: same data region and loop skeleton — iterates `(&DAT_001050a0)[lVar1 + param_1 * 0x200]`, bounded by `(&DAT_00105060)[param_1] + 1`, indexing `DAT_0010b8a0 + param_2*4`. But its behavior differs: it's a *check* function returning 0 on any (nonzero source ∧ nonzero result) pair, and it lacks the unrolled path and counter increment. Strong data-structure affinity, moderate control-flow/semantic affinity.
+- **F003 / F004** — `FUN_00101160`/`FUN_00101170`: tiny functions touching `DAT_00105050` (an LCG-style hash: `* 0x51d + 0x3619`). They live in the same data neighborhood but share no loop structure or semantics with the target.
+- **F008** — `FUN_00102070`: the program driver calling `FUN_001019f0` 100 times. No structural overlap.
+- **F009** — `_FINI_0`: library finalization boilerplate. No overlap.
+- **F010** — `entry`: libc startup stub. No overlap.
+- **F001 / F002** — empty `return;` stubs (the IRET/NOP-style padding functions). Least similar — no code or data overlap at all.
+
+**Step 3 — Rank.** Exact structural + address match first, then the structurally identical sibling (F006), then the same-data-region loop variant (F005), then unrelated data-neighborhood functions, then program boilerplate, then empty stubs last.
+
+{""ranking"": [""F007"", ""F006"", ""F005"", ""F004"", ""F003"", ""F008"", ""F009"", ""F010"", ""F001"", ""F002""]}",ok,1,1,3868,1263,29.1,0.060192,0,none,ok
+e9_L0_glm_agent_0028,L0,A0CAL,ss__SingleSource__Benchmarks__Stanford__Puzzle,FUN_00101190,0,10,e4f143271c8f8e93,glm_agent,claude-opus-5-5(1388out),"## Step-by-step reasoning
+
+**Step 1 — Identify the target.** The target function `FUN_00101190` is itself listed as candidate F005, byte-for-byte identical in decompilation. So F005 is a perfect match (similarity 1.0).
+
+**Step 2 — Look for semantic/structural relatives.** F006 (`FUN_001013f0`) takes the same signature `(int, int)`, touches the exact same global data: `DAT_00105060` (indexed by `param_1`, checked against `-1` as a signed count), `DAT_001050a0` (indexed `lVar6 * 0x800` bytes = `param_1 * 0x200` dwords, matching the target's stride), and iterates over elements correlated with `param_2 * 4`. It is essentially the same loop, just un-flattened/vectorized (unrolled 8-wide with scalar tail). Semantically equivalent → clear second place.
+
+**Step 3 — Shared global-state functions.** F003 and F004 write to `DAT_00105050`, a global adjacent to the target's `DAT_00105060` table — same data region, but no control-flow or semantic overlap with the target's loop. F004 at least performs a read-modify-write hash-like update (`* 0x51d + 0x3619`, masked to 16 bits), giving it marginally more computational character than F003's constant store. So F004 > F003, both weak matches.
+
+**Step 4 — Structural-only similarity.** F007 has a do-while counting loop (100 iterations calling `FUN_001019f0`), loosely echoing the target's do-while loop shape, but different signature, no shared data. Mid-low rank.
+
+**Step 5 — Lifecycle stubs.** F008 (`_FINI_0`) and F009 (`_INIT_0`) are library init/fini glue; F009 merely calls F002, F008 calls F001 plus a finalize check. Neither shares signature, data, or semantics with the target. F008 has slightly more logic, so F008 > F009.
+
+**Step 6 — Trivial stubs and entry.** F001 and F002 are empty `return` stubs — no content at all to compare. F010 is the process entry (`__libc_start_main` trampoline) — completely unrelated machinery. These take the bottom ranks.
+
+## Final ranking
+
+{""ranking"": [""F005"", ""F006"", ""F004"", ""F003"", ""F007"", ""F008"", ""F009"", ""F001"", ""F002"", ""F010""]}",ok,1,1,2890,1303,31.0,0.0445096,0,none,ok
+e9_L0_glm_agent_0029,L0,A0CAL,ss__SingleSource__Benchmarks__Stanford__Puzzle,_FINI_0,0,10,05cfa69728cfe130,glm_agent,claude-opus-5-5(885out),"## Step-by-step reasoning
+
+**1. Analyze the target function:**
+`_FINI_0` is a classic ELF `.fini`/destructor stub:
+- Guard flag check (`DAT_00105040 == '\0'` — run-once guard)
+- Conditional call to `__cxa_finalize` (via a pointer, skipped if null)
+- Call to an empty function `FUN_001010a0` (a ""deregister TM clones""-style stub)
+- Sets the guard flag to 1, returns
+
+**2. Exact match:** **F008** is character-for-character identical to the target — same guard, same `__cxa_finalize` call, same call to `FUN_001010a0`. This is clearly the original (unprotected) version of the same function. Rank 1.
+
+**3. Structural cousins:**
+- **F009** (`_INIT_0`) is the symmetric constructor stub: same CRT family, tiny wrapper that calls an empty stub function (`FUN_001010d0`, analogous to `FUN_001010a0`). It lacks the guard flag and `__cxa_finalize`, but shares the role, size, and call-a-no-op structure. Rank 2.
+- **F001** is `FUN_001010a0` itself — the exact callee invoked by the target. It's a trivial empty function; high relevance by name/callee identity, though not the same function. Rank 3.
+- **F002** is another empty stub of the same shape (called by `_INIT_0`), essentially interchangeable with F001 but not referenced by the target. Rank 4.
+
+**4. Small global-writing stubs:**
+- **F003** writes a constant to a global (`DAT_00105050`) — tiny, similar in size, touches the same data region, but no control flow similarity. Rank 5.
+- **F004** similarly small (arithmetic on `DAT_00105050`) but slightly more complex. Rank 6.
+
+**5. Unrelated larger functions:**
+- **F007** — a loop calling a function 100 times; has a call structure but nothing like the guard/finalize pattern. Rank 7.
+- **F010** — `processEntry`, calls `__libc_start_main` via pointer. It does use an indirect call like the target's `__cxa_finalize` pointer, but it's the program entry, structurally unrelated. Rank 8.
+- **F005** — a loop over data arrays (SAT-solver-like helper); no similarity. Rank 9.
+- **F006** — the largest, most complex function (vectorized loops, many variables); least similar. Rank 10.
+
+{""ranking"": [""F008"", ""F009"", ""F001"", ""F002"", ""F003"", ""F004"", ""F007"", ""F010"", ""F005"", ""F006""]}",ok,1,1,2798,807,19.5,0.0337136,0,none,ok
+e9_L0_glm_agent_0030,L0,A0CAL,ms__MultiSource__Benchmarks__MiBench__security-sha,FUN_00101310,0,10,43a71d8e4263ddcd,glm_agent,claude-opus-5-5(1067out),"Looking at the target function, I can identify its semantics first.
+
+## Step 1: Identify the target function
+
+The target has all the hallmarks of **SHA-1's block transform function**:
+- Five 32-bit state words (param_1[0..4]) rotated through variables
+- Round constants: `0x5a827999` (round 1), `0x6ed9eba1` (round 2), `0x8f1bbcdc` (round 3)
+- Rotations: `x << 5 | x >> 0x1b` (rol 5) and `x << 0x1e | x >> 2` (rol 30)
+- Round 1 boolean function `(b & c) | (~b & d)`, round 2 `b ^ c ^ d`, round 3 `(b & c) | (b & d) | (c & d)` (via `uVar7 & uVar6 | (uVar7 | uVar6) & uVar4`)
+- Message schedule expansion loop reading from an 80-word stack array (`auStack_1b8 ^ auStack_184 ^ auStack_198 ^ ...` = the `w[i] = rol1(w[i-3]^w[i-8]^w[i-14]^w[i-16])` expansion)
+- Reads 16 words (64 bytes) from `param_1` (the context's input buffer) and updates state at `param_1[0..4]`
+
+The obfuscation (loop unrolled by 2, instruction substitution like `uVar3 * 0x20 | uVar3 >> 0x1b` = rol 5) doesn't change the semantics.
+
+## Step 2: Match against candidates
+
+- **F004** (`FUN_00101310`): Same address, same signature, same code — this is literally the same function in the original binary. Obvious #1.
+- **F006** (`FUN_00101650`): Takes context + FILE*, reads file, updates state — this is the SHA-1 update/streaming function that calls the transform (or inlines it). Strong structural similarity (same SHA-1 context layout, same variable patterns).
+- **F005** (`FUN_001015b0`): SHA-1 finalization — writes 0x80 padding, memsets, calls `FUN_00101250` and `FUN_00101310` (the target!). Closely related.
+- **F003** (`FUN_001011b0`): Updates bit-length fields at `param_1+0x14/0x18` with `param_3 * 8` — the SHA-1 length/count update function. Related but very different code structure.
+- **F007**: Prints 5 `%08x` words — outputs the SHA-1 digest, but shares no transform logic.
+- **F008**: Main — hashes stdin/files, calls the SHA-1 pipeline. Related to the same program, but dissimilar body.
+- **F010**: `entry` — just calls `__libc_start_main`. Generic.
+- **F009**: `_FINI_0` destructor. Generic.
+- **F002**: Tiny function with unreachable blocks; no relation visible.
+- **F001**: Another trivial empty-ish function. Least similar.
+
+The SHA-1 program is clearly the whole binary: F003/F004/F005/F006/F007/F008 are its components (plus F009/F010 as boilerplate). F004 is the exact match; the other SHA-1 components follow in order of structural similarity to the transform; boilerplate and stubs go last.
+
+```json
+{""ranking"": [""F004"", ""F006"", ""F005"", ""F003"", ""F007"", ""F008"", ""F010"", ""F009"", ""F002"", ""F001""]}
+```",ok,1,1,4632,959,21.8,0.0520176,0,none,ok
+e9_L0_glm_agent_0031,L0,A0CAL,ms__MultiSource__Benchmarks__MiBench__security-sha,FUN_00101650,0,10,88d536435a1adc5d,glm_agent,claude-opus-5-5(2057out),"## Step-by-step reasoning
+
+**1. Identify the target.** The target `FUN_00101650` is a SHA-1-style file hashing routine:
+- It initializes a state structure: `param_1[0..1]` from a constant pool (`_DAT_00102010`, `_UNK_00102018` — the obfuscated SHA-1 constants 0x67452301/0xEFCDAB89/0x98BADCFE/0x10325476), `param_1[2] = 0xc3d2e1f0` (the fifth SHA-1 constant — a smoking gun), and clears a counter at `param_1+0x18`.
+- It reads 0x2000 bytes from a `FILE*` and loops.
+- Prologue contains a bit-length update: `*(param_1+0x14) += len*8` with carry into `*(param_1+0x18)` plus `(len >> 0x1d) & 7` — this is the exact 64-bit bit-counter arithmetic of a SHA-1 `update()` (note `(len*8)` split: high bits come from `len >> 0x1d & 7`).
+- The main loop copies 16 words from the 64-byte input block into the buffer at `param_1+0x1c` in the permuted SHA-1 message-schedule order (note the deliberate shuffling: `puVar22[0xb]`→`+0x2c`... i.e., W[3]..W[15] placed out of program order — the classic ""big-endian load via byte-swap-free reorder"" pattern).
+
+**2. Match candidates.**
+
+- **F006**: This *is* the same function from the original binary — same name `FUN_00101650`, same signature `(undefined8*, FILE*)`, same locals (`__dest`, `puVar22`, `local_2038`, `__s`, `__src`). Clear #1.
+- **F004**: The SHA-1 transform/compression. Its opening (`local_148 = *(param_1+0x13)`, i.e., state word at offset 0x4c, and the sequence of 8-byte state loads) plus its internal buffers (16×8-byte W schedule + `auStack_138[66]`) matches the block-processing half of the target, including the same W-buffer layout at `+0x1c`. Largest shared code mass with the target after F006.
+- **F003**: The SHA-1 `update()` length accumulator. Its body — `*(param_1+0x14) += (uint)len * 8`, carry into `+0x18`, `(len >> 0x1d) & 7` — appears **verbatim** in the target's prologue. Very high similarity, but it's a short function so less total shared code than F004.
+- **F005**: SHA-1 `final()/padding()`. Operates on the same structure (`uVar4 = *(param_1+0x14) >> 3 & 0x3f` — buffer index derived from the bit counter, writes 0x80 at `param_1+0x1c+idx`, memsets to the 0x38/56 boundary, calls F003/F004 helpers, and clears the block buffer). Same data structure, adjacent in the call graph, but code content (memsets) shares little text with the target.
+- **F008**: `main()` — directly *calls* the target (`FUN_00101650(local_8c, ...)`) with a 92-byte state buffer. Semantically tied (caller/callee, confirms the 5-word state + 64-byte buffer layout), but its own code (fopen/fclose loop) is unrelated.
+- **F007**: Prints the 5-word state (`""%08x %08x %08x %08x %08x""`) — confirms the 5-word SHA-1 state, but otherwise unrelated formatting code.
+- **F010**: Process entry / libc_start_main trampoline — generic.
+- **F009**: `_FINI_0` destructor — generic.
+- **F001/F002**: Empty `return;` stubs — no structural, data-flow, or call-graph similarity at all.
+
+## Final ranking
+
+{""ranking"": [""F006"", ""F004"", ""F003"", ""F005"", ""F008"", ""F007"", ""F010"", ""F009"", ""F001"", ""F002""]}",ok,1,1,4448,1970,48.5,0.0703456,0,none,ok
+e9_L0_glm_agent_0032,L0,A0CAL,ms__MultiSource__Benchmarks__MiBench__security-sha,FUN_00101810,0,10,f27a8d3af9e009e1,glm_agent,claude-opus-5-5(1629out),"## Step-by-step reasoning
+
+**Step 1 — Identify the target's behavior.** The target is a `main`-style function: takes `argc`/`argv`, reads stdin (if no args) or each file argument via `FUN_00101650` into a 92-byte buffer, then calls `FUN_001017f0` to print the digest (`%08x` ×5 → a 5-word hash state, consistent with SHA-1 given the `0xc3d2e1f0` constant elsewhere), returns 0.
+
+**Step 2 — Exact match.** **F007** is byte-for-byte the same decompilation as the target (same signature, same calls to `FUN_00101650`/`FUN_001017f0`, same loop structure, same `fopen`/`fclose` handling). Rank 1, trivially.
+
+**Step 3 — Direct callees.** **F006** (`FUN_001017f0`) is the function the target invokes to print results. It takes the same `local_8c` buffer (as `uint*`), shares the 5×`%08x` output format, and is the target's primary semantic counterpart. Rank 2.
+
+**Step 4 — Callers referencing the target.** **F010** (`processEntry`) is the only other candidate that references `FUN_00101810` by name — it passes the target function to `__libc_start_main`, confirming the target *is* `main`. Structurally different (indirect call, infinite loop), but strongly linked. Rank 3.
+
+**Step 5 — Same hash-family internals.** The remaining ""real"" functions are the hashing machinery called indirectly through `FUN_00101650`:
+- **F005**: finalization/padding routine (writes `0x80` terminator, memsets, calls transform+update, clears the state) — multi-call structure resembles the target's orchestration pattern. Rank 4.
+- **F004**: length/bit-count update (adds `len*8`, carry into high word) — same state struct (`+0x14`, `+0x18`), arithmetic-heavy. Rank 5.
+- **F003**: initialization writing the SHA-1 constants (`0xc3d2e1f0`) into the state — same state struct, simple assignments. Rank 6.
+
+**Step 6 — Framework stubs.** **F008** (`_FINI_0`) and **F009** (`_INIT_0`) are startup/teardown wrappers with no data-flow relation to the target; F008 is slightly larger (calls `__cxa_finalize` plus a stub). Ranks 7–8.
+
+**Step 7 — Empty stubs.** **F001** and **F002** are empty `return;` functions with zero shared content. Last.
+
+## Final ranking
+
+{""ranking"": [""F007"", ""F006"", ""F010"", ""F005"", ""F004"", ""F003"", ""F008"", ""F009"", ""F001"", ""F002""]}",ok,1,1,3432,1463,35.2,0.0536576,0,none,ok
+e9_L0_glm_agent_0033,L0,A0CAL,ms__MultiSource__Benchmarks__MiBench__security-sha,FUN_001011b0,0,10,6d54cf0723b5d9dc,glm_agent,claude-opus-5-5(1401out),"## Reasoning
+
+**Step 1: Identify the target function's semantics.**
+
+The target function FUN_001011b0 is a classic **hash update (transform feeder)** function — specifically it matches the SHA-1 style `sha1_update` pattern:
+- Adds `param_3 * 8` to a bit counter at `param_1 + 0x14` with carry into a high word at `param_1 + 0x18` (plus bits from `param_3 >> 0x1d & 7`) — the classic `ctx->size += len*8` with 64-bit accumulation.
+- Buffers input in 64-byte blocks: copies 16 words (`param_2[0..0xf]`) into a block buffer at `param_1 + 0x1c`.
+- Calls two helpers per full block: `FUN_00101250` (block buffer) and `FUN_00101310` (transform/state update).
+- Keeps the trailing partial block with a final `memcpy`.
+
+**Step 2: Compare each candidate.**
+
+- **F004 (FUN_001011b0):** Same address, same name, same signature, and the decompiled body is a prefix of the target's (Ghidra truncated the loop/copy tail in the original binary listing, but this is the same function). Identical match.
+- **F005 (FUN_001015b0):** This is the **finalize/final** function of the same hash. It operates on the exact same context layout — reads bit count at `+0x14`/`+0x18`, uses the same 64-byte buffer at `+0x1c`, pads with `0x80` and zeroing (sizes 0x38/0x3f = the classic 56/64 split), and calls the **same two helpers** `FUN_00101250` and `FUN_00101310`. Strongest structural/data-flow affinity after the exact match.
+- **F003 (FUN_00101190):** This is the **init** function — writes constant state `_DAT_00102010` (8 bytes = 0x67452301, 0xEFCDAB89 presumably), 0xc3d2e1f0 (the fifth SHA-1 constant h4!), and zeroes the rest. Definitely the same hash family's init; shares the same context structure conceptually, but little code-shape overlap with the update function.
+- **F007 (FUN_00101810):** The **main** driver — calls the hash computation (`FUN_00101650`, likely wrapping update) and printing. Semantically part of the same program, but its code shape (file loops, fopen/fclose) bears no structural resemblance to the update loop.
+- **F006 (FUN_001017f0):** Prints the 5-word state (`%08x` ×5) — consistent with SHA-1's 5-word digest; references the same state structure concept, tiny function.
+- **F010 (entry):** Program entry calling `__libc_start_main` with FUN_00101810; unrelated structurally.
+- **F009 (_INIT_0) / F008 (_FINI_0):** Init/fini stubs, trivial and unrelated.
+- **F001 / F002:** Empty `return` stubs (likely from obfuscation of trivial functions) — no code, no data flow; least similar. Interleaved arbitrarily.
+
+**Step 3: Rank.** Exact match first, then same-struct/same-helper sibling (F005), then same-family init (F003), then same-program callers (F007, F006), then program scaffolding (F010, F009, F008), then empty stubs (F001, F002).
+
+{""ranking"": [""F004"", ""F005"", ""F003"", ""F007"", ""F006"", ""F010"", ""F009"", ""F008"", ""F001"", ""F002""]}",ok,1,1,4109,1244,30.1,0.05451360000000001,0,none,ok
+e9_L0_glm_agent_0034,L0,A0CAL,ms__MultiSource__Benchmarks__MiBench__security-sha,FUN_001015b0,0,10,d3a420111809c8e4,glm_agent,claude-opus-5-5(1257out),"## Step-by-step reasoning
+
+**1. Identify what the target does.** The target `FUN_001015b0(param_1)` operates on a context struct:
+- Reads a 32-bit value at `+0x14` and `+0x18` (bit counter low/high)
+- Computes `count >> 3 & 0x3f` (byte offset within a 64-byte block)
+- Writes `0x80` at `buffer(+0x1c) + offset` — the classic MD4/MD5/SHA-1 padding marker
+- Zero-fills the rest; if the offset ≥ 0x38 (56), it zero-fills, processes the block (`FUN_00101250`), then zero-fills a fresh block
+- Calls `FUN_00101250` (block transform) and `FUN_00101310` (likely big-endian state store) and saves the bit count at `+0x54`/`+0x58`
+
+This is unambiguously a **hash finalization/padding function** (SHA-1 style, 5-word state matching the `0xc3d2e1f0` seen in F003).
+
+**2. Compare candidates.**
+
+- **F005** — This is literally the *same function* (same address `0x001015b0`, same decompilation, just truncated output). It is an exact match; similarity is maximal.
+- **F004** — SHA-1 update function: increments the same bit-count fields (`+0x14`, `+0x18`) by `len * 8` with carry. Operates on the identical context layout; the natural companion of the target. Second most similar.
+- **F003** — SHA-1 init: sets the five state constants (`0x67452301/0xEFCDAB89` via `_DAT_00102010`, and `0xc3d2e1f0` explicitly) plus zeroed count. Same context struct, same algorithm family, but no padding/transform logic.
+- **F006** — Prints the five state words (`%08x` ×5), consistent with a 160-bit SHA-1 digest. Same struct, but entirely different operation (I/O vs. padding).
+- **F007** — Main driver: reads stdin/files into the context and prints digests. Uses the same context but only at the orchestration level.
+- **F010** — `processEntry` calling `__libc_start_main`; unrelated program scaffolding that merely passes `FUN_00101810` (= F007) as main.
+- **F009 / F008** — `_INIT`/`_FINI` constructors/destructors; no relation to the hash logic, though F008 references F001.
+- **F001 / F002** — Empty stubs (F001 also called by F008). No structural, data-flow, or behavioral overlap with the target at all; least similar.
+
+**3. Final ordering.** Exact duplicate first, then functions sharing the same context struct and algorithm (F004, F003, F006), then program-level code (F007, F010), then init/fini scaffolding, then empty stubs.
+
+{""ranking"": [""F005"", ""F004"", ""F003"", ""F006"", ""F007"", ""F010"", ""F009"", ""F008"", ""F001"", ""F002""]}",ok,1,1,3630,1119,24.8,0.0478016,0,none,ok
+e9_L0_glm_agent_0035,L0,A0CAL,ss__SingleSource__Benchmarks__Stanford__FloatMM,FUN_00101270,0,10,bc26c5ebf41987e1,glm_agent,claude-opus-5-5(1090out),"## Step-by-step reasoning
+
+**1. Identify the target's structure.** The target function `FUN_00101270` does four things:
+- Sets `DAT_00104040 = 0x12403` (seed initialization).
+- Two nested loops filling 41×40 floats with pseudo-random values using the LCG `state = (state * 0x51d + 0x3619) & 0xffff`, mapped to `[-60, 59] / DAT_00102004`.
+- A triple loop computing dot products (stride-2 unrolled multiply-accumulate over rows) storing into `DAT_001074f0`-indexed output.
+- A guarded `printf(""%f\n"", ...)` of one result element.
+
+**2. Match against candidates.**
+
+- **F007**: Same address (0x00101270) and identical decompilation — it is literally the target function (listing truncated). Highest similarity by definition.
+- **F005**: The random-fill routine — seed read `DAT_00102004`, LCG update, identical float conversion expression, same loop bounds (0x28 inner / 0x29 outer), same 0xa4 row stride. This is the inlined body of the target's first two loop nests. Strongest structural match after F007.
+- **F006**: The dot-product kernel — `*param_1 = 0.0`, stride-2 accumulation `*(param_2 + lVar2*4) * pfVar1[0x29]` with `+0x52` float stride, loop to 0x2a. Matches the target's third loop nest (inlined, with `param_4 * 0xa4` and `param_5 * 4 + 0xa4` indexing). Third best.
+- **F003**: Exactly the target's first statement (`DAT_00104040 = 0x12403;`). Small but exact overlap — the seed initialization that F007/F005 omit.
+- **F004**: One LCG step `(state * 0x51d + 0x3619) & 0xffff` — the inner-body update primitive used 40×41×2 times in the target. Matches a single statement, so below F003/F005/F006.
+- **F008**: The caller — loops `FUN_00101270(i)` 5000 times. It's the function that invokes the target (likely `main` before inlining), so related by call relationship rather than body similarity.
+- **F010**: `processEntry`/`__libc_start_main` stub referencing `FUN_00101460` (F008). Only indirect relevance.
+- **F009**: `_FINI_0` destructor — boilerplate, no shared code.
+- **F002 / F001**: Empty `return` stubs with no overlap; least similar. F001 is the smallest (bare return), so last.
+
+## Final ranking
+
+{""ranking"": [""F007"", ""F005"", ""F006"", ""F003"", ""F004"", ""F008"", ""F010"", ""F009"", ""F002"", ""F001""]}",ok,1,1,3903,1090,27.5,0.037412,0,none,ok
+e9_L0_glm_agent_0036,L0,A0CAL,ss__SingleSource__Benchmarks__Stanford__FloatMM,FUN_00101170,0,10,1007c0b411b14865,glm_agent,claude-opus-5-5(1308out),"## Reasoning
+
+**Step 1 — Exact match.** F005 (`FUN_00101170`) is byte-for-byte the same decompilation as the target: same signature, same use of `DAT_00102004` as divisor, same LCG update `DAT_00104040 * 0x51d + 0x3619` masked to 16 bits, same nested loops (0x28 inner, 0x29 outer, 0xa4 row stride). It's either the unprotected original or an unprotected copy — rank 1.
+
+**Step 2 — Shared constants and state.** F004 updates the exact same pseudo-random generator state: `DAT_00104040 = (DAT_00104040 * 0x51d + 0x3619) & 0xffff` — identical multiplier, addend, and mask to the inner loop of the target. It's the RNG step factored out. Rank 2.
+
+**Step 3 — Shared data structure.** F006 operates on the same float matrix the target fills: it indexes floats with row stride `0xa4` (41 floats/row) and loops to `0x2a` (42), consistent with the target's 0x28-column/0x29-row geometry. Different computation (a dot-product/convolution) but strong data-structure and loop-shape overlap. Rank 3.
+
+**Step 4 — Shared global only.** F003 writes to `DAT_00104040` (the target's RNG state, seeding it with 0x12403) but shares no constants, types, or control flow with the target. Rank 4.
+
+**Step 5 — Program scaffolding.** F007 is the `main`-like driver (loop calling `FUN_00101270` 5000 times), F010 is the libc start-main entry, F009/F008 are `_INIT`/`_FINI` constructors. None share code, constants, or data with the target; F007 at least sits in the same hot-path call graph region. Ranking among them is largely arbitrary; I order by proximity in the call graph: F007, F010, F009, F008.
+
+**Step 6 — Empty stubs.** F001 and F002 are no-op functions (called only from `_FINI`/`_INIT`) with zero features in common with the target — least similar.
+
+```json
+{""ranking"": [""F005"", ""F004"", ""F006"", ""F003"", ""F007"", ""F010"", ""F009"", ""F008"", ""F001"", ""F002""]}
+```",ok,1,1,3047,1178,27.0,0.044644,0,none,ok
+e9_L0_glm_agent_0037,L0,A0CAL,ss__SingleSource__Benchmarks__Stanford__FloatMM,FUN_00101200,0,10,4b2a0efcdd66d051,glm_agent,claude-opus-5-5(1251out),"## Step-by-step reasoning
+
+**1. Structural comparison with each candidate:**
+
+- **F006** (`FUN_00101200`): The decompiled body is *character-for-character identical* to the target — same signature, same `0xa4` row stride, same accumulator loop starting at `lVar2 = 2` with step 2 up to `0x2a`, same `pfVar1[0x29]` / `pfVar1 + 0x52` accesses, same repeated stores to `*param_1`. This is an exact match (identical address 0x1200), so the target apparently received no obfuscation passes, or the decompilation already normalized them.
+
+- **F005** (`FUN_00101170`): Operates on the same data structure — float arrays with the same `0xa4` byte stride (41 floats = 41×4 = 164 = 0xa4), loops bounded by 0x28/0x29 matching the target's matrix dimensions. It fills the matrix with pseudo-random values (via the LCG in F004). It's the data-initialization companion to the target's dot-product/computation, so it's the next most similar in data types, memory-access patterns, and loop structure — but it computes something entirely different.
+
+- **F007** (`FUN_00101460`): A driver loop calling `FUN_00101270` (which sits between F006 and F007 in address space, likely part of the same kernel/benchmark family) 5000 times. Related to the target's execution context but shares no code shape, types, or arithmetic with it.
+
+- **F004** (`FUN_00101150`): The LCG step (`* 0x51d + 0x3619 & 0xffff`) that F005 uses to generate matrix data. Indirectly connected to the target's data, but it's simple integer state update — no float math, no loops.
+
+- **F003** (`FUN_00101140`): Just seeds the same `DAT_00104040` RNG state with a constant. Even less structure than F004.
+
+- **F001 / F002**: Empty stubs (x86 `endbr64; ret` style) with unreachable-block artifacts. No computation, no types, no loops. Minimal similarity. F002 is called by F009, giving it a faint contextual tie, but as function bodies they're equivalent.
+
+- **F009** (`_INIT_0`): Constructor calling stub F002 — init/teardown boilerplate, unrelated to the target's computation.
+
+- **F008** (`_FINI_0`): Destructor with `__cxa_finalize` logic — library lifecycle boilerplate, unrelated.
+
+- **F010** (`processEntry`): Process entry calling `__libc_start_main` — the least similar; it's process startup glue with an infinite do-nothing loop, sharing nothing with the target.
+
+**2. Key discriminators used:** exact body identity (F006), shared data-structure semantics — float arrays, 0xa4 stride, matching loop trip counts (F005), call-graph proximity (F007, F004, F003), and then generic boilerplate/stubs (remaining).
+
+**3. Final ordering:** exact match first, then the semantically-related matrix-initialization routine, then the driver, RNG helpers, empty stubs, and finally init/fini/entry boilerplate.
+
+{""ranking"": [""F006"", ""F005"", ""F007"", ""F004"", ""F003"", ""F001"", ""F002"", ""F009"", ""F008"", ""F010""]}",ok,1,1,3030,1198,28.9,0.0428816,0,none,ok
+e9_L0_glm_agent_0038,L0,A0CAL,ss__SingleSource__Benchmarks__Stanford__FloatMM,_FINI_0,0,10,7de1ffea0685cb9a,glm_agent,claude-opus-5-5(855out),"## Reasoning
+
+**Step 1 — Exact structural match:** F008 is byte-for-byte the same decompilation as the target `_FINI_0`: same guard on `DAT_00104030`, same conditional `__cxa_finalize(PTR_LOOP_00104028)`, same call to `FUN_00101080`, same flag set to 1. This is clearly the same function (the target is the protected version, F008 the original).
+
+**Step 2 — Direct callee:** F001 (`FUN_00101080`) is the function the target invokes right after finalization. It's a trivial empty function — related by call relationship and structurally near-identical (just a return).
+
+**Step 3 — Same-family trivial functions:** F002 (`FUN_001010b0`) is another empty function, essentially identical to F001. F009 (`_INIT_0`) is a one-line wrapper calling `FUN_001010b0` — same shape as the target's tail (call an empty stub, return), and it's also a lifecycle-section function (INIT vs FINI), so it shares the semantic role.
+
+**Step 4 — Tiny global-writing stubs:** F003 and F004 are single-statement functions touching `DAT_00104040`. F003 is a constant store (closest to ""do almost nothing""); F004 is an arithmetic update. Both are small leaf functions but lack the flag-check/finalize pattern.
+
+**Step 5 — Larger computational functions:** F007 loops 5000 times calling `FUN_00101270` — a simple driver loop, small but heavier behavior. F005 is a double-nested loop filling a 41×40 float table using an LCG-style PRNG (`*0x51d + 0x3619`, same constant as F004) — substantial computation. F006 is a dot-product-style inner loop over floats — structurally complex, nothing in common with the target.
+
+**Step 6 — Unrelated entry logic:** F010 is `processEntry` calling `__libc_start_main` with an infinite loop — completely different role (program entry vs. fini handler). Least similar.
+
+## Final ranking
+
+{""ranking"": [""F008"", ""F001"", ""F002"", ""F009"", ""F003"", ""F004"", ""F007"", ""F005"", ""F006"", ""F010""]}",ok,1,1,2859,807,19.5,0.0335936,0,none,ok
+e9_L0_glm_agent_0039,L0,A0CAL,ss__SingleSource__Benchmarks__Stanford__FloatMM,FUN_001010b0,0,10,ecd3301f50a594f2,glm_agent,claude-opus-5-5(1003out),"## Reasoning
+
+**Target analysis:** `FUN_001010b0` is a completely empty function — it just returns, with two unreachable-block warnings. Its only content is the function prologue/epilogue itself. Notably, it's referenced by name in F009, which tells us these candidates come from the same original binary as the protected target.
+
+**Step-by-step comparison:**
+
+1. **F002** — Byte-for-byte identical to the target: same address (`001010b0`), same unreachable-block warnings (`0x001010d4`, `0x001010e0`), same empty body. This is an exact match; the target function appears unmodified among the candidates (the obfuscation tool likely left it untouched, or the target was sampled from the same set).
+
+2. **F001** — Also an empty `return;` function with the same structure (unreachable-block warnings at shifted addresses). Semantically identical to the target; differs only in address. Effectively a twin.
+
+3. **F009** — An `_INIT` constructor whose entire body is a single tail call to `FUN_001010b0` — the target itself. Tiny, trivially structured, and directly references the target. Very similar in size and role, but not empty itself.
+
+4. **F008** — `_FINI` constructor: small, mostly straight-line, calls `FUN_00101080` (which is F001, an empty function). Low complexity, related to the empty functions, but has conditional logic and a global flag check.
+
+5. **F003** — A single store to a global (`DAT_00104040 = 0x12403`). Minimal, one basic block, but performs actual work unlike the target.
+
+6. **F004** — A single read-modify-write on the same global (LCG-style state update: `* 0x51d + 0x3619`). Still one basic block, slightly more complex than F003.
+
+7. **F007** — A simple loop calling `FUN_00101270` 5000 times. Control flow exists (one loop), moderate complexity.
+
+8. **F010** — The process entry point: sets up `__libc_start_main` via an indirect call and an infinite loop. Distinct role, indirect branching, but still small.
+
+9. **F005** — Nested loops (41×40) filling a float matrix using the LCG from F004, with division by a float constant. Substantially larger and more complex.
+
+10. **F006** — Dot-product/convolution-style loop over floats with strided pointer arithmetic. Comparable in size to F005 and the most computationally dense candidate; least similar to an empty stub.
+
+**Summary:** The ranking is driven by (a) exact/pattern identity of empty stubs, (b) functions that reference or wrap the empty stubs, (c) single-block minimal functions, then (d) increasing loop/computation complexity.
+
+{""ranking"": [""F002"", ""F001"", ""F009"", ""F008"", ""F003"", ""F004"", ""F007"", ""F010"", ""F005"", ""F006""]}",ok,1,1,2819,948,22.5,0.0362336,0,none,ok
+e9_L0_glm_agent_0040,L0,A0CAL,ms__MultiSource__Benchmarks__Olden__voronoi,FUN_00103380,0,10,10589a2dd6c5eaf7,glm_agent,claude-opus-5-5(2667out),"## Step-by-step reasoning
+
+**Step 1 — Identify the target.** The target is `FUN_00103380(long *param_1, undefined8 param_2, uint *param_3)`, which checks `DAT_001060b0 != 0`, then walks an XOR-linked list (`^ 0x40` pointer idiom), loading triples of doubles, and calls `FUN_00102ea0(param_3, param_1)`, `FUN_00103b80(&local_160)`, and `FUN_00103090(&local_160)`.
+
+**Step 2 — Exact match.** F010 is literally `FUN_00103380` with the identical signature, identical local layout (`local_160`, `dStack_158`, `local_150`, …), identical `DAT_001060b0` guard, identical XOR-0x40 list traversal, and identical calls. It is the same function from the original binary — rank 1 by a wide margin.
+
+**Step 3 — Direct callees.**
+- F009 is `FUN_00103090` — called directly by the target (`FUN_00103090(&local_160)`), with results stored into `local_a8/local_98/dStack_a0`. It also shares the `FUN_00103b80(&local_…)` call pattern and the same double-local structure as the target's body. Rank 2.
+- F008 is `FUN_00102ea0(int *, long)` — the target's very first call `FUN_00102ea0(param_3, param_1)` matches its signature exactly. It also shares the XOR-0x40 linked-list traversal and stack-push idiom seen in the target's loop. Rank 3.
+
+**Step 4 — Same-program relatives.**
+- F006 (`FUN_00102980`) is a main-like function that *sets* `DAT_001060b0 = 1` — the exact global the target tests — and drives the pipeline (`FUN_001011e0`, `FUN_00102b30`). Strong contextual link. Rank 4.
+- F004 (`FUN_00101680(double*, double*)`) operates on points as doubles (""ERROR: Only 1 point!""), loops over point arrays — thematically closest to the target's point/geometry computation. Rank 5.
+- F007 (`FUN_00102b30`) is called by F006 and does recursive double/log/exp work; related but computationally dissimilar to the target. Rank 6.
+
+**Step 5 — Shared-idiom utilities.** F005, F002, F001, F003 are all node-manipulation helpers using the same `^ 0x40` / `& ~0x7f` alignment idiom as the target but with no call relationship and no double/point logic:
+- F005 is the richest of these (multi-field node traversal matching the target's triple-load pattern). Rank 7.
+- F002 and F001 are near-identical `myalign`/alloc helpers; F002 reads slightly more of the node structure. Ranks 8–9.
+- F003 is a pure pointer-swap utility, least like the target. Rank 10.
+
+{""ranking"": [""F010"", ""F009"", ""F008"", ""F006"", ""F004"", ""F007"", ""F005"", ""F002"", ""F001"", ""F003""]}",ok,1,1,5601,2560,25.0,0.0917696,0,none,ok
+e9_L0_glm_agent_0041,L0,A0CAL,ms__MultiSource__Benchmarks__Olden__voronoi,FUN_00101680,0,10,d1e7c0648b272eba,glm_agent,claude-opus-5-5(2262out),"## Step-by-step reasoning
+
+**Step 1 — Identify the exact match.** The target function is literally `FUN_00101680` — and **F005** is the candidate with the same name, same signature (`undefined8 * (double*, double*)`), and an identical decompilation prefix: the `param_1 == 0` check, the `""ERROR: Only 1 point!""` string, the `param_1[4] != 0.0` loop, and the recursive self-calls `FUN_00101680(param_1[4],param_2)` / `FUN_00101680(param_1[3],param_1)`. F005 is unambiguously the same function (the target dump is its truncated body, shown with obfuscation artifacts like the `^ 0x40` pointer tagging).
+
+**Step 2 — Key features of the target to match against.**
+- Uses the custom aligned allocator: `DAT_00106088` free-list pop, `memalign(0x80, 0x80)`, and a 0x80-byte node initialized field-by-field (`puVar11[2] = 0; puVar11[6] = 0; ...`).
+- Heavy `^ 0x40` pointer-tag arithmetic and the `((x + 0x20U) & 0x7f) + 8 + (x & ~0x7f)` alignment-obfuscation idiom throughout.
+- Recursive, linked-list/treap-like structure with `double` point data.
+
+**Step 3 — Score the remaining candidates.**
+- **F002, F003**: Both contain the exact allocator idiom — `DAT_00106088` free list, `memalign(0x80,0x80)`, `""myalign() failed""` / `exit(-1)` — plus `^ 0x40` tagging and the same alignment arithmetic. These are sibling functions of the same module (the myalign-based insert/split routines). Most similar after F005. F003 additionally mirrors the target's use of `param_2` in the alignment computation, so it edges slightly ahead of F002.
+- **F004**: No allocator, but dense use of the `^ 0x40` tag and the `(x + 0x20) & 0x7f` / `& ~0x7f` alignment idiom, plus pointer swapping on the same node layout — same obfuscation fingerprint, same data structure.
+- **F006**: Same alignment-arithmetic idiom and `^ 0x40` tagging on the same node layout, but no allocator and no traversal loop matching the target's shape.
+- **F009**: Operates on the same linked structure (`next` at offset +8, `^ 0x40` tag decoding, stack push/pop over the list) — structurally related (a delete/sweep helper), but lacks the allocator and alignment idiom.
+- **F010**: Works with `double` locals and calls into a different helper cluster (`FUN_00103b*`); different purpose, few shared idioms.
+- **F008**: Recursive (like the target) but over a different structure — `malloc(0x28)`, `log`/`exp` randomization; different domain and allocator.
+- **F007**: `main`-like driver (`printf(""argc = %d\n"")`, calls F001/F008 helpers); no structural overlap.
+- **F001**: Pure argument parsing with `strtol`; nothing in common.
+
+**Step 4 — Final order.** Exact match first, then allocator-sharing siblings, then obfuscation-idiom sharers, then structural cousins, then unrelated drivers/parsers.
+
+{""ranking"": [""F005"", ""F003"", ""F002"", ""F004"", ""F006"", ""F009"", ""F010"", ""F008"", ""F007"", ""F001""]}",ok,1,1,5938,2153,47.6,0.0863656,0,none,ok
+e9_L0_glm_agent_0042,L0,A0CAL,ms__MultiSource__Benchmarks__Olden__voronoi,FUN_00103090,0,10,faee26f50311a8ca,glm_agent,claude-opus-5-5(5307out),"## Step-by-step reasoning
+
+**Step 1 — Identify an exact match.** Candidate F010 (`FUN_00103090`) is at the *same address* as the target function and its decompilation is **character-for-character identical**: same signature (`undefined8 *f(undefined8 *param_1)`), same helper calls (`FUN_00103b80`, `FUN_00103ba0`, `FUN_00103b60`, `FUN_00103b40`, `FUN_00103b00`, `FUN_00103b20`, `FUN_00103bc0`), same globals (`DAT_00104150`, `_DAT_00104158`), same `if (0.0 <= dVar1)` guard, and same 24-byte struct copy-out (`*param_1`, `param_1[1]`, `param_1[2]`). This means the target was compiled without effective obfuscation for this function. F010 is trivially rank 1.
+
+**Step 2 — Characterize the target.** F010 is a small ""constructor/getter-style"" function: it builds a ~24-byte result struct via small accessor helpers, does a bit of double arithmetic (one multiplication by a global constant, one division `local_d8 / dVar1`), one conditional on a double, and returns the struct through the sret-style `param_1` pointer. No loops, no printf, no malloc.
+
+**Step 3 — Compare remaining candidates on features shared with the target:**
+
+- **F008** (`FUN_00102b30`): heavy double math (`log`, `exp`, division, multiplication), computes a randomized double from an LCG, writes results into a struct passed by pointer (`param_2[1]`, `*(int *)(param_2 + 2)`), returns a pointer — the same ""compute a double, store it in a ~24–0x28-byte struct, return via pointer"" flavor as the target. It's also in the same address neighborhood (0x2b30 → 0x3090) and same subsystem (point generation). **Strongest non-exact match.**
+- **F005** (`FUN_00101680`): returns `undefined8 *` (sret-like like the target), operates on point data with extensive double arithmetic (`""ERROR: Only 1 point!""`), shares the doubles-plus-point-struct domain. Larger and loop-heavy, but same data domain. Rank 3.
+- **F007** (`FUN_00102980`): the `main`-style driver of the same subsystem — initializes globals, calls F001 and F008, passes flags/counts. Different structure (printf, many global stores), but connected to the same data pipeline the target participates in. Rank 4.
+- **F002 / F003** (`FUN_001012b0` / `FUN_00101410`): twin node-allocation helpers (`memalign(0x80,0x80)`, `""myalign() failed""`). They at least share the ""fill an output struct through a pointer parameter"" pattern, but operate on packed pointer/node machinery (XOR 0x40, &0x7f masking) unrelated to the target's double math. Ranks 5–6.
+- **F009** (`FUN_00102ea0`): builds a stack from a circular list with the same XOR-0x40 pointer tricks; pointer/list plumbing only. Rank 7.
+- **F006** (`FUN_00102520`): pure packed-pointer traversal/comparison of node fields; no doubles, no struct return. Rank 8.
+- **F004** (`FUN_00101570`): pure pointer swapping between nodes; furthest from the target's accessor/struct-construction shape among the node functions. Rank 9.
+- **F001** (`FUN_001011e0`): command-line argument parsing (`strtol` on argv, global flag setup). Completely different domain — no doubles, no structs, no allocation. Rank 10 (least similar).
+
+**Step 4 — Sanity check.** The ordering keeps the exact match first, then the double/struct-computation functions, then the orchestration code, then the packed-pointer node utilities, and finally argument parsing — a monotonic decrease in shared features (double arithmetic, struct construction via pointer, accessor calls, same subsystem).
+
+{""ranking"": [""F010"", ""F008"", ""F005"", ""F007"", ""F002"", ""F003"", ""F009"", ""F006"", ""F004"", ""F001""]}",ok,1,1,5514,5239,123.7,0.1438736,0,none,ok
+e9_L0_glm_agent_0043,L0,A0CAL,ms__MultiSource__Benchmarks__Olden__voronoi,FUN_00102b30,0,10,c4ed60775f2b3785,glm_agent,claude-opus-5-5(2026out),"## Step-by-step reasoning
+
+**Step 1 — Identify the target's key features.**
+`FUN_00102b30` is a recursive divide-and-conquer function (halves `param_3` and `param_7`, recurses twice) that:
+- works primarily with `double` values (`param_1`, `param_2[1]`, `dVar4`, `dVar5`) and returns `double *`
+- calls `malloc(0x28)` to build a 5-double node structure
+- contains an LCG-style PRNG: multipliers `0x16bd` and `0xc45`, modulus `10000`
+- calls `log()` and `exp()` to compute a scaled multiplier
+- writes results back through pointer parameter `param_2`
+
+**Step 2 — Compare each candidate.**
+
+- **F008**: This is byte-for-byte the *same function* as the target (same address `FUN_00102b30`, same signature, same LCG constants, same log/exp sequence). It is the exact match.
+- **F007**: The caller of the target — it invokes `FUN_00102b30(DAT_00104030,&local_40,1,uVar3,...)` with matching argument patterns, uses the same global region (`DAT_001060bc`, `DAT_00104030`/`_DAT_00104038` neighborhood), and orchestrates the same workflow. Strong contextual/semantic affinity even though its own body is I/O-heavy.
+- **F005**: Pure `double` arithmetic on arrays of doubles (an orientation/signed-volume test `param_1..param_4`, indexing `[1]`, `[2]` like the target's node layout). Most similar in *data-type profile and arithmetic style* among the remaining candidates, though no recursion or PRNG.
+- **F010**: Floating-point output routine; its odd `~-(uint)NAN(f) & (uint)f | ...` pattern is a sign-magnitude bit manipulation (evidence of SUB-style substitution). Float/double flavor, but no recursion, allocation, or PRNG.
+- **F002 / F003**: Nearly identical pair of tree-node functions (`memalign(0x80,0x80)`, ""myalign"", `^0x40`, `& 0x...80` masking). They allocate memory like the target but operate on pointer/integer tree structures with no floating point.
+- **F006 / F004**: Also pointer-heavy tree-manipulation code (same `^0x40` / `& 0x...80` idioms; F004 does pairwise swaps, i.e., tree rotations). Same family as F002/F003 but no allocation at all in F004.
+- **F009**: Explicit stack push/pop over a linked structure with the same `^0x40` pointer-tag idiom; integer-only, no floating point, no allocation.
+- **F001**: Argument parsing via `strtol` into globals — the most dissimilar: no doubles, no recursion, no allocation, no PRNG, pure setup logic.
+
+**Step 3 — Rank.**
+Exact match first; then the caller sharing globals/call-site; then double-arithmetic (F005), then float bit-trick (F010); then the tree/pointer family (F002, F003, F006, F004); then stack ops (F009); finally arg parsing (F001).
+
+```json
+{""ranking"": [""F008"", ""F007"", ""F005"", ""F010"", ""F002"", ""F003"", ""F006"", ""F004"", ""F009"", ""F001""]}
+```",ok,1,1,5800,1973,51.4,0.08054159999999999,0,none,ok
+e9_L0_glm_agent_0044,L0,A0CAL,ms__MultiSource__Benchmarks__Olden__voronoi,FUN_00102980,0,10,7432e8b1d4c0b8e6,glm_agent,claude-opus-5-5(1745out),"## Step-by-step reasoning
+
+**Step 1 — Identify the target.** The target `FUN_00102980` is a `main`-style function: it initializes a block of globals (`_DAT_0010609c`…`DAT_001060b8`), prints `argc`, parses arguments via a helper, calls two recursive/setup helpers, allocates with `malloc`, and dispatches to the voronoi pipeline. It references globals `DAT_001060bc` and `DAT_001060c4` (a debug flag) that are set elsewhere.
+
+**Step 2 — Match exact identity.** **F007** is literally the same function `FUN_00102980` (truncated decompilation of the same body — same global stores, same printf strings, same calls). This is an exact address-level match → rank 1.
+
+**Step 3 — Match direct callees.** The target calls `FUN_001011e0(param_1, param_2)` and uses its return as the point count, and calls `FUN_00102b30(...)` twice.
+- **F001** is `FUN_001011e0` — the argument parser (`strtol` on `argv` entries at `param_2+8/0x10/0x18`, setting `DAT_001060c4` and `DAT_001060bc`, exactly the globals the target reads). Strong structural and data-flow coupling → rank 2.
+- **F008** is `FUN_00102b30` — the recursive point-generator called twice by the target (matching the two call sites, including the `malloc`, the recursion on `param_3 >> 1`, and the log/exp jitter math). Direct callee → rank 3.
+
+**Step 4 — Remaining candidates** are other functions from the same program but not direct callees of the target:
+- **F010** is a leaf that prints four floats via `printf(""Vedge %g ..."")` with SUB-obfuscated absolute-value bit tricks. It shares the printf-heavy style and belongs to the same program's output path, but no shared globals or call edge → rank 4.
+- **F002, F003, F006** are all variations of the same obfuscated doubly-linked-list splice/insert routines (memalign, the `^ 0x40` flag-pointer XOR trick, `& ~0x7f` masking). They're mutually similar but structurally unrelated to `main` → ranks 5–7 (F002 before F003/F006 as the simplest of the family).
+- **F009** is a stack push/pop over the same linked-list nodes (also uses the `^ 0x40` trick, prints an error via `puts`) → rank 8.
+- **F004** is a pure pointer-swap routine on the obfuscated list structure, no I/O, no shared state with the target → rank 9.
+- **F005** is a clean 3D orientation predicate over doubles — completely disjoint in structure (no globals, no calls, no obfuscation artifacts) from the target → rank 10.
+
+**Final ranking:**
+
+{""ranking"": [""F007"", ""F001"", ""F008"", ""F010"", ""F002"", ""F003"", ""F006"", ""F009"", ""F004"", ""F005""]}",ok,1,1,5828,1587,38.1,0.07806400000000001,0,none,ok
+e9_L0_glm_agent_0045,L0,A0CAL,ms__MultiSource__Benchmarks__McCat__12-IOtest,FUN_00101480,0,10,439a6e40f0843b6d,glm_agent,claude-opus-5-5(2550out),"## Step-by-step reasoning
+
+**Step 1 — Exact match.** The target `FUN_00101480` is literally present in the candidate list as **F006**: identical calls to `FUN_00101190`, four calls to `FUN_00101240` with the same function-pointer arguments (`FUN_00101380/13c0`, `FUN_00101390/13f0`, `FUN_001013a0/1420`, `FUN_001013b0/1450`) and stack offsets +4..+7, identical `""B %d min %d max %d add %d mult \n""` printf, same return. F006 ranks first with certainty.
+
+**Step 2 — Structural twins.**
+- **F007** (`FUN_00101510`) has the exact same skeleton: init call, four `FUN_00101240` dispatches on bytes +4..+7, same printf format — only the label differs (`""C""`) and the op-helper addresses differ. It's the sibling variant of the same program family.
+- **F005** (`FUN_00101330`) shares the skeleton (init, `FUN_00101240`, same printf shape) but issues only one dispatch and prints `""A""`. Slightly less similar than F007 because it lacks three of the four dispatch sites.
+
+**Step 3 — Direct callees of the target.**
+- **F003** is `FUN_00101240` itself — the dispatcher invoked four times by the target. Its body (call `param_1` once, loop `param_2` 0x28f492 times) is the ICALL-style core of the target's behavior.
+- **F002** is `FUN_00101190` — the first function the target calls, an obfuscated (SUB-style) init loop over 0x28f492 bytes. Also a direct callee, but only called once and its loop body shares no structure with the target itself. F003 ranks above F002 due to repeated invocation and matching the dispatch idiom.
+
+**Step 4 — Sibling-family helpers (not referenced by the target).**
+- **F004** (`FUN_001012d0`) is the composite op-helper used by F005's chain: reads a counter (`FUN_00101150`), applies four byte operations (`FUN_00101200`–`FUN_00101230`, matching the ""min/max/add/mult"" semantics), and increments the counter. Same helper family the target's hidden callees almost certainly belong to.
+- **F008** and **F009** are single-operation versions of the same helper pattern (used by F007's chain), each applying one op to one byte and bumping the counter by 0x1001. They are near-identical to each other; F008 edges out F009 only arbitrarily.
+
+**Step 5 — Unrelated code.**
+- **F001** is an empty stub (unreachable-block artifact, likely a discard/init thunk). No shared structure, but harmless/trivial.
+- **F010** is `_FINI_0`, the library finalizer — completely unrelated to the target's behavior.
+
+## Final ranking
+
+{""ranking"": [""F006"", ""F007"", ""F005"", ""F003"", ""F002"", ""F004"", ""F008"", ""F009"", ""F001"", ""F010""]}",ok,1,1,3728,2472,60.2,0.0744456,0,none,ok
+e9_L0_glm_agent_0046,L0,A0CAL,ms__MultiSource__Benchmarks__McCat__12-IOtest,FUN_00101510,0,10,c854fbdc8c5c0421,glm_agent,claude-opus-5-5(1809out),"# Reasoning
+
+**Step 1: Identify the target's structure.**
+The target `FUN_00101510`:
+1. Calls `FUN_00101190()` (an init/table-fill routine).
+2. Calls `FUN_00101240(f_init, f_loop, &buf+N)` four times, at byte offsets +4, +5, +6, +7 of a stack byte buffer.
+3. Prints `""C %d min %d max %d add %d mult""` with the four bytes.
+4. Returns the stack value.
+
+**Step 2: Match by identity.**
+- **F007** is decompiled at the *same address* (0x00101510) with a byte-for-byte identical body — it is the target itself. Rank 1.
+- **F008** (`FUN_001015b0`) and **F009** (`FUN_001015f0`) are the exact callback addresses the target passes to `FUN_00101240` (first and second pairs). They are direct callees of the target — part of its call graph.
+
+**Step 3: Match by structural similarity.**
+- **F006** has the identical skeleton (init call, four `FUN_00101240` calls at +4..+7, same printf format) but the label is `""B""` and the callback addresses differ (`FUN_00101380/1390/13a0/13b0...`). It's the same function family, one variant over.
+- **F005** has the same skeleton but only *one* `FUN_00101240` call and label `""A""`. Similar, but less so than F006.
+
+**Step 4: Shared components.**
+- **F003** (`FUN_00101240`) is the dispatcher the target invokes four times with target-specific arguments — directly in the target's call graph, central to its behavior.
+- **F002** (`FUN_00101190`) is the init routine the target calls first — also an exact-address direct callee, but a generic table initializer shared by all variants, so slightly less distinguishing than F003.
+- **F004** (`FUN_001012d0`) is *not* called by the target; it's the multi-byte callback of the ""A"" variant. Structurally it resembles F008/F009 (fetch value, apply op, bump counter), but no address overlap with the target.
+
+**Step 5: Unrelated candidates.**
+- **F010** (`_FINI_0`) is a library destructor — no call-graph or structural relation to the target.
+- **F001** is an empty stub with unreachable-block warnings — no code content at all, least similar.
+
+# Final Ranking
+
+{""ranking"": [""F007"", ""F006"", ""F005"", ""F008"", ""F009"", ""F003"", ""F002"", ""F004"", ""F010"", ""F001""]}",ok,1,1,3728,1741,38.0,0.060112,0,none,ok
+e9_L0_glm_agent_0047,L0,A0CAL,ms__MultiSource__Benchmarks__McCat__12-IOtest,FUN_00101190,0,10,8a1fd1e246a2639e,glm_agent,claude-opus-5-5(1769out),"## Step-by-step reasoning
+
+**1. Identify the target's characteristics:**
+- Void function, no parameters
+- A single countdown/stride loop with trip constant `0x28f492` (increment by 2 until `uVar2 == 0x28f492`)
+- Loop body writes bytes into a global table (`DAT_00104048`) using obfuscated arithmetic (SSE multiply by `0x8080808080808081` simulating division; `(ulong)uVar3 / 0xff` idiom) — this looks like a table/keys initialization routine
+- No calls to other functions
+
+**2. Compare each candidate:**
+
+- **F002**: Byte-for-byte identical decompilation, same address (`FUN_00101190`), same loop constant, same body. This is the target itself appearing in the original binary. → Clear #1.
+
+- **F003**: The only other function sharing the distinctive magic constant `0x28f492` as its loop bound. Structure differs (indirect calls instead of table writes), but the shared trip count and simple loop shape make it the closest non-identical match. → #2.
+
+- **F004**: Void function whose body is a sequence of byte stores (`*param_1[i] = computed char`) using helper functions — mirrors the target's loop body pattern of storing computed bytes, though without the loop or the constant. → #3.
+
+- **F005, F006, F007**: Near-identical triplet; each calls `FUN_00101190` (the target) directly, so they're call-graph adjacent, but their own bodies (dispatcher calls + `printf`) differ from the target's loop-only structure. F005 has one dispatcher call, F006/F007 have four. → #4–#6.
+
+- **F008, F009**: Small twin functions transforming a single byte via helpers — reminiscent of F004's pattern but even further from the target's loop/table-write shape, no shared constants. → #7–#8.
+
+- **F010**: `_FINI_0` destructor — unrelated control flow (guard flag, `__cxa_finalize`), no shared constants, no loops. → #9.
+
+- **F001**: Empty function (just `return`) — shares nothing with the target whatsoever. → #10.
+
+{""ranking"": [""F002"", ""F003"", ""F004"", ""F005"", ""F006"", ""F007"", ""F008"", ""F009"", ""F010"", ""F001""]}",ok,1,1,3681,1650,39.7,0.058449600000000004,0,none,ok
+e9_L0_glm_agent_0048,L0,A0CAL,ms__MultiSource__Benchmarks__McCat__12-IOtest,FUN_001012d0,0,10,826f753851fe0988,glm_agent,claude-opus-5-5(1461out),"## Step-by-step reasoning
+
+**1. Target function structure.** `FUN_001012d0(char *param_1)` does:
+- Call `FUN_00101150()`, pass result to `FUN_001011f0()` → get an int key
+- Apply four byte-transform calls (`FUN_00101200/1210/1220/1230`) to `param_1[0..3]`, storing results back
+- Call `FUN_00101150()` again, then `FUN_00101160(lVar2 + 1)`
+
+**2. F004 — exact match.** F004 is byte-for-byte the same decompilation as the target (same address `FUN_001012d0`, same body). This is the target itself in the original binary, so it's trivially most similar.
+
+**3. F008 and F009 — same skeleton, single byte.** Both follow the identical pattern: `FUN_00101150` → `FUN_001011f0` → one byte transform (`FUN_00101200` in F008, `FUN_00101210` in F009) → store to `*param_1` → `FUN_00101150` → `FUN_00101160(lVar2 + 0x1001)`. They're the per-byte variants of the target's logic. F008 ranks above F009 because it shares the target's first transform function `FUN_00101200`.
+
+**4. F005 — calls the target.** `FUN_00101330` invokes `FUN_00101240(FUN_001012b0, FUN_001012d0, ...)` — i.e., it passes the *target function itself* as an indirect-call argument, executed `0x28f492` times. Structurally different (setup + print pattern), but it has a direct reference to the target.
+
+**5. F006 and F007 — siblings of F005.** Same structure as F005 (table init, repeated `FUN_00101240` invocations on 4 stack bytes, printf) but using other function-pointer pairs (`FUN_00101380/1380...` and `FUN_001015a0...`), never referencing the target. They're near-identical to F005, so they sit just below it; F006 and F007 are essentially tied.
+
+**6. F003 — generic invoker.** The trampoline `(*param_1)(param_3)` then loop of `(*param_2)(param_3)` — the mechanism used to call the target in F005–F007, but itself has no transform logic and no direct reference to the target.
+
+**7. F002 — table initialization.** The loop filling a 0x28f492-entry table at `DAT_00104048`, called by F005–F007; arithmetic setup code, unrelated in structure to the target.
+
+**8. F001 — empty function.** Just a `return`.
+
+**9. F010 — finalizer.** `_FINI_0` with `__cxa_finalize` — library teardown, completely unrelated.
+
+{""ranking"": [""F004"", ""F008"", ""F009"", ""F005"", ""F006"", ""F007"", ""F003"", ""F002"", ""F001"", ""F010""]}",ok,1,1,3703,1354,27.2,0.0524656,0,none,ok
+e9_L0_glm_agent_0049,L0,A0CAL,ms__MultiSource__Benchmarks__McCat__12-IOtest,FUN_00101330,0,10,15ad1dc77108f028,glm_agent,claude-opus-5-5(1572out),"## Step-by-step reasoning
+
+**Step 1 — Identify the exact match.**
+The target `FUN_00101330` is decompiled identically to candidate **F003** (`FUN_00101330`): same address, same call sequence (`FUN_00101190`, `FUN_00101240` with `FUN_001012b0`/`FUN_001012d0` and a stack pointer), same `printf` format string, same return of `uStack_8`. F003 is the same function as the target — rank 1 by definition.
+
+**Step 2 — Direct callees.**
+The target's central work is delegated to `FUN_00101240`, which is candidate **F002**: it invokes `param_1` once, then loops `param_2` roughly `0x28f492` (~2.68M) times over the shared state buffer. This function is directly called by the target and implements its core iterative mutation logic, making it the second-most similar candidate.
+
+**Step 3 — Sibling state-mutation helpers.**
+Candidates **F004–F009** all share the same structural template: read a counter (`FUN_00101150`), derive a key/op (`FUN_001011f0`), apply one of the operations `FUN_00101200/1210/1220/1230` to `*param_1` (corresponding to the ""min / max / add / mult"" operations the target's printf advertises), store the result, and bump the counter. They belong to the same program family and operate on the same state the target's loop manipulates, so they cluster together behind F002. Among them:
+- **F004, F005** increment the counter by `+1`, which matches the simple counting-loop semantics seen in F002's `+ -1` loop pattern — slightly closer.
+- **F006, F007** use the same ops (`01200`/`01210`) but a `+0x1001` increment.
+- **F008, F009** use different ops (`01220`/`01230`) plus the `+0x1001` increment — marginally further.
+
+**Step 4 — Unrelated leftovers.**
+- **F001** is an empty stub (just a `return`), sharing no logic with the target, but at least it's a trivial program helper.
+- **F010** is `_FINI_0`, a library-finalization destructor — completely unrelated to the target's logic.
+
+## Final ranking
+
+{""ranking"": [""F003"", ""F002"", ""F004"", ""F005"", ""F006"", ""F007"", ""F008"", ""F009"", ""F001"", ""F010""]}",ok,1,1,3134,1529,32.6,0.0501336,0,none,ok
+e9_L0_glm_agent_0050,L0,A0CAL,ss__SingleSource__Benchmarks__Misc-C++__stepanov_container,FUN_00102140,0,10,17cb050c59f2e5a7,glm_agent,claude-opus-5-5(2534out),"I'll analyze this systematically. First, let me check if I can examine the actual binaries to ground my comparison.
+
+## Step 1: Identify the target's algorithm from the decompilation
+
+Key observations about `FUN_00102140` (the obfuscated target):
+
+1. **Operates on a `std::list`**: `param_1` is a list header (`*param_1` = first node, `*(param_1+0x10)` = size, decremented when nodes are moved out).
+2. **Calls `std::__detail::_List_node_base::_M_transfer`** — nodes are spliced between lists without allocation.
+3. **Allocates 64 bucket lists on the stack** (loop `lVar4 += 0x60` up to `0x600`, initializing self-pointing `_List_node_base` pairs + a size field = 16-byte node base + count; four arrays of 16 lists).
+4. **Key is a `double` at node offset 0x10** (payload after the two list links), compared with `<` and `==` — this is a **bucket-distribution sort of doubles stored in `std::list`** (a 16-way MSD/radix-style split, then insertion into sorted bucket order).
+5. Heavy stack usage (~0x668 bytes of list headers) plus a state machine shape — consistent with FLA/BCF obfuscation of a distribution loop.
+
+Now let me check the builds directory for the original binary to verify which candidate matches.",parse_failure,0,,5295,2475,69.4,0.0866616,0,none,ok
+e9_L0_glm_agent_0051,L0,A0CAL,ss__SingleSource__Benchmarks__Misc-C++__stepanov_container,FUN_001026a0,0,10,b1682a93db776f31,glm_agent,claude-opus-5-5(1607out),"## Step-by-step reasoning
+
+**Step 1: Identify the target's algorithm.**
+The target `FUN_001026a0(double*, double*, long)` operates on a range `[param_1, param_2)` of doubles. Key structures:
+- `uVar15 = param_2 - param_1` (byte distance), checks `0x80 < uVar15` (i.e., >16 elements).
+- Sift-down loop comparing children at `uVar6*2+1` vs `uVar6*2+2` and selecting the larger — classic **binary heap** (`std::__adjust_heap`).
+- A sift-up loop with parent index `(uVar6 - ((uVar6-1)>>0x3f) - 1) >> 1` — the standard signed-corrected parent computation from libstdc++ `__adjust_heap`.
+- A second phase popping the heap top (`param_2[-1] = *param_1; param_2--;`) — `__sort_heap` behavior.
+
+This is almost certainly the libstdc++ heap-select/adjust-heap routine used by `std::partial_sort` / `nth_element` on `vector<double>`.
+
+**Step 2: Find exact/near-exact matches.**
+- **F003** is literally the same function: same name `FUN_001026a0`, same signature, same body byte-for-byte. It's the unprotected version of the target. Rank 1.
+- **F004** (`FUN_00102be0`) has the identical signature, identical variable set, and an identical body opening (`uVar15` distance, `0x80` threshold, same sift-down skeleton). It's the same algorithm compiled in a different program (different address). Rank 2.
+
+**Step 3: Rank by structural/algorithmic similarity.**
+- **F009**: contains the *exact* heap parent expression `(param_3 - ((long)(param_3 - 1) >> 0x3f)) + -1) >> 1` and walks `param_1[1]`, `param_1[3]` as a heap range over elements — this is the companion `__adjust_heap` / heap routine from the same algorithm family. Rank 3.
+- **F007**: operates on `double*` ranges with pointer-difference arithmetic (`uVar16 = (long)pdVar12 - (long)pdVar7`), three params, same double-comparison heap/sort idiom family (introsort helpers on `vector<double>`). Rank 4.
+- **F010**: also `double*` heavy, same algorithm family (heap/sort helpers, two-range operations like `__heap_select` follow-ups). Slightly less matching structure than F007 (only two params). Rank 5.
+- **F006**: `double*` arithmetic with similar pointer-diff loops — plausibly another helper of the same sort (e.g., insertion-sort part of introsort), but lacks the heap child-index pattern. Rank 6.
+- **F008**: mixes `long*` and `double*`, computes element counts (`>> 3`) and a buffer size with `* 0x40` — related container machinery (e.g., `__merge_sort_with_buffer` / buffer allocation), but no heap sift pattern. Rank 7.
+- **F005**: `long*` params with many spilled locals — likely the same sort family but over integers, heavy obfuscation/locals obscure structure. Rank 8.
+- **F002**: `_List_node_base` pointer chasing — `std::list` operations, entirely different data structure and algorithm. Rank 9.
+- **F001**: computes `log`/`floor`-based threshold — this is the introsort **depth-limit** setup (`__lg(n) * 2`), only tangentially related, smallest overlap with the heap body. Rank 10.
+
+{""ranking"": [""F003"", ""F004"", ""F009"", ""F007"", ""F010"", ""F006"", ""F008"", ""F005"", ""F002"", ""F001""]}",ok,1,1,5077,1516,36.7,0.0663776,0,none,ok
+e9_L0_glm_agent_0052,L0,A0CAL,ss__SingleSource__Benchmarks__Misc-C++__stepanov_container,FUN_00102be0,0,10,e547356b06f0fd74,glm_agent,claude-opus-5-5(2009out),"Looking at this matching task, I'll analyze the target function and compare against each candidate.
+
+## Step 1: Identify what the target function does
+
+The target `FUN_00102be0(double *param_1, double *param_2, long param_3)` has:
+- **Signature**: two `double*` iterators (first, last) plus a `long` depth counter — the classic `(first, last, depth_limit)` signature of `std::__introsort_loop`.
+- **Logic**: when `param_3` (depth limit) hits 0, it falls back to a **heap-based sort**: builds a heap over `[param_1, param_2)` (the sift-down loop with `uVar6*2+1` / `uVar6*2+2` child indexing), then repeatedly swaps `*param_1` with `param_2[-1]` and pops the heap. This is the heapsort fallback in `__introsort_loop` (`std::__partial_sort` inlined).
+- **Key idioms**: `(uVar15 >> 3)` element counts (8 bytes per double), child selection `if (a[2i+1] < a[2i+2] || ==) use 2i+2 else 2i+1`, parent computation `((uVar6 - ((long)(uVar6-1) >> 0x3f)) + -1) >> 1`.
+
+## Step 2: Compare candidates
+
+- **F004** (`FUN_00102be0`): The body is **character-for-character identical** to the target, and critically the **address matches exactly** (0x102be0 = 0x102be0). This is the same function from the original (unobfuscated) binary — the protected binary preserved layout, so the obfuscated target was compiled from this exact source location. → **Rank 1**.
+
+- **F003** (`FUN_001026a0`): Identical signature `(double*, double*, long)` and **identical decompiled body text** (same opening: `uVar15 = (long)param_2 - (long)param_1; if (0x80 < ...)` etc.). This is a duplicate/inlined copy of the same heapsort-fallback code (e.g., another instantiation or the same template code emitted at a second address). Virtually as similar as F004, differing only in address. → **Rank 2**.
+
+- **F009** (`FUN_00103e10(long*, ulong, ulong)`): Contains the exact same rare parent-index idiom `(param_3 - ((long)(param_3 - 1) >> 0x3f)) + -1) >> 1` and heap sift-down structure with child selection; it's a heap-adjust helper operating on the same container family. Not double-typed directly and only a helper, but structurally very close. → **Rank 3**.
+
+- **F010** (`FUN_00104210(undefined8*, undefined8*)`): Operates on `double*` heap data, two-iterator signature, similar sift/heap variable patterns. Likely another heap/introsort helper on doubles. → **Rank 4**.
+
+- **F006** (`FUN_00103450(long*, long*)`): Two-iterator function with `double` temporaries and pointer arithmetic — heap-related helper on double data (e.g., `__adjust_heap` / `sort_heap` variant). Similar but fewer matching idioms than F010. → **Rank 5**.
+
+- **F007** (`FUN_001038a0(undefined8*, undefined8*, undefined8*)`): Three-iterator function touching `double*` ranges with heap-like traversals — likely a heap select/merge helper from the same sort family. Moderate similarity. → **Rank 6**.
+
+- **F008** (`FUN_00103bd0(long*, long*, undefined8*)`): Uses `double*` and computes combined sizes `(a_end-a_begin>>3)+(b_end-b_begin>>3)+...*0x40` — a different algorithm (buffer allocation for merge/heap), same library family but structurally distinct. → **Rank 7**.
+
+- **F005** (`FUN_00103450`-adjacent, `FUN_00103290(long*, long*, long)`): Three long parameters but entirely local-buffer-oriented code, no heap idioms or doubles visible. → **Rank 8**.
+
+- **F002** (`FUN_00102140(_List_node_base*)`): `std::list` node splicing/merge code — unrelated data structure, no doubles, no heap indexing. → **Rank 9**.
+
+- **F001** (`FUN_00101e00(uint)`): Uses `log`, `floor`, global constants — introsort's *threshold/depth-limit computation* preamble, but its body is a different routine entirely; only a tenuous numeric relation to sorting. Least similar. → **Rank 10**.
+
+## Final ranking
+
+{""ranking"": [""F004"", ""F003"", ""F009"", ""F010"", ""F006"", ""F007"", ""F008"", ""F005"", ""F002"", ""F001""]}",ok,1,1,5076,1939,43.9,0.07440959999999999,0,none,ok
+e9_L0_glm_agent_0053,L0,A0CAL,ss__SingleSource__Benchmarks__Misc-C++__stepanov_container,FUN_001038a0,0,10,5edc0f1bce6694dd,glm_agent,claude-opus-5-5(1571out),"## Step-by-step reasoning
+
+**Step 1 — Identify the target's core behavior.**
+`FUN_001038a0` takes three 8-byte-pointer-based objects. It reads `param_2[3]`, `param_3[3]` (end/capacity slots of a container whose layout is `[begin, ?, end, cap_end]`), computes distances via `(p_end - p_begin) >> 3` (element counts of 8-byte doubles), and adds `*0x40` multiples (64-element chunks). The `>> 6` / `| 0xfc00...` pattern is a signed division by 64 used to index a second-level table (`*(long*)(base + chunk*8)`), i.e., a two-level (hierarchical, 64-wide) index structure over a vector of doubles. It then loads three doubles and compares them (`dVar1 <= dVar19`, `dVar2 <= dVar19`) — characteristic of a heap/priority-queue sift or tournament over doubles.
+
+**Step 2 — Match candidates against these features.**
+
+- **F007**: This is byte-for-byte the same function (same name/address `FUN_001038a0`, same signature, same body). Exact match.
+- **F008 (`FUN_00103bd0`)**: Signature `(long*, long*, undefined8*)`. Computes the *identical* layout formula: `(end - begin >> 3) + (ptr - x[1] >> 3) + ((cap - end >> 3) - 1) * 0x40`, same `[0]=begin, [1]=?, [2]=end, [3]=cap` container layout, same double-pointer work. Same library, sibling operation on the same data structure. Strong second.
+- **F010 (`FUN_00104210`)**: `(undefined8*, undefined8*)`, works with `double*`, ulongs, and a local array of pointers/longs (chunk table built on the stack). Clearly the same double-heap family, one fewer operand. Third.
+- **F006 (`FUN_00103450`)**: `(long*, long*)`, uses doubles and pointer-difference arithmetic with ulong chunk indices — same structure family, only two container arguments. Fourth.
+- **F009 (`FUN_00103e10`)**: `(long*, ulong, ulong)`, accesses `param_1[3]`, `param_1[1]` (same container layout), pointer diffs `>> 3` — related sibling, but fewer double comparisons visible. Fifth.
+- **F003 / F004 (`FUN_001026a0` / `FUN_00102be0`)**: `(double*, double*, long)`, pure pointer-diff (`0x80` threshold, `>> 3`) with a `long` counter that decrements — these are plain double-array operations (likely insertion/quick sort variants), not the 64-chunk hierarchical structure. They match on ""doubles + iterator arithmetic"" but not on the defining layout formula. F004 is a near-clone of F003, so they tie adjacently.
+- **F005 (`FUN_00103290`)**: `(long*, long*, long)` with a large stack struct — no doubles, no recognizable container layout. Weak match.
+- **F002 (`FUN_00102140`)**: `_List_node_base` manipulation — std::list splicing/merging. Different data structure entirely.
+- **F001 (`FUN_00101e00`)**: uses `log`, `floor`, and tuning constants — parameter sizing math for the structure's setup, but no pointer/heap logic; least similar to the target's body.
+
+**Step 3 — Ordering ties.** F003/F004 are indistinguishable; F005's long-only struct work is closer to the pointer-heavy family than F002's list nodes or F001's floating-point math setup.
+
+{""ranking"": [""F007"", ""F008"", ""F010"", ""F006"", ""F009"", ""F003"", ""F004"", ""F005"", ""F002"", ""F001""]}",ok,1,1,5109,1508,16.2,0.0659136,0,none,ok
+e9_L0_glm_agent_0054,L0,A0CAL,ss__SingleSource__Benchmarks__Misc-C++__stepanov_container,FUN_00101e00,0,10,78f91800565b78e0,glm_agent,claude-opus-5-5(2970out),"## Step-by-step reasoning
+
+**Step 1 — Identify the target's behavior.**
+`FUN_00101e00` (from the protected binary) is a *driver* function:
+- Computes an iteration count via `floor(B / ((log(n)/A) * n))` using globals `_DAT_00105010/00105018`.
+- Allocates `2*param_1` doubles with `operator new`, `memset`s them, then fills two halves with arithmetic sequences (step `DAT_00105008`).
+- Performs a Fisher–Yates-style shuffle using `rand() % i` with 8-byte element swaps.
+- Loops `iVar9` times calling `FUN_00101370(array, array+n)` — a sort/selection routine on a double array.
+
+Key features: `uint` param, double-array allocation/init, `rand`-based swapping, loop calling a sort helper, heavy pointer arithmetic on 8-byte elements.
+
+**Step 2 — Scan for an exact match.**
+`F001` is *literally* the same function: same name `FUN_00101e00`, same address, same signature `void (uint)`, and the visible body is identical line-for-line (log/floor computation, `DAT_00107110/118` check, allocation of `param_1*2` doubles, dual iota fills, `rand()` shuffle loop, `FUN_00101370` calls). This is the unobfuscated counterpart of the target. **F001 = rank 1, unambiguous.**
+
+**Step 3 — Rank the remaining decoys by structural/type similarity to the target.**
+
+- **F003 / F004** (`FUN_001026a0`, `FUN_00102be0`): operate on `double*` ranges with a `(double*, double*, long)` signature, index arithmetic like `size >> 3`, midpoint/odd-index math (`uVar10 | 1`), and element-wise compare/swap loops — classic heap sift-down inside introsort. The target manipulates exactly this kind of double array with 8-byte stride swaps. These are the closest decoys; they differ only in that they're the *sort kernel* rather than the *driver*. F003 and F004 are near-identical twins; order between them is arbitrary.
+- **F010 / F007** (`FUN_00104210`, `FUN_001038a0`): take `undefined8*` params reinterpreted as `double*` containers, compute sizes/strides and iterate element-wise over double data — same data type as the target's buffer, but container-of-containers style rather than a flat array driver. Slightly less similar than F003/F004.
+- **F009** (`FUN_00103e10`): `long*` range with two size params and midpoint/median-of-range math — selection-like logic on arrays, but on `long` instead of `double`.
+- **F006** (`FUN_00103450`): `long*` pair with double temporaries and pointer-loop structure — sorting internals on integer arrays.
+- **F008** (`FUN_00103bd0`): computes a combined size across three containers (`(end-begin)>>3` sums) — merge/setup logic, only loosely comparable to the target's allocation-size computation.
+- **F005** (`FUN_00103290`): large stack of `long` locals, block-copy/threshold logic on `long` data — structurally furthest from the target's compact double-array driver.
+- **F002** (`FUN_00102140`): operates on `_List_node_base` linked-list nodes (std::list splice/sort). The target uses a *contiguous* double array with no node linkage at all — the least similar candidate.
+
+## Final ranking
+
+{""ranking"": [""F001"", ""F003"", ""F004"", ""F010"", ""F007"", ""F009"", ""F006"", ""F008"", ""F005"", ""F002""]}",ok,1,1,5033,2886,73.3,0.09620400000000001,0,none,ok
+e9_L0_glm_agent_0055,L0,A0CAL,ss__SingleSource__Benchmarks__Adobe-C++__stepanov_abstraction,FUN_00101290,0,10,6f2e4dd4a54894d4,glm_agent,claude-opus-5-5(1362out),"## Step-by-step reasoning
+
+**1. Identify what the target does.** The target function:
+- Takes 6 parameters (`undefined8, int, uint, undefined8, int, undefined8`) at address `0x1290`
+- Iterates over a table of entries (stride 0x10) computing `max(strlen(name), 12)` to determine a column width
+- Prints a benchmark table header via two `printf` calls with `""\ntest %*s description...""` / `""number %*s time per second...""`
+- Iterates the same table printing per-test rows (`printf(""%2i %*s\""%s\"" %5.2f sec %5.2f M %.2f\n"", ...)`), reading a double time and computing a ratio
+- Ends with a partially unrolled summation loop over the doubles (4-way unrolled main loop + remainder loop), i.e., computing a total/average
+
+**2. Compare F001.** F001 is byte-for-byte the same decompilation: same function name `FUN_00101290` (same address in the original binary), identical 6-parameter signature, identical max-strlen loop, identical printf calls, identical table-walk loop with `dVar9 / dVar10` ratio computation, and the same 4-way unrolled double summation. This is an exact match — the target is simply the obfuscated version of F001. **Rank 1: F001.**
+
+**3. Compare F002.** F002 shares the distinctive opening logic verbatim: the `if (DAT_00107178 < 1) uVar3 = 0xc; else` do-while loop computing `max(strlen(...), 12)` over the same global table with stride 0x10, same `uVar6 << 4 != lVar5` termination. It is clearly the same underlying function in a variant form (takes a `FILE*`, different param count — likely the un-obfuscated/alternate build where output goes to a stream). Structurally very similar but not the exact match. **Rank 2: F002.**
+
+**4. Compare F003–F010.** All eight are sorting routines (F003/F004 are quicksort-partition style; F005–F010 are heap-sift style), operating on double arrays. They share none of the target's salient features: no `strlen`, no `printf`, no global string table, no column-width computation. Their only weak overlap is generic: loops over doubles and a `do/while` structure.
+
+Among these, F005–F010 (heap sift) have a nested do-while accumulation pattern marginally more akin to the target's summation loop than the deeply nested swap loops of the quicksort variants (F003/F004), but the difference is marginal — treat F003–F010 as near-ties ranked after F001/F002. Within the identical-looking groups, ordering is arbitrary.
+
+## Final ranking
+
+{""ranking"": [""F001"", ""F002"", ""F005"", ""F006"", ""F007"", ""F008"", ""F009"", ""F010"", ""F003"", ""F004""]}",ok,1,1,5739,1245,31.3,0.06726,0,none,ok
+e9_L0_glm_agent_0056,L0,A0CAL,ss__SingleSource__Benchmarks__Adobe-C++__stepanov_abstraction,FUN_00103ca0,0,10,e6ea0cbebbaf1c31,glm_agent,claude-opus-5-5(2953out),"## Step-by-step reasoning
+
+**1. Identify what the target function does.**
+
+`FUN_00103ca0` from the protected binary takes `(undefined8*, long)`, immediately computes `param_2 -= (long)param_1` (i.e., converts end-pointer to a byte length), checks `8 < param_2` (i.e., more than one 8-byte element), and sets `uVar4 = param_2 >> 3` (element count). What follows is a classic **heapsort on an array of doubles**:
+
+- **Build-heap phase:** loop from `lVar6 = count/2` down to 1, saving `dVar1 = param_1[lVar6-1]`, sifting down children (`lVar10*2`), picking the larger child via `uVar7 = (a <= b && b != a)`, then percolating up while `dVar1 <= parent`, finally `param_1[lVar3] = dVar1`.
+- **Extract phase:** swap root with last element (`param_1[uVar4-1] = *param_1`), shrink the heap, re-sift, with a special case `if (uVar5 < 3)` / `if (uVar5 == 2) goto LAB_00103e49` for tiny heaps.
+
+The odd comparison `(a <= b) && (b != a)` is an obfuscated equivalent of `a < b` — instruction substitution (SUB).
+
+**2. Classify candidates.**
+
+- **F001, F002:** operate on global tables (`DAT_00107170`, `DAT_00107178`), call `strlen`, deal with strings/widths — completely different semantics. Least similar.
+- **F003, F004:** `double*` pair with `lVar4 < 9` early return and partition loops scanning inward (`pdVar6 + -1`, `dVar2 < dVar3`) — this is a **quicksort/partition** variant. Same domain (sorting doubles in place with begin/end pointers, `8 < size` guard) but different algorithm (partition/swap loops vs. heap sift). Moderately similar.
+- **F005–F010:** all six have byte-for-byte identical decompilation to the target in the shown body: same signature `(undefined8*, long)`, same `param_2 - (long)param_1`, `8 < param_2`, `uVar4 = param_2 >> 3`, identical build-heap sift-down with the `(a <= b && b != a)` idiom, identical extraction-phase structure. These are heapsort implementations matching the target exactly.
+
+**3. Disambiguate F005–F010.**
+
+The visible decompilation is identical, so the discriminator is structural/address evidence:
+
+- **F005 is `FUN_00103ca0` — the exact same address as the target.** The target's labels (`LAB_00103dd0`, `LAB_00103e49`) fall at offsets consistent with F005's extent (0x103ca0–0x103eb0, size 0x210): `LAB_00103e49` sits at offset 0x1a9 with the remaining tail (the post-`LAB_00103dd0` sift-down/loop-back code) fitting in the remaining 0x67 bytes. This is an exact address-and-body match — the strongest possible signal.
+- **F006 (0x103eb0, size 0x210)** is the immediately following function with the same size, so its full body is the next most likely to be structurally identical.
+- **F007 (0x1040c0, size 0x210)** also shares the 0x210 size.
+- **F008–F010 (0x1042b0, 0x1044a0, 0x104690, size 0x1f0)** are slightly smaller (0x1f0), indicating a minor difference in the truncated tail region, so they rank just below.
+
+Since the sorted prefix matches perfectly and only tail sizes differ, I order the heapsort family by size match and address adjacency: F005 > F006 = F007 > F008/F009/F010.
+
+**4. Final ordering rationale.**
+
+Heapsort clones with exact body match first (F005 by address identity, then by size/adjacency F006, F007, then the 0x1f0-sized F008–F010), then the other double-sorting functions F003/F004 (same domain, different algorithm), then the string/table functions F002/F001 (unrelated semantics).
+
+{""ranking"": [""F005"", ""F006"", ""F007"", ""F008"", ""F009"", ""F010"", ""F003"", ""F004"", ""F002"", ""F001""]}",ok,1,1,5716,2798,63.9,0.0984096,0,none,ok
+e9_L0_glm_agent_0057,L0,A0CAL,ss__SingleSource__Benchmarks__Adobe-C++__stepanov_abstraction,FUN_00103eb0,0,10,a48e0a87135ea337,glm_agent,claude-opus-5-5(1717out),"## Analysis
+
+**Step 1 — Identify what the target does.**
+The target `FUN_00103eb0(undefined8 *param_1, long param_2)` computes `param_2 -= (long)param_1` (i.e., turns an end-pointer into a byte length), checks `8 < param_2`, then works in units of 8 bytes (`param_2 >> 3` = element count). The body is a classic binary **heap construction + heapsort extraction loop over `double`s**: it sifts down (`lVar10 * 2` child index, comparing `param_1[uVar5-1] <= param_1[uVar5]` to pick the larger child), then repeatedly swaps the root with the last element and re-heapifies. Signature: pointer-to-8-byte-elements + end pointer.
+
+**Step 2 — Match against candidates.**
+- **F006 (`FUN_00103eb0`)**: Not only is the visible decompilation byte-for-byte identical to the target — the candidate is at the *same address*, `0x103eb0`. The target's internal labels `LAB_00104059` and `LAB_00103fe0` fall inside the range `[0x103eb0, 0x1040c0)` bounded by the next candidate F007 at `0x1040c0`. This is an exact address-and-code match.
+- **F005, F007, F008, F009, F010**: These are sibling heap-sort-on-doubles functions with *identical* visible prologues (same signature, same sift-down code, same variable names). They are near-twins of the target; the only differences lie in the truncated tail. By address adjacency (F005 at `0x103ca0` directly precedes the target; F007–F010 follow consecutively), they are the closest family after F006.
+- **F003, F004**: Also operate on `double` arrays with an end pointer and a `lVar4 < 9` (i.e., `< 2 elements`) guard, but the loop structure is a Hoare-style partition scan (`dVar2 < dVar3` walking inward from both ends) — a quicksort variant, not the heap sift-down pattern. Same data domain, different algorithm.
+- **F002**: Takes `(FILE *, undefined8*)` and iterates a global table calling `strlen` — no relation to array sorting.
+- **F001**: Takes six parameters and also does `strlen` over a global string table — least similar of all.
+
+**Step 3 — Ordering.**
+F006 is the exact match. The five heap-sort twins follow (ordered by address proximity, since their code is otherwise indistinguishable in the provided excerpts). F003/F004 share the double-array domain but not the algorithm. F002/F001 are string-table utilities, ranked last.
+
+{""ranking"": [""F006"", ""F005"", ""F007"", ""F008"", ""F009"", ""F010"", ""F004"", ""F003"", ""F002"", ""F001""]}",ok,1,1,5716,1602,37.2,0.0736896,0,none,ok
+e9_L0_glm_agent_0058,L0,A0CAL,ss__SingleSource__Benchmarks__Adobe-C++__stepanov_abstraction,FUN_001040c0,0,10,2d61657c5f70b4c5,glm_agent,claude-opus-5-5(2350out),"## Step-by-step reasoning
+
+**1. Identify the algorithm in the target.**
+`FUN_001040c0` takes `(undefined8 *param_1, long param_2)` and immediately computes `param_2 = param_2 - (long)param_1` — i.e., the second argument is an *end pointer*, converted into a byte-length. Dividing by 8 (`param_2 >> 3`) gives the element count, so this is an in-place sort over an array of 8-byte `double` values. The body is a classic **heapsort**:
+- First loop (`lVar6` from `uVar4/2` down to 1): build-max-heap phase — sift-down starting at the last internal node (`n/2`).
+- The child-selection idiom `uVar7 = (p[child-1] <= p[child] && p[child] != p[child-1])` picks the larger child (the `!=` is a NaN-avoidance/branchless trick).
+- Second loop: repeatedly swap the root (`*param_1`) with the last element (`param_1[uVar4-1]`), shrink the heap, and sift the new root down (`uVar9 = uVar7 - 1; uVar8 = uVar9 >> 1; ...` — actually the second `while` with `dVar1 <= p[parent]` compares the saved value against the parent, an insertion-style sift-up/down of the extracted element).
+
+This is the standard heapsort pattern (e.g., from `qsort`-style library code compiled to heap phase + extraction phase).
+
+**2. Match candidates by algorithm class.**
+- **F005–F010**: all have the *identical* signature `(undefined8*, long)`, the identical `param_2 - (long)param_1` prologue, `param_2 >> 3` element count, the same build-heap loop, the same child-selection idiom `p[uVar5-1] <= p[uVar5] && p[uVar5] != p[uVar5-1]`, and the same `uVar5 == uVar4` last-child fixup. These are all heapsort-on-doubles variants — only the (truncated) tail differs slightly.
+- **F003, F004**: also take `(double*, double*)` and check `lVar4 < 9` (i.e., fewer than 2 doubles → return), but the body is a **quicksort partition** (pivot `dVar2 = *param_1`, scans with `dVar2 < dVar3`, converging pointers). Same problem domain (sorting doubles in place) but a different algorithm.
+- **F001, F002**: operate on a global table (`DAT_00107170`, `DAT_00107178`), call `strlen` — completely unrelated string/table-formatting functions.
+
+**3. Pinpoint the exact match.**
+The candidate **F007 is literally named `FUN_001040c0` — the exact same address as the target function** from the protected binary. Its decompiled body is word-for-word identical to the target's visible portion (same variable structure, same block at `LAB_001041e0`, same `LAB_00104256` analog). This is the same function, so F007 is unambiguously rank 1.
+
+**4. Rank the remaining heapsorts (F005, F006, F008–F010).**
+These are sibling copies of the same heapsort in the original binary (adjacent addresses 0x103ca0–0x104690, spaced 0x1f0–0x210 apart — consecutive functions of nearly equal size). The visible code is identical to the target; differences are confined to the truncated tail (sift-down of the extracted element), where small variations in the comparison layout exist between the copies. Since F008 and F009 occupy the same 0x1f0-byte footprint immediately adjacent to F007 (0x1042b0, 0x1044a0), their overall structure most likely mirrors F007's tail most closely; F005/F006 are slightly larger (0x210), and F010's size is unconstrained. I order them F008, F009, F006, F005, F010.
+
+**5. Rank the rest.**
+- F003/F004: same data type and in-place sort semantics (double array, begin/end pointers), different algorithm (quicksort partition) — moderately similar.
+- F002/F001: no relation whatsoever; F001 has more parameters and a different global access pattern, making it the least similar.
+
+{""ranking"": [""F007"", ""F008"", ""F009"", ""F006"", ""F005"", ""F010"", ""F003"", ""F004"", ""F002"", ""F001""]}",ok,1,1,5719,2275,52.8,0.0863736,0,none,ok
+e9_L0_glm_agent_0059,L0,A0CAL,ss__SingleSource__Benchmarks__Adobe-C++__stepanov_abstraction,FUN_001042b0,0,10,bb98b564b8d6b389,glm_agent,claude-opus-5-5(1831out),"## Step 1: Identify what the target function does
+
+The target `FUN_001042b0(undefined8 *param_1, long param_2)` is clearly a **heapsort / sift-down routine on an array of doubles**:
+
+- `param_2 = param_2 - (long)param_1` → converts `(start, end)` pointers into a byte length; `8 < param_2` checks ≥ 1 element (8 bytes each); `uVar4 = param_2 >> 3` is the element count.
+- First loop (`lVar6` counting down from `n/2` to 1) is the classic **build-heap** phase: for each parent, sift down by comparing children `param_1[uVar5-1]` vs `param_1[uVar5]` (picking the larger child via `uVar7 = child <= child+1 && ...`), then walking up parents (`lVar10 = (lVar3-1)/2`) until the extracted value `dVar1` fits, then placing it.
+- Second phase (swapping `*param_1` with `param_1[uVar4-1]` and re-sifting with a shrinking heap `uVar5 = uVar4-1`) is the **extract-max** loop of heapsort.
+
+So the target is a heap-based sort of doubles using 1-based heap indexing over a 0-based array.
+
+## Step 2: Match against candidates
+
+- **F005–F010** (FUN_00103ca0 … FUN_00104690): all share the *identical* signature `(undefined8*, long)`, the identical pointer-difference prologue, the identical build-heap sift-down code (same `uVar7 = (a<=b && b!=a)` child-selection idiom, same `uVar5 == uVar4` last-child fixup, same upward sift loop). These are all copies/variants of the same heapsort source function.
+- **F003/F004**: signature `(double*, double*)` matches pointer-based sorting, but the body is a **quicksort-style partition** (pivot `dVar2 = *param_1`, scanning inward from both ends). Related sorting family, but not the heap algorithm.
+- **F001/F002**: operate on `DAT_00107170` / `DAT_00107178` with `strlen` on strings — completely unrelated (string/table processing).
+
+## Step 3: Disambiguate among F005–F010
+
+The visible decompilation is truncated and textually identical, so the strongest structural signal is the **address**:
+
+- The target is at **0x1042b0** in the protected binary, and **F008 is `FUN_001042b0`** in the original binary — an exact address match, strongly indicating it is the same source function that MIXCOMPILE protected.
+- Address spacing shows F007 (0x1040c0), F008 (0x1042b0), F009 (0x1044a0), F010 (0x104690) are consecutive 0x1f0-sized functions, while F005 (0x103ca0) and F006 (0x103eb0) are 0x210-sized — likely a slightly different variant (e.g., different inlining context). The nearest neighbors of the exact match (F009, F007) come next, then F010, then the 0x210-sized pair F006/F005.
+
+## Step 4: Rank the rest
+
+- F004/F003: quicksort on doubles — same domain (double sorting, pointer pair signature), same library region, but different algorithm.
+- F002/F001: string/table helpers — least similar.
+
+**Final ranking:**
+
+{""ranking"": [""F008"", ""F009"", ""F007"", ""F010"", ""F006"", ""F005"", ""F004"", ""F003"", ""F002"", ""F001""]}",ok,1,1,5719,1714,16.6,0.0759936,0,none,ok

@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.8,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.3
+  },
+  "FLA": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.4
+  },
+  "SPLIT": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  },
+  "IBR": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.3
+  },
+  "ICALL": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.3
+  },
+  "IGV": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.4,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.2
+  }
+ },
+ "rationale": "This is a small (14 KB text, 39 functions) but compute-heavy C++ template benchmark (Stepanov container/abstraction demo: bignum Fibonacci, deque/list/vector tests, introsort), so the dominant constraint is runtime overhead on hot arithmetic- and iterator-intensive loops, not size. FLA gets the highest SecurityGain/DiversityGain because the large, control-dense functions (deque_test at 1023 bytes, __introsort_loop and __copy_move_backward variants, list operations at ~900+ bytes) benefit most from flattening, but its RuntimeCost/CorrectnessRisk weights stay high so the selector avoids flattening small hot leaf templates where flattening is both costly and fragile. BCF is similar: strong obfuscation value but the highest cost weights of any pass, restricting it to functions where features indicate sufficient slack. SUB is the workhorse \u2014 cheap, correct, and effective on the arithmetic-heavy code (bignum chains, container value types) \u2014 so it has low cost/risk weights and solid gain weights, letting it apply broadly. SPLIT and IBR provide cheap diversity that composes with FLA/BCF (splitting enlarges basic-block populations for later passes; indirect branches obscure the flattened dispatch), so their DiversityGain is kept above their modest gains/costs. ICALL and IGV are moderate: this program has many direct template instantiations and C++ global/static state (vtables, functor objects) where indirection hides call targets and global references cheaply, but their RuntimeCost weights are kept mid-range since indirect calls add per-call dispatch cost in tight container loops. Overall the table biases selection toward low-cost passes (SUB, SPLIT, IGV) applied broadly, with expensive passes (FLA, BCF) gated to the few large complex functions where their security payoff justifies the overhead.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Misc-C++__stepanov_container",
+  "run_id": "e10C_glm_agent_stepanov_container_0_2893",
+  "arm": "C",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T16:08:52Z"
+ }
+}

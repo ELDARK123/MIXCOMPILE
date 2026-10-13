@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.55,
+   "SizeCost": 0.55,
+   "CorrectnessRisk": 0.75
+  },
+  "BCF": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.2
+  },
+  "FLA": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.15,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  },
+  "SPLIT": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.65
+  },
+  "IBR": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.35
+  },
+  "ICALL": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.4
+  },
+  "IGV": {
+   "SecurityGain": 0.3,
+   "DiversityGain": 0.4,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.35
+  }
+ },
+ "rationale": "The ary3 Shootout kernel is a tiny program dominated by tight, data-parallel numeric loops over arrays, so virtually the entire execution time sits in a handful of hot basic blocks and the profile offers no static function/size data to guide selective application; the safest strategy is to lean on instruction-level transforms and treat control-flow-heavy passes conservatively. SUB is cheap, correctness-safe, and highly effective on the arithmetic-dense bodies of this benchmark, so it gets the highest weights across security, diversity, runtime, and correctness dimensions. SPLIT is nearly free and adds structural diversity, so it is also favored even on hot code. BCF and FLA multiply work inside the hot loops (bogus predicates and a flattened dispatcher on every iteration), which would badly degrade a shootout-style kernel, so their RuntimeCost and SizeCost weights are kept low so they are only applied where security-gain features strongly dominate; FLA additionally carries modest CorrectnessRisk weighting for loop-dominated code. IBR is kept at moderate weight since it hardens dispatch without per-iteration dispatch-table costs as severe as FLA. ICALL and IGV are least applicable here: ary3 has few indirect-call opportunities and its array accesses are through locals/parameters rather than named globals, so they are retained only at low weights for whichever functions happen to match.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Shootout-C++__ary3",
+  "run_id": "e10D_glm_agent_ary3_2_86610",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T11:37:45Z"
+ }
+}

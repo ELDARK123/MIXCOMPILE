@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "SPLIT": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "IGV": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.2
+  },
+  "IBR": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.3
+  },
+  "BCF": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.2
+  },
+  "ICALL": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.4
+  },
+  "FLA": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.4
+  }
+ },
+ "rationale": "The sample is ary3 from the Shootout C++ suite, a numeric array kernel whose profile shows no debuggable source structure, meaning protection must come purely from code-level transforms; such benchmarks are dominated by a few extremely hot loops doing dense arithmetic, so the table favors cheap, semantics-preserving transforms over expensive control-flow ones. SUB and SPLIT get the strongest weights (high Security/Diversity, negligible Runtime/Size/Risk) because instruction substitution and basic-block splitting add real static-analysis friction on arithmetic-heavy code at near-zero cost; IGV is boosted to break global-value correspondence in the tight kernels with only minor cost; IBR and BCF are kept at moderate weights so they apply selectively to outer-loop or infrequently-executed blocks where their per-iteration overhead is amortized; ICALL is held back somewhat since indirect-call introduction adds dispatch overhead in hot numeric loops and carries moderate correctness risk around C++ vtable/exception edges; FLA is effectively discouraged (highest RuntimeCost/SizeCost weights, low SecurityGain) because flattening a tight array kernel would devastate the loop performance that defines this benchmark while yielding less marginal resistance than the cheaper passes already provide.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Shootout-C++__ary3",
+  "run_id": "e10C_glm_agent_ary3_0_86522",
+  "arm": "C",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T11:35:57Z"
+ }
+}

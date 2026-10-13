@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.15,
+   "SizeCost": 0.15,
+   "CorrectnessRisk": 0.05
+  },
+  "FLA": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.75,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.3
+  },
+  "BCF": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.85,
+   "CorrectnessRisk": 0.15
+  },
+  "SPLIT": {
+   "SecurityGain": 0.45,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.25
+  },
+  "ICALL": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.3
+  },
+  "IGV": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.45,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  }
+ },
+ "rationale": "queens is a tiny, compute-bound recursive benchmark (N-queens search) with a few very hot small functions (the recursive try/canAttack core), no source to analyze statically, and no I/O-heavy or call-rich structure. SUB gets high weights on all benefit dimensions with very low cost/risk because arithmetic substitution is cheap, safe, and directly obscures the bitwise/arithmetic attack tests in canAttack. FLA is weighted highest for SecurityGain/DiversityGain since flattening the recursive search's control flow is the strongest deterrent against static recovery, but its RuntimeCost is kept high so the selector applies it selectively rather than to every hot function. BCF gets a high SizeCost (its opaque predicates and cloned blocks bloat small functions disproportionately) and high RuntimeCost since predicates execute on every loop iteration of this compute-bound kernel. SPLIT is a low-cost diversifier of the hot basic blocks and is encouraged. IBR offers good resistance on the branch-dense search loop at moderate cost, with CorrectnessRisk reflecting its interaction with recursion and jump tables. ICALL is moderately discouraged: queens is call-sparse, so per-call indirection buys little security while adding overhead and risk on recursive calls. IGV is modestly discounted since the program has minimal global state (the solver counter/queens array), limiting both its benefit and its blast radius, but it remains usable for the few globals present. Overall the table biases toward cheap, safe transforms (SUB, SPLIT) everywhere, with expensive high-impact transforms (FLA, BCF) gated by their cost weights so they land only where features justify them, preserving acceptable runtime/size and correctness of the tightly recursive kernel.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__McGill__queens",
+  "run_id": "e10D_glm_agent_queens_1_85583",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T11:20:06Z"
+ }
+}

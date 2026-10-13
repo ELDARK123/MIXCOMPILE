@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.2
+  },
+  "FLA": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.5
+  },
+  "SPLIT": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.2
+  },
+  "IBR": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.3
+  },
+  "ICALL": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.4
+  },
+  "IGV": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.2
+  }
+ },
+ "rationale": "The profile is opaque (no source, no function data), so the table hedges toward universally safe, cheap transformations while capping the expensive ones; the sample is the Shootout 'hash' benchmark, which is typically a compact, loop-heavy, pointer-intensive driver where runtime overhead is the main hazard and code size is secondary. SUB and IGV get high security/diversity weights with near-zero cost/risk weights since arithmetic substitution is cheap and semantics-preserving, making them the workhorses; SPLIT is similar but with slightly lower security weight since it mainly amplifies other passes. BCF and IBR provide the strongest control-flow resistance, so they keep high gain weights, but their RuntimeCost weights are raised to ~0.5 so the selector spares hot loops inside hash-table lookups; FLA gets the highest SizeCost and CorrectnessRisk weights because flattening pointer/branch-dense code inflates size and can interact badly with indirect control flow; ICALL earns high security weight (indirect-call conversion strongly hinders static analysis) with moderate risk weight to account for calling-convention edge cases. Overall the table maximizes reverse-engineering resistance from low-cost passes while gating the high-overpass transformations behind per-function cost features.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Shootout__hash",
+  "run_id": "e10D_glm_agent_hash_2_87081",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T11:45:13Z"
+ }
+}

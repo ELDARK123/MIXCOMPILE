@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.9,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.8,
+   "CorrectnessRisk": 0.9
+  },
+  "BCF": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.8
+  },
+  "FLA": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.7
+  },
+  "SPLIT": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.8,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.9
+  },
+  "IBR": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.6
+  },
+  "ICALL": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.7
+  },
+  "IGV": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.8,
+   "CorrectnessRisk": 0.7
+  }
+ },
+ "rationale": "Round 1 built, ran correctly, and hit no ICE fallback, so this candidate pushes obfuscation\u5f3a\u5ea6 upward while keeping the cost dimensions conservative on the hot numeric kernels (Crystal_Cholesky, Crystal_div, Crystal_pow dominate the 5.1KB text and all runtime). SUB stays near-maximal across dimensions since instruction substitution is cheap, safe, and effective on arithmetic-heavy code like Cholesky/div/pow; SPLIT and IGV keep high cost-dimension weights because they add diversity at negligible runtime/size expense. FLA and BCF get elevated SecurityGain/DiversityGain for stronger control-flow resistance but restrained RuntimeCost/SizeCost weights so the selector avoids stacking them onto the tight inner loops where flattening and bogus branches would hurt most. ICALL remains a strong mid-cost option for the driver/init call sites, and IBR is kept at moderate levels since indirect branches add anti-disassembly value but with higher correctness sensitivity; CorrectnessRisk weights stay >=0.6 everywhere so the selector only applies riskier transforms to functions whose features genuinely tolerate them.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__ASC_Sequoia__CrystalMk",
+  "run_id": "e10D_glm_agent_CrystalMk_2_48486",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T01:01:50Z"
+ }
+}

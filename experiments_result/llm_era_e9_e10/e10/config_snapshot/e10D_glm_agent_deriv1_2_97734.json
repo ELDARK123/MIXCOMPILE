@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.55,
+   "CorrectnessRisk": 0.15
+  },
+  "FLA": {
+   "SecurityGain": 0.9,
+   "DiversityGain": 0.85,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.2
+  },
+  "SPLIT": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.05
+  },
+  "IBR": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.15
+  },
+  "ICALL": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.25
+  },
+  "IGV": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.85,
+   "RuntimeCost": 0.25,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.3
+  }
+ },
+ "rationale": "Round 1 built cleanly and passed correctness with no ICE fallback, so round 2 escalates obfuscation aggressiveness across all seven passes. This target is a small C++ expression-derivation program whose value is concentrated in a handful of medium functions (main at 558 bytes, quotient_expr::deriv at 399 bytes) built around a class hierarchy with virtual-style deriv/print methods, so the table prioritizes control-flow flattening (FLA) and bogus control flow (BCF) to destroy the recognizable recursive-derivative structure of the deriv methods, with instruction substitution (SUB) and indirect branch (IBR) raised to complement them and erase basic-block fingerprints left by flattening. ICALL and IGV are kept in the mix at moderate security weight because indirect calls and global variable obfuscation disrupt the class-hierarchy symbol/vtable patterns that make this program easy to annotate in a decompiler, while their slightly higher correctness weights reflect the greater fragility of rewriting call targets and global references in C++ code. Cost dimensions are deliberately kept below the security/diversity gains because the program is tiny (1720 total text bytes, 16 functions) and its runtime is dominated by trivial arithmetic, meaning even multi-x overhead from BCF/FLA stays well within acceptable bounds; the modest bump of BCF/FLA SizeCost and RuntimeCost versus round 1 simply encodes their true relative expense so they concentrate on the largest, most valuable functions instead of the many trivial ones.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__Prolangs-C++__deriv1",
+  "run_id": "e10D_glm_agent_deriv1_2_97734",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T14:42:38Z"
+ }
+}

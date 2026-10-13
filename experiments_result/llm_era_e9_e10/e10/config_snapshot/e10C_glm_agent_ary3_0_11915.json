@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.8,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.1
+  },
+  "FLA": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.9,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.4
+  },
+  "SPLIT": {
+   "SecurityGain": 0.3,
+   "DiversityGain": 0.4,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.2
+  },
+  "ICALL": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.3
+  },
+  "IGV": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.3
+  }
+ },
+ "rationale": "ary3 is a tiny (512-byte text, single hot main) numeric-loop Shootout kernel where virtually all execution time sits in a tight float/array inner loop, so runtime overhead dominates the trade-off: FLA and BCF carry high RuntimeCost weights (0.9/0.8) because dispatch loops and bogus predicates are devastating in hot loops, and FLA also gets a moderate CorrectnessRisk (0.4) since restructuring a compact loop-heavy main is where semantic breakage is most likely. SUB is favored (high Security/Diversity, low RuntimeCost 0.3) because arithmetic-substitution overhead is small and instruction-level diversity is valuable in such a small attack surface; IBR and ICALL get mid-range weights (RuntimeCost 0.6/0.5) to add indirection-based resistance on cold paths without crushing the inner loop; IGV and SPLIT are kept as low-cost diversity contributors but with modest security weight since this program has almost no global-variable or basic-block breadth to hide. Overall the table biases selection toward cheap, correct passes (SUB, IGV, ICALL) and throttles the expensive control-flow passes so runtime and size stay acceptable on this benchmark's tight loop.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Shootout__ary3",
+  "run_id": "e10C_glm_agent_ary3_0_11915",
+  "arm": "C",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-05T14:52:18Z"
+ }
+}

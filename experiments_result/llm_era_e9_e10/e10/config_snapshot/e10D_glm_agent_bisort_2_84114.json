@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.75,
+   "SizeCost": 0.8,
+   "CorrectnessRisk": 0.9
+  },
+  "BCF": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.8
+  },
+  "FLA": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.6
+  },
+  "SPLIT": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.35,
+   "RuntimeCost": 0.8,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.85
+  },
+  "IBR": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.55,
+   "CorrectnessRisk": 0.7
+  },
+  "ICALL": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.65
+  },
+  "IGV": {
+   "SecurityGain": 0.35,
+   "DiversityGain": 0.3,
+   "RuntimeCost": 0.8,
+   "SizeCost": 0.85,
+   "CorrectnessRisk": 0.85
+  }
+ },
+ "rationale": "bisort is a small, pointer-heavy Olden benchmark built around recursive tree traversal and a bitonic merge that relies heavily on bitwise arithmetic, so SUB gets the strongest weights: it obfuscates exactly the arithmetic/logic idioms that dominate this code at near-zero runtime and size cost, and its transformations are semantics-preserving on integer/bitwise ops (high CorrectnessRisk tolerance). FLA is weighted next-highest on security because flattening the recursive sort/merge control flow substantially raises reversing effort, but its RuntimeCost and SizeCost weights are held moderate and CorrectnessRisk moderate (0.60) since aggressive flattening interacts with the loop/recursion structure that defines bisort's behavior. BCF offers good deterrence but is the worst pass for cost on a tight benchmark like this (classic BCF roughly doubles block counts), so its cost weights are kept low while security stays decent. IBR gets mid-range weights as a complementary control-flow diversifier with acceptable cost; ICALL is kept as a light diversifier (bisort has few indirect-call sites, so features will naturally limit its application) with conservative cost weights. SPLIT and IGV are effectively de-prioritized: SPLIT adds little to already-small functions and IGV has almost no global-variable surface in bisort, so both get low benefit weights but high cost/risk tolerance so they only fire where clearly cheap and safe.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__Olden__bisort",
+  "run_id": "e10D_glm_agent_bisort_2_84114",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T10:55:50Z"
+ }
+}

@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.15
+  },
+  "FLA": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  },
+  "SPLIT": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.15
+  },
+  "ICALL": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.2
+  },
+  "IGV": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.15
+  }
+ },
+ "rationale": "Round 0 built, ran, and preserved correctness with no ICE fallback, so this round pushes obfuscation strength up across all seven passes while keeping cost tolerances moderate. SUB stays the anchor (SecurityGain 0.85) since arithmetic substitution is low-risk and effective everywhere; ICALL (0.8) is raised to disrupt the program's simple call graph across its few functions; IBR (0.75) is strong to break the control-flow readability of the larger simulate and main bodies; FLA and IGV (0.7 each) flatten loop/branch structure and obscure global state, both well within tolerance for a 1479-line, 1805-byte-text benchmark where the hot misr recursion tolerates modest constant overhead; BCF is raised to 0.6 but capped on cost weights to avoid bloating the tiny create_link_list/kill_list/_start functions where bogus control flow pays a poor size-per-benefit trade; SPLIT (0.5) is enabled as a cheap diversifier that improves the efficacy of FLA and BCF by creating more basic blocks to transform. CorrectnessRisk weights are kept low-to-moderate (0.1-0.2) everywhere since the round-0 run validated the pipeline end to end, leaving headroom to escalate further in later rounds if correctness and performance remain clean.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__McGill__misr",
+  "run_id": "e10D_glm_agent_misr_1_51844",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T01:57:53Z"
+ }
+}

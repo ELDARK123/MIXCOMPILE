@@ -1,0 +1,491 @@
+{
+  "sample_id": "ms__MultiSource__Benchmarks__DOE-ProxyApps-C__Pathfinder",
+  "rule": "k-th .text function (sorted by entry) of llvm reference pairs with k-th recovered function of target; offsets relative to first entry",
+  "functions": [
+    {
+      "name": "_start",
+      "addr": 4640,
+      "size": 38
+    },
+    {
+      "name": "Bitfield_new",
+      "addr": 4880,
+      "size": 89
+    },
+    {
+      "name": "Bitfield_delete",
+      "addr": 4976,
+      "size": 33
+    },
+    {
+      "name": "Bitfield_nodeVisited",
+      "addr": 5024,
+      "size": 44
+    },
+    {
+      "name": "Bitfield_copy",
+      "addr": 5072,
+      "size": 314
+    },
+    {
+      "name": "Bitfield_clear",
+      "addr": 5392,
+      "size": 30
+    },
+    {
+      "name": "SearchOptions_new",
+      "addr": 5424,
+      "size": 46
+    },
+    {
+      "name": "Configuration_new",
+      "addr": 5472,
+      "size": 106
+    },
+    {
+      "name": "currentTime",
+      "addr": 5584,
+      "size": 4
+    },
+    {
+      "name": "Graph_new",
+      "addr": 5600,
+      "size": 39
+    },
+    {
+      "name": "Graph_delete",
+      "addr": 5648,
+      "size": 111
+    },
+    {
+      "name": "Graph_addOuterNode",
+      "addr": 5760,
+      "size": 74
+    },
+    {
+      "name": "Graph_findNode",
+      "addr": 5840,
+      "size": 69
+    },
+    {
+      "name": "Graph_findContainedNode",
+      "addr": 5920,
+      "size": 35
+    },
+    {
+      "name": "buildGraphFromPaths",
+      "addr": 5968,
+      "size": 538
+    },
+    {
+      "name": "exportGraph",
+      "addr": 6512,
+      "size": 455
+    },
+    {
+      "name": "main",
+      "addr": 6976,
+      "size": 1020
+    },
+    {
+      "name": "exhaustiveLegSearch",
+      "addr": 8000,
+      "size": 95
+    },
+    {
+      "name": "runBatch",
+      "addr": 8096,
+      "size": 229
+    },
+    {
+      "name": "runInteractively",
+      "addr": 8336,
+      "size": 473
+    },
+    {
+      "name": "mygets",
+      "addr": 8816,
+      "size": 72
+    },
+    {
+      "name": "Node_new",
+      "addr": 8896,
+      "size": 67
+    },
+    {
+      "name": "Node_delete",
+      "addr": 8976,
+      "size": 52
+    },
+    {
+      "name": "NodeList_clear",
+      "addr": 9040,
+      "size": 99
+    },
+    {
+      "name": "EdgeList_clear",
+      "addr": 9152,
+      "size": 33
+    },
+    {
+      "name": "Node_duplicate",
+      "addr": 9200,
+      "size": 77
+    },
+    {
+      "name": "Node_setParent",
+      "addr": 9280,
+      "size": 22
+    },
+    {
+      "name": "Node_addInteriorNode",
+      "addr": 9312,
+      "size": 133
+    },
+    {
+      "name": "NodeList_insertBack",
+      "addr": 9456,
+      "size": 90
+    },
+    {
+      "name": "Node_addEdgeToNode",
+      "addr": 9552,
+      "size": 110
+    },
+    {
+      "name": "NodeList_new",
+      "addr": 9664,
+      "size": 15
+    },
+    {
+      "name": "NodeList_insertFront",
+      "addr": 9680,
+      "size": 75
+    },
+    {
+      "name": "EdgeList_new",
+      "addr": 9760,
+      "size": 31
+    },
+    {
+      "name": "EdgeList_insertNodeId",
+      "addr": 9792,
+      "size": 77
+    },
+    {
+      "name": "buildEntranceList",
+      "addr": 9872,
+      "size": 154
+    },
+    {
+      "name": "buildNodeFromData",
+      "addr": 10032,
+      "size": 177
+    },
+    {
+      "name": "resolveNodeEdges",
+      "addr": 10224,
+      "size": 293
+    },
+    {
+      "name": "parseFile",
+      "addr": 10528,
+      "size": 1569
+    },
+    {
+      "name": "parseSignature",
+      "addr": 12112,
+      "size": 161
+    },
+    {
+      "name": "parseConfigFile",
+      "addr": 12288,
+      "size": 1038
+    },
+    {
+      "name": "doMultiSearches",
+      "addr": 13328,
+      "size": 311
+    },
+    {
+      "name": "findLabelPath",
+      "addr": 13648,
+      "size": 346
+    },
+    {
+      "name": "findNextLabel",
+      "addr": 14000,
+      "size": 424
+    },
+    {
+      "name": "findAndRecordAllPaths",
+      "addr": 14432,
+      "size": 623
+    },
+    {
+      "name": "findAllPossibleLegs",
+      "addr": 15056,
+      "size": 502
+    },
+    {
+      "name": "findAndLogAllPossibleLegs",
+      "addr": 15568,
+      "size": 965
+    },
+    {
+      "name": "SearchDiagram_findNode",
+      "addr": 16544,
+      "size": 43
+    },
+    {
+      "name": "SearchDiagram_build",
+      "addr": 16592,
+      "size": 628
+    },
+    {
+      "name": "SearchDiagram_findSignatureAlongEdges",
+      "addr": 17232,
+      "size": 449
+    },
+    {
+      "name": "HistogramElement_new",
+      "addr": 17696,
+      "size": 37
+    },
+    {
+      "name": "HistogramElement_updateList",
+      "addr": 17744,
+      "size": 133
+    },
+    {
+      "name": "Stats_new",
+      "addr": 17888,
+      "size": 75
+    },
+    {
+      "name": "Stats_delete",
+      "addr": 17968,
+      "size": 32
+    },
+    {
+      "name": "Stats_logPath",
+      "addr": 18000,
+      "size": 60
+    },
+    {
+      "name": "Stats_calculate",
+      "addr": 18064,
+      "size": 330
+    },
+    {
+      "name": "testStats",
+      "addr": 18400,
+      "size": 780
+    },
+    {
+      "name": "SystemCallMapElement_new",
+      "addr": 19184,
+      "size": 95
+    },
+    {
+      "name": "SystemCallMapElement_delete",
+      "addr": 19280,
+      "size": 33
+    },
+    {
+      "name": "SystemCallMap_new",
+      "addr": 19328,
+      "size": 80
+    },
+    {
+      "name": "SystemCallMap_delete",
+      "addr": 19408,
+      "size": 88
+    },
+    {
+      "name": "SystemCallMap_insert",
+      "addr": 19504,
+      "size": 349
+    },
+    {
+      "name": "SystemCallMap_findLabeledNodes",
+      "addr": 19856,
+      "size": 104
+    },
+    {
+      "name": "SystemCallMap_getLabelIndex",
+      "addr": 19968,
+      "size": 77
+    },
+    {
+      "name": "SystemCallMap_signatureRepresented",
+      "addr": 20048,
+      "size": 122
+    },
+    {
+      "name": "edgeListPrettyPrint",
+      "addr": 20176,
+      "size": 99
+    },
+    {
+      "name": "nodeListPrettyPrint",
+      "addr": 20288,
+      "size": 199
+    },
+    {
+      "name": "graphPrettyPrint",
+      "addr": 20496,
+      "size": 370
+    },
+    {
+      "name": "systemCallMapPrettyPrint",
+      "addr": 20880,
+      "size": 232
+    },
+    {
+      "name": "testGraph",
+      "addr": 21120,
+      "size": 269
+    },
+    {
+      "name": "printStack",
+      "addr": 21392,
+      "size": 212
+    },
+    {
+      "name": "testStack",
+      "addr": 21616,
+      "size": 1
+    },
+    {
+      "name": "searchDiagramPrettyPrint",
+      "addr": 21632,
+      "size": 1
+    },
+    {
+      "name": "IntVector_new",
+      "addr": 21648,
+      "size": 75
+    },
+    {
+      "name": "IntVector_delete",
+      "addr": 21728,
+      "size": 33
+    },
+    {
+      "name": "IntVector_insertEnd",
+      "addr": 21776,
+      "size": 119
+    },
+    {
+      "name": "IntVector_createFromString",
+      "addr": 21904,
+      "size": 408
+    },
+    {
+      "name": "CharVector_new",
+      "addr": 22320,
+      "size": 71
+    },
+    {
+      "name": "CharVector_delete",
+      "addr": 22400,
+      "size": 33
+    },
+    {
+      "name": "CharVector_insertEnd",
+      "addr": 22448,
+      "size": 114
+    },
+    {
+      "name": "CharVector_getLineFromFile",
+      "addr": 22576,
+      "size": 255
+    },
+    {
+      "name": "NodePtrVec_new",
+      "addr": 22832,
+      "size": 95
+    },
+    {
+      "name": "NodePtrVec_delete",
+      "addr": 22928,
+      "size": 33
+    },
+    {
+      "name": "NodePtrVec_copy",
+      "addr": 22976,
+      "size": 409
+    },
+    {
+      "name": "NodePtrVec_push",
+      "addr": 23392,
+      "size": 153
+    },
+    {
+      "name": "NodePtrVec_pop",
+      "addr": 23552,
+      "size": 27
+    },
+    {
+      "name": "NodePtrVec_find",
+      "addr": 23584,
+      "size": 57
+    },
+    {
+      "name": "NodePtrVec_findReverse",
+      "addr": 23648,
+      "size": 54
+    },
+    {
+      "name": "NodePtrVec_appendVectors",
+      "addr": 23712,
+      "size": 214
+    },
+    {
+      "name": "NodeVecVec_new",
+      "addr": 23936,
+      "size": 110
+    },
+    {
+      "name": "NodeVecVec_delete",
+      "addr": 24048,
+      "size": 110
+    },
+    {
+      "name": "NodeVecVec_insert",
+      "addr": 24160,
+      "size": 144
+    },
+    {
+      "name": "YAMLOpen",
+      "addr": 24304,
+      "size": 553
+    },
+    {
+      "name": "YAMLWriteString",
+      "addr": 24864,
+      "size": 33
+    },
+    {
+      "name": "YAMLClose",
+      "addr": 24912,
+      "size": 17
+    },
+    {
+      "name": "YAMLWriteInt",
+      "addr": 24944,
+      "size": 32
+    },
+    {
+      "name": "YAMLWriteDouble",
+      "addr": 24976,
+      "size": 30
+    },
+    {
+      "name": "YAMLWriteFloat",
+      "addr": 25008,
+      "size": 34
+    }
+  ]
+}

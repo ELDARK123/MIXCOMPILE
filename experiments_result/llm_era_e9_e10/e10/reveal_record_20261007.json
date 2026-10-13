@@ -1,0 +1,39 @@
+{
+ "reveal_utc": "2026-10-07T01:39",
+ "test_stats": {
+  "C/D": {
+   "recs": 130,
+   "preserved": 127,
+   "rate": 0.977,
+   "ice": 0
+  },
+  "B-rand": {
+   "recs": 88,
+   "preserved": 88,
+   "rate": 1.0,
+   "ice": 0
+  },
+  "B-rule": {
+   "recs": 44,
+   "preserved": 44,
+   "rate": 1.0,
+   "ice": 0
+  },
+  "E": {
+   "recs": 44,
+   "preserved": 22,
+   "rate": 0.5,
+   "ice": 0
+  }
+ },
+ "consistency": "pilot 55.6% / validation 57.9% / test 50.0% (E arm semantic-break stable 43-50%)",
+ "d6_preset_comparisons_status": {
+  "E semantic preservation": "MEASURED: 50.0% (compiler-baseline necessity confirmed on held-out)",
+  "D-C / D-B / C-RandomPass correctness dimension": "no separation (97.7-100% all arms) - separation expected in cost/security dimensions (pending)",
+  "D-A TOST": "correctness dimension |delta|=2.3pp within |0.05| equivalence domain - PENDING cost/security dims"
+ },
+ "pending": [
+  "runtime/size cost measurement on all candidates (zero LLM cost)",
+  "security attack chain on sampled candidates (budget requires user decision - exceeds D6 $15 planner budget)"
+ ]
+}

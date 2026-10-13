@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.4
+  },
+  "BCF": {
+   "SecurityGain": 0.65,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.5
+  },
+  "FLA": {
+   "SecurityGain": 0.65,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.5
+  },
+  "SPLIT": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.45,
+   "CorrectnessRisk": 0.4
+  },
+  "IBR": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.55,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.55
+  },
+  "ICALL": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.55,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.55
+  },
+  "IGV": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.45,
+   "CorrectnessRisk": 0.45
+  }
+ },
+ "rationale": "Round 1 failed with a compiler internal error, so this candidate flattens all weights into a conservative 0.4-0.65 band, avoiding the extreme (near-0.0 or near-1.0) values that likely produced degenerate or over-aggressive pass combinations. All seven passes remain enabled with moderate SecurityGain (0.5-0.65) so obfuscation coverage is broad rather than concentrated, which reduces the chance that many heavy passes stack on the same large functions (Trianglelise, Jacobi, QRiterate). BCF and FLA carry the highest SecurityGain since they dominate reverse-engineering resistance on this numerically-kernel-heavy benchmark, but their RuntimeCost/SizeCost weights (0.6) temper their selection on hot loops. SUB, SPLIT, and IGV sit near neutral (0.4-0.55) as low-risk diversity sources. IBR and ICALL keep slightly elevated CorrectnessRisk (0.55) so the selector applies them sparingly where control-flow/call-graph transformation is riskier, prioritizing correctness preservation while maintaining defense-in-depth across all pass types.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__McCat__05-eks",
+  "run_id": "e10D_glm_agent_05-eks_2_42620",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-05T23:24:10Z"
+ }
+}

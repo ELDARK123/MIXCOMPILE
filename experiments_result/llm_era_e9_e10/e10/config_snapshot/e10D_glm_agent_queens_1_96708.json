@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.2
+  },
+  "FLA": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.2
+  },
+  "SPLIT": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.1
+  },
+  "ICALL": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.3
+  },
+  "IGV": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.2
+  }
+ },
+ "rationale": "Round 0 built and ran correctly with no ICE fallback, so this tiny 4-function compute-bound benchmark (queens search with recursive find) can absorb a more aggressive obfuscation profile without risking the validated correctness path. BCF and FLA get the highest SecurityGain since control-flow flattening plus bogus branches most strongly resist static recovery of the search/backtracking logic in find and main, while their RuntimeCost weights are held at mid-range (0.5-0.6) to keep hot-loop slowdown bounded rather than maximal. SUB keeps high DiversityGain because arithmetic substitution cheaply obscures the board-scoring arithmetic at low runtime/size cost. SPLIT is emphasized for diversity (0.8) since it multiplies basic blocks and synergizes with FLA/BCF at negligible cost on a 1.5 KB text section. IBR and ICALL add indirect control/data flow that defeats naive call-graph and cross-reference analysis, with ICALL carrying the highest CorrectnessRisk weight (0.3) because indirect call lowering is the most likely pass to perturb the benchmark's exact output semantics, so the selector should apply it only where features are strongly favorable. IGV contributes global-variable indirection for the board state at low cost. Overall the profile raises security/diversity pressure ~uniformly above the round-0 baseline while keeping every RuntimeCost weight below 0.65 so the measured overhead stays acceptable on this execution-heavy benchmark.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__McGill__queens",
+  "run_id": "e10D_glm_agent_queens_1_96708",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T14:25:28Z"
+ }
+}

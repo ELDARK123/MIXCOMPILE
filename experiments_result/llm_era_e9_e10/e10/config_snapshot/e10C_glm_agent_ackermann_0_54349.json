@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.2
+  },
+  "FLA": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.9,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.4
+  },
+  "SPLIT": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.3
+  },
+  "ICALL": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.3
+  },
+  "IGV": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.4,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.3
+  }
+ },
+ "rationale": "This benchmark is a micro-program (333 text bytes, 4 functions) dominated by the deeply recursive Ackermann function, so control-flow obfuscation must be chosen carefully: FLA gets high SecurityGain/DiversityGain weights because flattening is the strongest structural disguise, but its RuntimeCost (0.9) and SizeCost (0.7) penalties are maximal because flattening a tiny recursive hot function multiplies both recursion dispatch overhead and relative text size dramatically, and CorrectnessRisk is elevated (0.4) since flattening recursive kernels can perturb loop-carried state; BCF is kept attractive (0.7 security) with moderate runtime penalty (0.6) since opaque predicates are cheap on a short call chain and add negligible absolute size to 48-208 byte functions; SUB and SPLIT get low cost/risk weights so they apply broadly \u2014 they are semantics-preserving, nearly free, and give good baseline diversity on such small functions; IBR and ICALL are favored moderately for their anti-analysis value (breaking static call/branch graph recovery, valuable in a program whose entire logic is one call graph) but tempered by runtime weight 0.5 due to indirect-dispatch overhead in the recursive hot path; IGV is weakest across the board because the program has essentially no global variable state to protect, so indirection there buys little security while still adding cost and risk.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Shootout-C++__ackermann",
+  "run_id": "e10C_glm_agent_ackermann_0_54349",
+  "arm": "C",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T02:39:25Z"
+ }
+}

@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.85,
+   "CorrectnessRisk": 0.15
+  },
+  "BCF": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.15,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.1
+  },
+  "FLA": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.25,
+   "SizeCost": 0.45,
+   "CorrectnessRisk": 0.15
+  },
+  "SPLIT": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.8,
+   "SizeCost": 0.8,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.1
+  },
+  "ICALL": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.85,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.2
+  },
+  "IGV": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.85,
+   "RuntimeCost": 0.55,
+   "SizeCost": 0.75,
+   "CorrectnessRisk": 0.2
+  }
+ },
+ "rationale": "Round 0 built and passed, so the ceiling is obfuscation strength, not robustness; this program is a tiny (2-function, ~512B text) numeric Shootout kernel whose entire execution lives in one hot loop inside main, so the strategy is to lean hard on passes whose transformations are cheap per-execution and apply them aggressively \u2014 SUB (arithmetic substitution, near-free for integer matrix math), SPLIT (basic-block splitting, negligible cost but high diversity), and ICALL/IGV (indirect calls and global variable indirection, which destroy static call/data-flow recovery in a program with so few functions that every remaining landmark is valuable). FLA and BCF were previously the correct things to hold back and stay held back: their loop-unrolling and opaque-predicate bloating land directly in the hot loop and would blow the runtime budget on a benchmark defined by its execution speed, so their RuntimeCost weights remain low (0.15-0.25) to keep them from binding here. IBR gets a moderate RuntimeCost weight (0.45) because indirect branching is high-value against a disassembler in a program this small but does add per-block cost in the hot path. CorrectnessRisk weights stay low across the board since round 0 showed no fragility, giving the selector room to compose multiple passes per function without risking the build.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Shootout__ary3",
+  "run_id": "e10D_glm_agent_ary3_1_55164",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T02:53:08Z"
+ }
+}

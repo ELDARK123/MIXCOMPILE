@@ -1,0 +1,15 @@
+{
+  "limits": {
+    "build_timeout_s": 300,
+    "run_timeout_s": 60,
+    "run_repeats": 5,
+    "min_median_runtime_s": 0.1,
+    "max_rss_gb": 4.0,
+    "workers": 8
+  },
+  "split_seed": 20260903,
+  "frozen_utc": "2026-09-03T05:13:57Z",
+  "clang": "/home/vincent/Desktop/llvm-project-17.0.6.src/build/bin/clang",
+  "clang_sha256": "fe7f9bb8f584060e35771f66168da80c3b9eb3c75ce9071f73e4cd39b6e3b778",
+  "passdecider_sha256": "c5152d559697ea4cef5fda0f9f3b622f020ab5d25af6e52294490eeec8c563b3"
+}

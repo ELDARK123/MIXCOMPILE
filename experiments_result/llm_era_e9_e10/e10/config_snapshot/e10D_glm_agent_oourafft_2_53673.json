@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.9,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.2
+  },
+  "FLA": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.15,
+   "SizeCost": 0.15,
+   "CorrectnessRisk": 0.3
+  },
+  "SPLIT": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.2
+  },
+  "IBR": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.2
+  },
+  "ICALL": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  },
+  "IGV": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.1
+  }
+ },
+ "rationale": "Round 1 built and ran correctly, so this candidate raises obfuscation pressure while respecting the profile: the binary is dominated by hot floating-point FFT kernels (cftmdl 12KB text, cdft, cft1st, bitrv2) where runtime overhead must stay contained. SUB is cheap, safe, and strong against static pattern matching, so it gets the highest SecurityGain/DiversityGain and low cost/risk weights to fire broadly, including on hot loops. FLA keeps high SecurityGain but low RuntimeCost/SizeCost weights so flattening concentrates on control-flow-rich functions (bitrv2, cdft) rather than straight-line FP loops where it would bloat and slow everything; its CorrectnessRisk stays moderate since aggressive flattening can disturb PHI/CFG reconstruction. BCF is similarly throttled on RuntimeCost to avoid polluting the innermost FFT loops, with moderate SizeCost since bogus predicates only cost on functions whose features favor it. IBR and SPLIT are nearly free and disrupt basic-block layout and boundaries, so they get solid security/diversity weights with neutral cost weights to act as broad low-cost filler. ICALL and IGV are kept as moderate secondary diversifiers (indirect-call and global-value hiding) with slightly higher RuntimeCost tolerance on IGV since it is compile-time-centric and runtime-neutral, and all CorrectnessRisk weights stay low to preserve the clean build/correctness record from round 1.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Misc__oourafft",
+  "run_id": "e10D_glm_agent_oourafft_2_53673",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T02:28:46Z"
+ }
+}

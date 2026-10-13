@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.15,
+   "SizeCost": 0.15,
+   "CorrectnessRisk": 0.05
+  },
+  "BCF": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.25,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "FLA": {
+   "SecurityGain": 0.65,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.1
+  },
+  "SPLIT": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.05
+  },
+  "IBR": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.15,
+   "SizeCost": 0.15,
+   "CorrectnessRisk": 0.05
+  },
+  "ICALL": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.15,
+   "CorrectnessRisk": 0.1
+  },
+  "IGV": {
+   "SecurityGain": 0.45,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.1,
+   "CorrectnessRisk": 0.05
+  }
+ },
+ "rationale": "Round 1 built and passed correctness with no ICE fallback, so this round pushes more aggressively toward resistance: SecurityGain and DiversityGain are raised across the board (SUB highest, since arithmetic-heavy sieve bit-masking benefits most from instruction substitution; BCF and FLA next, to obscure the tight bit-sieve loops and the dispatch structure of the multi-benchmark main; SPLIT and IBR add cheap control-flow diversification with almost no runtime impact; ICALL and IGV stay moderate as they mainly hinder static analysis of the tiny 521-byte text where marginal benefit is smaller). RuntimeCost/SizeCost/CorrectnessRisk weights are kept low because nsieve-bits is a compute-bound benchmark whose hot loops are runtime-sensitive, the binary is already tiny so growth is tolerable but not free, and the program's correctness must be preserved; the modest BCF/FLA runtime weights still allow application where features indicate loops can absorb the transformation without exceeding acceptable overhead.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__BenchmarkGame__nsieve-bits",
+  "run_id": "e10D_glm_agent_nsieve-bits_2_1612",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T15:47:13Z"
+ }
+}

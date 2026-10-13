@@ -1,0 +1,99 @@
+{
+  "generated_utc": "2026-09-09T08:42:37Z",
+  "rule": "fitted from E4 pass-only calibration (rule v2, amended 2026-09-07: activation proxy switched from per-unit MEDIAN to MEAN because boundary-random passes like FLA concentrate activations in a minority of units and medians degenerate to 0): RuntimeCost=clamp01(exec_ratio_median/2), SizeCost=clamp01(size_ratio_median-1), CorrectnessRisk=clamp01(5*fail_rate), Security/DiversityGain=clamp01(0.2+0.02*mean_activation_per_unit); derivation data: table_pass_calibration.csv",
+  "per_pass_rule": {
+    "SUB": {
+      "exec_ratio_median": 0.8065,
+      "size_ratio_median": 1.0,
+      "median_activation": 5.5,
+      "fail_rate": 0.0
+    },
+    "BCF": {
+      "exec_ratio_median": 1.0415,
+      "size_ratio_median": 1.2576,
+      "median_activation": 3.0,
+      "fail_rate": 0.021739130434782594
+    },
+    "FLA": {
+      "exec_ratio_median": 1.0265,
+      "size_ratio_median": 1.0,
+      "median_activation": 0.0,
+      "fail_rate": 0.021739130434782594
+    },
+    "SPLIT": {
+      "exec_ratio_median": 1.0241,
+      "size_ratio_median": 1.0,
+      "median_activation": 8.0,
+      "fail_rate": 0.021739130434782594
+    },
+    "IBR": {
+      "exec_ratio_median": 1.0203,
+      "size_ratio_median": 1.0,
+      "median_activation": 0.0,
+      "fail_rate": 0.028384279475982543
+    },
+    "ICALL": {
+      "exec_ratio_median": 0.7792,
+      "size_ratio_median": 1.0004,
+      "median_activation": 2.0,
+      "fail_rate": 0.0
+    },
+    "IGV": {
+      "exec_ratio_median": 1.0152,
+      "size_ratio_median": 1.0009,
+      "median_activation": 4.0,
+      "fail_rate": 0.022222222222222254
+    }
+  },
+  "weights": {
+    "SUB": {
+      "SecurityGain": 0.534636,
+      "DiversityGain": 0.534636,
+      "RuntimeCost": 0.40325,
+      "SizeCost": 0.0,
+      "CorrectnessRisk": 0.0
+    },
+    "BCF": {
+      "SecurityGain": 0.289565,
+      "DiversityGain": 0.289565,
+      "RuntimeCost": 0.52075,
+      "SizeCost": 0.2576,
+      "CorrectnessRisk": 0.108696
+    },
+    "FLA": {
+      "SecurityGain": 0.209043,
+      "DiversityGain": 0.209043,
+      "RuntimeCost": 0.51325,
+      "SizeCost": 0.0,
+      "CorrectnessRisk": 0.108696
+    },
+    "SPLIT": {
+      "SecurityGain": 0.424522,
+      "DiversityGain": 0.424522,
+      "RuntimeCost": 0.51205,
+      "SizeCost": 0.0,
+      "CorrectnessRisk": 0.108696
+    },
+    "IBR": {
+      "SecurityGain": 0.220961,
+      "DiversityGain": 0.220961,
+      "RuntimeCost": 0.51015,
+      "SizeCost": 0.0,
+      "CorrectnessRisk": 0.141921
+    },
+    "ICALL": {
+      "SecurityGain": 0.314909,
+      "DiversityGain": 0.314909,
+      "RuntimeCost": 0.3896,
+      "SizeCost": 0.0004,
+      "CorrectnessRisk": 0.0
+    },
+    "IGV": {
+      "SecurityGain": 0.324356,
+      "DiversityGain": 0.324356,
+      "RuntimeCost": 0.5076,
+      "SizeCost": 0.0009,
+      "CorrectnessRisk": 0.111111
+    }
+  }
+}

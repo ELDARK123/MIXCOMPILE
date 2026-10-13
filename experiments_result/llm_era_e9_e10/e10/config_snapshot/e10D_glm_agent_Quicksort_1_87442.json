@@ -1,0 +1,62 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.2
+  },
+  "BCF": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  },
+  "FLA": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.25,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.25
+  },
+  "SPLIT": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.8,
+   "CorrectnessRisk": 0.8
+  },
+  "IBR": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.3
+  },
+  "ICALL": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.3
+  },
+  "IGV": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.4,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.5
+  }
+ },
+ "rationale": "This program is a small Stanford Quicksort benchmark with no visible source profile (no line/function data), so the safest strategy is to lean on cheap, low-risk transformations and restrain expensive ones in what is almost certainly a hot, comparison-and-pointer-intensive recursive sort loop. SUB and SPLIT get the highest applicability weights because they add strong instruction-level and structural diversity with minimal runtime/size cost and negligible correctness risk, making them safe to apply broadly including inner loops. FLA and BCF provide the core control-flow hiding (valuable given quicksort's data-dependent branching and recursion) but their RuntimeCost/SizeCost weights are deliberately kept low so the selector applies them selectively rather than to every function, protecting the tight partition loop; their SecurityGain stays high so they still fire where features favor control-flow obfuscation. IBR and ICALL are held at moderate security weight with low RuntimeCost weight because indirect branches and indirect calls tax the recursion-heavy call pattern of quicksort; IGV gets the lowest security/diversity weights since the empty profile gives no evidence of exploitable global state, making heavy global-value obfuscation likely wasted size and correctness budget. CorrectnessRisk weights are kept low for every pass except SPLIT/IGV so that, absent source-level information, the configuration errs toward transformations that cannot break the sort's recursive invariants.",
+ "_weight_semantics_note": "Weights express how strongly each dimension should attract pass selection; high SecurityGain/DiversityGain favor application, while RuntimeCost/SizeCost/CorrectnessRisk here act as affordability/tolerance dials tuned to keep the benchmark's hot loops fast and the sort correct.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Stanford__Quicksort",
+  "run_id": "e10D_glm_agent_Quicksort_1_87442",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T11:51:13Z"
+ }
+}

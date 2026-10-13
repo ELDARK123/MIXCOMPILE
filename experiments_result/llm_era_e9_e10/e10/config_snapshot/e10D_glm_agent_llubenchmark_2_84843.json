@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.2
+  },
+  "SPLIT": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.15,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.35
+  },
+  "ICALL": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.3
+  },
+  "IGV": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.4
+  },
+  "BCF": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.9,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.2
+  },
+  "FLA": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.95,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.55
+  }
+ },
+ "rationale": "llubenchmark is an LLVM bitcode interpreter: a single very hot dispatch loop dominated by switch-based opcode dispatch, integer/logical operations, and dense control flow, with a tiny code footprint and no source-level profile available. The dominant risk is runtime overhead inside that loop, so the expensive control-flow passes are weighted to be suppressed: FLA (RuntimeCost 0.95, CorrectnessRisk 0.55) would flatten and destroy the dispatch loop's branch predictability and is risky around switch lowering, and BCF (RuntimeCost 0.9, SizeCost 0.7) adds opaque predicates that execute on every interpreter iteration for size-heavy gains. Instead, resistance is concentrated in cheap, composable data-oriented transforms: SUB (high SecurityGain/DiversityGain, low risk) targets exactly the arithmetic/logic opcode-semantics the interpreter works on and costs almost nothing, SPLIT adds control-flow diversity at negligible cost, and IBR/ICALL (moderate weights with elevated RuntimeCost 0.6) convert direct calls and branches into indirect forms where per-function features indicate cold code, blurring the dispatch and helper-call structure without taxing the hot loop. IGV is kept moderate for global-variable indirection but carries a higher CorrectnessRisk weight since interpreter state globals must alias correctly; its runtime cost is low so it remains in play. Overall the table biases selection toward low-overhead, high-diversity passes while gating the two heavyweight control-flow transforms behind a high runtime-cost penalty appropriate for a compute-bound benchmark.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__llubenchmark",
+  "run_id": "e10D_glm_agent_llubenchmark_2_84843",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T11:07:58Z"
+ }
+}

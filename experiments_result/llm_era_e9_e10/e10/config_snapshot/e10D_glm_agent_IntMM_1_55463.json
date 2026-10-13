@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.8
+  },
+  "BCF": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.7
+  },
+  "FLA": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.65
+  },
+  "SPLIT": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.75,
+   "SizeCost": 0.8,
+   "CorrectnessRisk": 0.9
+  },
+  "IBR": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.7
+  },
+  "ICALL": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.6
+  },
+  "IGV": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.8,
+   "CorrectnessRisk": 0.7
+  }
+ },
+ "rationale": "Round 0 built and ran correctly with no ICE, so this revision raises obfuscation pressure across all seven passes. IntMM is a tiny (7 functions, ~1.3KB text) integer matrix-multiply kernel whose hot path is tight nested loops, so runtime-heavy transforms are moderated: BCF and FLA get the strongest SecurityGain (bogus predicates and control-flow flattening give the largest static-analysis resistance) but reduced RuntimeCost weights to avoid aggressive insertion into the multiply loops, while SUB stays high since instruction substitution is nearly free at runtime. SPLIT and IGV are cheap and safe on small functions, so they receive high cost-tolerance weights and are leaned on for diversity. IBR gets the top DiversityGain since opaque branch conditions complement flattening well, and ICALL keeps a moderate CorrectnessRisk weight because indirect-call rewriting on this codebase's small helper-heavy functions (Initmatrix, Innerproduct) is the likeliest correctness hazard; the elevated CorrectnessRisk weights overall preserve the demonstrated clean build while the raised Security/Diversity weights push reverse-engineering resistance up from round 0.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Stanford__IntMM",
+  "run_id": "e10D_glm_agent_IntMM_1_55463",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T02:58:12Z"
+ }
+}

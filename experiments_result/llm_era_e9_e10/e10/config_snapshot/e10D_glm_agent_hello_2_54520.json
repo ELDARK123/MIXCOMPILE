@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.9,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.25,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.2
+  },
+  "FLA": {
+   "SecurityGain": 0.9,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.3
+  },
+  "SPLIT": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  },
+  "ICALL": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  },
+  "IGV": {
+   "SecurityGain": 0.65,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.2
+  }
+ },
+ "rationale": "Round 1 built and ran correctly with no ICE, so the pipeline tolerates this program and the binding constraints are satisfied; the lever now is obfuscation intensity. This sample is a hello-world-class Shootout binary: only 3 tiny functions (191 bytes of text total) and effectively zero meaningful runtime (one print), so runtime-cost sensitivity is dropped to near-irrelevant levels (0.20-0.40) and size cost is kept low-moderate since even multiplicative bloat on a 191-byte base stays trivial. SecurityGain and DiversityGain are pushed high across the board to maximize reverse-engineering resistance: FLA and BCF get the strongest weights (0.90) to restructure main's control flow and wrap it in opaque predicates, IBR (0.85) breaks basic-block locality, and ICALL (0.70/0.80) plus SPLIT and IGV add indirect-call and global-variable indirection for diversity, since with only three functions layering many weak transforms beats relying on any single one. CorrectnessRisk weights are held at 0.10-0.30 because the previous round showed no correctness fragility, but FLA retains the highest risk weight (0.30) as the transform most likely to perturb the static-init glue (_GLOBAL__sub_I_hello.cpp) if applied there. All seven passes are included so per-function feature matching can spread transforms across main, _start, and the init stub rather than concentrating on one.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Shootout-C++__hello",
+  "run_id": "e10D_glm_agent_hello_2_54520",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T02:42:28Z"
+ }
+}

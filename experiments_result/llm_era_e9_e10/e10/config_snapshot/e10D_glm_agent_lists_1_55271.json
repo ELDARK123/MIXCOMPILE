@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.15
+  },
+  "BCF": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.25
+  },
+  "FLA": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.45,
+   "CorrectnessRisk": 0.35
+  },
+  "SPLIT": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.2
+  },
+  "ICALL": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.3
+  },
+  "IGV": {
+   "SecurityGain": 0.65,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.25,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.15
+  }
+ },
+ "rationale": "Round 0 built and ran correctly with no ICE, so the table is shifted toward stronger obfuscation rather than conservatism. FLA gets the highest SecurityGain (0.80) since control-flow flattening is the strongest structural defense and this program's largest function (test_lists, 899 of 1686 text bytes) is a good flattening target; its RuntimeCost/CorrectnessRisk weights stay mid-range so hot numeric loops (heapsort, matrix, ary3, sieve) are not flattened indiscriminately. SUB and ICALL stay high on SecurityGain because arithmetic substitution and indirect calls are cheap-to-moderate semantic disruptions that pair well with flattening; ICALL's CorrectnessRisk remains 0.30 to keep it off fragile indirect-call sites in methcall/objinst. BCF and IBR get moderate weights to add opaque predicates and branch injection without compounding runtime blowup on loop-heavy shootout kernels. SPLIT and IGV are the low-risk complements: SPLIT divides the few larger functions to increase FLA/SUB surface at near-zero runtime cost, and IGV keeps DiversityGain high (0.80) since global variable renaming plus new global variables uniquely frustrates static pattern matching in this small-binary setting. Overall the cost dimensions (0.20-0.50) permit aggressive selection on cold functions while gating the hottest loops, and no pass is disabled given the clean round-0 result.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Shootout__lists",
+  "run_id": "e10D_glm_agent_lists_1_55271",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T02:54:51Z"
+ }
+}

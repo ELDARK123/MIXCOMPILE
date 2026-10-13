@@ -1,0 +1,51 @@
+{
+  "BCF": {
+    "CorrectnessRisk": 0.897244,
+    "DiversityGain": 0.728793,
+    "RuntimeCost": 0.522848,
+    "SecurityGain": 0.885264,
+    "SizeCost": 0.788244
+  },
+  "FLA": {
+    "CorrectnessRisk": 0.155556,
+    "DiversityGain": 0.82098,
+    "RuntimeCost": 0.396565,
+    "SecurityGain": 0.356216,
+    "SizeCost": 0.768975
+  },
+  "IBR": {
+    "CorrectnessRisk": 0.147727,
+    "DiversityGain": 0.094136,
+    "RuntimeCost": 0.850411,
+    "SecurityGain": 0.706165,
+    "SizeCost": 0.983218
+  },
+  "ICALL": {
+    "CorrectnessRisk": 0.132534,
+    "DiversityGain": 0.620388,
+    "RuntimeCost": 0.591012,
+    "SecurityGain": 0.642968,
+    "SizeCost": 0.973908
+  },
+  "IGV": {
+    "CorrectnessRisk": 0.297375,
+    "DiversityGain": 0.993758,
+    "RuntimeCost": 0.353286,
+    "SecurityGain": 0.784416,
+    "SizeCost": 0.938809
+  },
+  "SPLIT": {
+    "CorrectnessRisk": 0.971762,
+    "DiversityGain": 0.4431,
+    "RuntimeCost": 0.845893,
+    "SecurityGain": 0.685009,
+    "SizeCost": 0.793491
+  },
+  "SUB": {
+    "CorrectnessRisk": 0.334201,
+    "DiversityGain": 0.929848,
+    "RuntimeCost": 0.559441,
+    "SecurityGain": 0.323041,
+    "SizeCost": 0.242886
+  }
+}

@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.3
+  },
+  "FLA": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.8,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.6
+  },
+  "SPLIT": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  },
+  "IBR": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  },
+  "ICALL": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.3
+  },
+  "IGV": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.2
+  }
+ },
+ "rationale": "This Adobe-C++ benchmark is a small, arithmetic-heavy kernel with hot loops (simple types, loop-invariant computations) and no available per-function profile, so the table favors transformations that obscure numeric and structural semantics cheaply while penalizing loop-hostile control-flow rewrites. SUB gets the strongest security/diversity weights because arithmetic obfuscation directly hides the benchmark's simple typed computations at near-zero cost; IBR and ICALL add branch and call-indirection diversity with modest runtime impact suitable for hot loops; IGV and SPLIT provide low-cost diversity gains for global-value and basic-block structure. BCF is kept at moderate security weight but with elevated RuntimeCost so it is applied selectively rather than uniformly in loops, and FLA receives high RuntimeCost and CorrectnessRisk weights so the flattening pass is only applied where control-flow complexity justifies its loop-disrupting overhead, preserving both acceptable performance and correctness for this loop-centric program.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Adobe-C++__simple_types_loop_invariant",
+  "run_id": "e10D_glm_agent_simple_types_loop_invariant_2_85147",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T11:12:48Z"
+ }
+}

@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.75,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.85
+  },
+  "BCF": {
+   "SecurityGain": 0.2,
+   "DiversityGain": 0.2,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.1,
+   "CorrectnessRisk": 0.3
+  },
+  "FLA": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.55
+  },
+  "SPLIT": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.8
+  },
+  "IBR": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.4,
+   "RuntimeCost": 0.15,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.55
+  },
+  "ICALL": {
+   "SecurityGain": 0.3,
+   "DiversityGain": 0.3,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.6
+  },
+  "IGV": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.4,
+   "RuntimeCost": 0.55,
+   "SizeCost": 0.55,
+   "CorrectnessRisk": 0.7
+  }
+ },
+ "rationale": "This sample is a hot numeric benchmark (ooura FFT) where nearly all execution time is spent in tight FP loops inside cftmdl, cft1st, and cdft, so runtime-expensive passes must be suppressed: BCF is effectively disabled (low RuntimeCost/SizeCost tolerance) since bogus control flow would bloat the 18KB text section and break FP vectorization in the hottest loops, and IBR is kept low because indirect branches serialize hot-loop dispatch. FLA is given the highest security weight since flattening the large, complex CFG of cftmdl (12KB, the dominant function) yields the biggest reverse-engineering resistance, but its low RuntimeCost weight ensures it is reserved for the few large cold-ish functions rather than the inner FFT kernels. SUB is favored strongly across cost dimensions because arithmetic substitution is cheap and its main caution is FP-vectorization interference, so moderate security/diversity with high cost tolerance lets it apply broadly. SPLIT and IGV are low-cost enablers (SPLIT improves the effectiveness of the limited FLA use; IGV hides ooura's global trig tables) and receive healthy cost tolerances, while ICALL gets low security/diversity weight because this program is mostly straight-line numeric code with very few indirect-call-worthy sites, making indirection there pure overhead with negligible RE payoff. CorrectnessRisk tolerances are kept highest for SUB/SPLIT/IGV (semantics-preserving by construction) and moderate for FLA/IBR/ICALL, which restructure control flow and can disturb sensitive code like the bitrv2 permutation logic.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Misc__oourafft",
+  "run_id": "e10C_glm_agent_oourafft_0_53600",
+  "arm": "C",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T02:27:20Z"
+ }
+}

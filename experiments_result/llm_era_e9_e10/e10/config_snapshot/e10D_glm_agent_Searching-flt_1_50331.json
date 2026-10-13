@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.2
+  },
+  "BCF": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.3
+  },
+  "FLA": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.4
+  },
+  "SPLIT": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.2
+  },
+  "IBR": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.3
+  },
+  "ICALL": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.3
+  },
+  "IGV": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  }
+ },
+ "rationale": "Round 0 built and ran correctly with no reported regressions, so this round pushes obfuscation strength up moderately while guarding runtime: Searching-flt is a small, loop-dominated benchmark (14 functions, 43KB text, dominated by the 39KB unrolled `init`), so flattening (FLA) and bogus control flow (BCF) get the highest security weights to disrupt the large straight-line loop bodies that dominate reverse-engineering effort, but their runtime/size cost weights stay elevated so the selector is discouraged from applying them to the hottest inner loops. SUB gets a high DiversityGain with moderate security weight since instruction substitution adds cheap static diversity with low risk on scalar float code. SPLIT stays moderate to fragment the oversized `init` into harder-to-track regions without ballooning the tiny binary. IBR and ICALL are held at mid weights: indirect branching and indirect calls add real disassembly confusion but carry measurable dispatch overhead in tight loops. IGV keeps low cost and good diversity for global-variable indirection, which suits TSVC's heavy use of globals arrays with minimal correctness exposure. All correctness-risk weights remain low-to-moderate since the round-0 build was clean; no pass is disabled to preserve diversity across the feature dimensions.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__TSVC__Searching-flt",
+  "run_id": "e10D_glm_agent_Searching-flt_1_50331",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T01:32:20Z"
+ }
+}

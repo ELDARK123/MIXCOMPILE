@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.15
+  },
+  "BCF": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.3,
+   "RuntimeCost": 0.8,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.3
+  },
+  "FLA": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.45,
+   "CorrectnessRisk": 0.3
+  },
+  "SPLIT": {
+   "SecurityGain": 0.35,
+   "DiversityGain": 0.45,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.1,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.65,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.2
+  },
+  "ICALL": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.4,
+   "RuntimeCost": 0.25,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.2
+  },
+  "IGV": {
+   "SecurityGain": 0.3,
+   "DiversityGain": 0.3,
+   "RuntimeCost": 0.15,
+   "SizeCost": 0.15,
+   "CorrectnessRisk": 0.15
+  }
+ },
+ "rationale": "mandel-2 is a Mandelbrot-set compute kernel from the SingleSource/Benchmarks/Misc suite: a small number of functions dominated by a tight, floating-point-arithmetic inner loop with simple control flow and essentially no indirect calls or global-variable dispatch. SUB is the clear priority \u2014 its per-instruction algebraic transformations land squarely on the arithmetic-dense hot loop, yielding strong reverse-engineering resistance at modest linear runtime/size cost and near-zero correctness risk; IBR (opaque-predicate branch transformation) is the secondary choice, adding branch-level diversity without multiplying the loop body as badly as BCF, whose bogus-path cloning would sit directly inside the hottest loop and inflate its iteration cost substantially (high RuntimeCost/SizeCost weights, low SecurityGain affinity for this workload). FLA is kept at moderate weight since the function has few, simple loops \u2014 flattening adds some diversity but limited payoff and some loop-iteration overhead \u2014 while SPLIT is cheap but adds little beyond FLA on such simple control flow. ICALL and IGV are weighted low because the kernel rarely (if ever) exercises indirect calls or global-pointer loads, so those passes would spend compile-time complexity on negligible security benefit; the empty static profile (unknown function count, no source lines) argues for a conservative, benefit-driven configuration centered on transformations that pay off on arithmetic-heavy straight-line code.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Misc__mandel-2",
+  "run_id": "e10C_glm_agent_mandel-2_0_86237",
+  "arm": "C",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T11:31:19Z"
+ }
+}

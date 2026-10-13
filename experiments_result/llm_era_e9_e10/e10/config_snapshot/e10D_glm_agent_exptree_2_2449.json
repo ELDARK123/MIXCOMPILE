@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.1,
+   "CorrectnessRisk": 0.05
+  },
+  "BCF": {
+   "SecurityGain": 0.9,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.1
+  },
+  "FLA": {
+   "SecurityGain": 0.9,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.15
+  },
+  "SPLIT": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.1,
+   "CorrectnessRisk": 0.05
+  },
+  "IBR": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.1
+  },
+  "ICALL": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.15
+  },
+  "IGV": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.85,
+   "RuntimeCost": 0.25,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  }
+ },
+ "rationale": "Round 1 built cleanly and passed correctness with no ICE fallback, so the table is shifted toward maximum strength: SecurityGain and DiversityGain are raised on all seven passes to maximize application across the 14 functions, with SPLIT, SUB, and IGV weighted especially aggressively since they are cheap, low-risk multipliers whose coverage composes well with the heavier passes. RuntimeCost and SizeCost weights are kept low-to-moderate overall (BCF/IBR highest at ~0.3-0.35) because this benchmark is recursion-dominated (recSearch, doSearch, queens-style search) and the larger functions (recSearch at 660 bytes, getInput at 611 bytes) have room to grow without the 2.6 KB text baseline becoming a problem, while still tempering flattening/bogus-control-flow on the hottest recursive cores to keep runtime acceptable. CorrectnessRisk weights stay low everywhere (0.05-0.15), slightly higher for FLA and ICALL since control-flow restructuring and indirect-call conversion carry the most semantic risk in recursive code, preserving the correctness that round 1 already demonstrated.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__McGill__exptree",
+  "run_id": "e10D_glm_agent_exptree_2_2449",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T16:01:14Z"
+ }
+}

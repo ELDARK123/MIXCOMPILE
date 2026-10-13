@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.25,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.05
+  },
+  "BCF": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.1
+  },
+  "FLA": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.15
+  },
+  "SPLIT": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.05
+  },
+  "IBR": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.1
+  },
+  "ICALL": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.15
+  },
+  "IGV": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.25,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.2
+  }
+ },
+ "rationale": "Round 1 built and ran correctly with no ICE fallback, so the baseline is safe and the margins allow a stronger table across all seven passes. md5_process is a large, arithmetic-heavy hot function (3076 of 4819 text bytes), so SUB and IGV get high SecurityGain/DiversityGain with low risk: instruction substitution hard to pattern-match MD5's add/xor/rotate mix, and inter-group variable scattering destroys the a/b/c/d state-variable locality that a reverse engineer relies on. FLA is weighted highest on SecurityGain since flattening md5_process's 64-round loop and main's branch structure yields the biggest control-flow graph explosion per byte, but its RuntimeCost stays moderate (0.40) because md5_update processes whole 64-byte blocks and flattening the per-block loop body adds only a dispatcher per round, not per byte. BCF gets moderate weights with a RuntimeCost ceiling of 0.45 because its opaque predicates multiply the hottest loop's dynamic instruction count and this binary must stay benchmark-competitive; size cost is tolerated since the 4819-byte text is tiny and has room to grow. SPLIT is cheap in both runtime and risk and synergizes with FLA (more basic blocks to flatten), so DiversityGain is elevated to increase structural variety between the seven functions. IBR is favored for its low dynamic overhead relative to the static indirection it adds on a small call graph. ICALL and IGV carry the highest CorrectnessRisk (0.15-0.20) because indirect call lowering and global variable splitting interact with MD5's tightly-coupled context struct and function pointers in md5_starts/finish, so they are enabled but capped so the correctness-preserving selection can skip them on the riskiest functions rather than being disabled outright.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__Trimaran__enc-md5",
+  "run_id": "e10D_glm_agent_enc-md5_2_50521",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T01:35:41Z"
+ }
+}

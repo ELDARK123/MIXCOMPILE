@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.45,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.5
+  },
+  "BCF": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.55
+  },
+  "FLA": {
+   "SecurityGain": 0.9,
+   "DiversityGain": 0.85,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.6
+  },
+  "SPLIT": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.45
+  },
+  "IBR": {
+   "SecurityGain": 0.65,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.5
+  },
+  "ICALL": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.5
+  },
+  "IGV": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.25,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.5
+  }
+ },
+ "rationale": "Round 1 compiled and passed, so the headroom exists to push control-flow obfuscation harder on this tiny 14-function benchmark dominated by the huge init function (~40KB text). FLA stays the strongest lever since flattening init's large switch-like search dispatch maximally resists static analysis, and BCF weights are raised (SecurityGain 0.75) to add opaque-predicate noise inside the hot search loops; SPLIT and IBR are kept elevated to fragment and randomize basic blocks, compounding the flattened dispatcher. SUB is held at moderate weights because Searching-flt is float-heavy ( Searching-flt kernels) and aggressive instruction substitution on FP code risks numerical drift for limited gain, while ICALL and IGV remain light: indirect-call and global-variable indirection add modest resistance at low size cost, but the program's small data footprint means heavier IGV would bloat without much payoff. All RuntimeCost/SizeCost weights are kept in the 0.2-0.4 band since round 1 showed no runtime or size pressure yet, and CorrectnessRisk stays near or above 0.5 so the selector only applies transforms where feature confidence is high.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__TSVC__Searching-flt",
+  "run_id": "e10D_glm_agent_Searching-flt_2_50351",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T01:33:01Z"
+ }
+}

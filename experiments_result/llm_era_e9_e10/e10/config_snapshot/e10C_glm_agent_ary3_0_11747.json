@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.8,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.8
+  },
+  "SPLIT": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.8,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.8
+  },
+  "IBR": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.6
+  },
+  "IGV": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.5
+  },
+  "ICALL": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.4,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.4
+  },
+  "BCF": {
+   "SecurityGain": 0.3,
+   "DiversityGain": 0.3,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.3
+  },
+  "FLA": {
+   "SecurityGain": 0.2,
+   "DiversityGain": 0.3,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.3
+  }
+ },
+ "rationale": "The target is the ary3 Shootout kernel: a ~512-byte binary dominated by a single tight, data-parallel matrix-multiply loop in main, so virtually all execution time sits in one hot basic block and any control-flow-heavy transformation is paid on every iteration. I therefore keep the two cheap, semantically local passes favored \u2014 SUB (instruction substitution) and SPLIT (basic-block splitting) \u2014 with high weights across all dimensions since their runtime and size costs are near zero and their correctness risk is negligible, giving solid diversity for a tiny function count (only main matters). IGV and IBR get moderate security/diversity weights but suppressed cost weights: IGV complicates CFG recovery meaningfully but adds global-variable traffic in the hot loop, and IBR's opaque predicates execute per-iteration, so both should apply only where features indicate cold paths. ICALL is kept low across the board because indirect-call conversion of arithmetic-heavy code defeats loop optimization and its static analysis value on a 474-byte main is limited. BCF and FLA are retained in the table only with minimal weights and heavily suppressed cost dimensions \u2014 full flattening or bogus-control-flow duplication of the kernel would inflate runtime and text size by multiples on a loop-dominated benchmark, far exceeding an acceptable overhead budget, while correctness risk from loop-carried restructurings is nonzero. Net effect: baseline obscuring substitutions everywhere, structural noise on cold regions, and the hot kernel left optimizable.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Shootout__ary3",
+  "run_id": "e10C_glm_agent_ary3_0_11747",
+  "arm": "C",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-05T14:49:39Z"
+ }
+}

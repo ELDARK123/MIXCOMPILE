@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.1,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.2
+  },
+  "FLA": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.3
+  },
+  "SPLIT": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  },
+  "ICALL": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.3
+  },
+  "IGV": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.2
+  }
+ },
+ "rationale": "This is a very small (339 lines, 12 functions, ~1.4 KB text) pointer- and recursion-heavy trie benchmark where measured runtime is a primary metric, so the table favors low-cost, high-coverage transforms: SUB gets the strongest security/diversity weights since instruction substitution is nearly free and effective across this arithmetic/logic-light but comparison-heavy code, while SPLIT and IGV are boosted as cheap enablers (SPLIT fattens basic blocks so FLA/BCF have more to flatten, IGV diversifies interprocedural structure across the 12 small functions at negligible runtime cost). FLA is moderately weighted because trie_insert/trie_scan/main contain the dispatch-rich control flow where flattening pays off, but its RuntimeCost/SizeCost weights keep it off trivial accessors; BCF is retained with elevated RuntimeCost/SizeCost weights so bogus control flow lands only on the few large, security-relevant functions (addfile, charsequence_push, trie_insert) rather than everywhere in an already size-constrained binary. ICALL and IBR carry higher runtime penalties since indirect calls and branch rebasing add per-execution cost on hot trie-traversal loops and are correctness-sensitive in this pointer-dense code, so they apply selectively where features justify them; CorrectnessRisk weights stay low overall because all seven passes are mature for C at this scale, with the highest reserved for FLA and ICALL on the recursive/pointer-manipulating trie routines.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__McCat__03-testtrie",
+  "run_id": "e10C_glm_agent_03-testtrie_0_96713",
+  "arm": "C",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T14:25:24Z"
+ }
+}

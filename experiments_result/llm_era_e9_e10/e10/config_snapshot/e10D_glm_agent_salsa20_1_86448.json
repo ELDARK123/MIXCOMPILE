@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.1
+  },
+  "SPLIT": {
+   "SecurityGain": 0.65,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.8,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.2
+  },
+  "FLA": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.9,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.3
+  },
+  "IBR": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.2
+  },
+  "ICALL": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.3
+  },
+  "IGV": {
+   "SecurityGain": 0.3,
+   "DiversityGain": 0.4,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.3
+  }
+ },
+ "rationale": "Salsa20 is a stream cipher whose security-critical work sits in a very hot quarter-round loop over small, compute-dense functions, so the weight table favors low-cost data-level transforms and penalizes control-flow heavy passes on the hot path. SUB gets the highest SecurityGain with low cost/risk weights because instruction substitution obscures the ARX arithmetic without materially hurting the tight loop; SPLIT is cheap and composes well, aiding diversity at negligible overhead. FLA and BCF have strong obfuscation value but heavy runtime/size footprints, so their high RuntimeCost/SizeCost weights suppress their application to the cipher's hot functions while still allowing selective use on cold setup/key-schedule code; FLA also carries a modest CorrectnessRisk weight since flattening loop-heavy crypto kernels can disturb optimization. IBR is kept as a moderate option for hiding branch structure but with elevated RuntimeCost weight to keep it off the innermost loop. ICALL and IGV are down-weighted because salsa20 is a self-contained kernel with few indirect calls and globals, so they add call/lookup overhead and risk for little gain.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Misc__salsa20",
+  "run_id": "e10D_glm_agent_salsa20_1_86448",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T11:34:34Z"
+ }
+}

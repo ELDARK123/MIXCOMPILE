@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.15,
+   "SizeCost": 0.1,
+   "CorrectnessRisk": 0.05
+  },
+  "FLA": {
+   "SecurityGain": 0.65,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.55,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.15
+  },
+  "SPLIT": {
+   "SecurityGain": 0.45,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.15,
+   "CorrectnessRisk": 0.05
+  },
+  "BCF": {
+   "SecurityGain": 0.45,
+   "DiversityGain": 0.4,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.75,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  },
+  "ICALL": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.45,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.3
+  },
+  "IGV": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.45,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.1,
+   "CorrectnessRisk": 0.15
+  }
+ },
+ "rationale": "Sphereflake is a floating-point ray-tracing benchmark with a small number of compute-dense, hot-loop functions and no symbol-rich source surface (empty source profile), so obfuscation value must come from arithmetic and control-flow disguise rather than large-scale restructuring. SUB is weighted highest: arithmetic substitution is cheap in size and runtime and directly obscures the FP/integer math that dominates this program. FLA gets a solid but tempered weight \u2014 flattening hides the branch structure of the rendering loops, but its dispatch overhead lands squarely in hot numeric code, so its RuntimeCost is kept above 0.5 to bias selection toward cold/medium-heat functions. BCF is de-emphasized (high RuntimeCost/SizeCost) because bogus-control-flow bloat yields low marginal security on top of SUB+FLA and would balloon the binary. SPLIT and IGV are cheap diversity boosters (splitting large blocks and obscuring global values) and are kept at moderate weights with near-zero cost. IBR is moderate: indirect branches add real resistance to control-flow recovery at tolerable cost, with a slightly elevated CorrectnessRisk from exception/landing-pad interactions. ICALL is the lowest-enabled pass because this benchmark has few indirect-call sites to protect and indirecting direct FP-kernel calls risks the greatest correctness and optimization (inlining/vectorization) degradation for the least gain.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Misc-C++__Large__sphereflake",
+  "run_id": "e10D_glm_agent_sphereflake_2_85677",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T11:21:50Z"
+ }
+}

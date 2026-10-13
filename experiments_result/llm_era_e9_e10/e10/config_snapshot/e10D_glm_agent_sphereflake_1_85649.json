@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.15,
+   "SizeCost": 0.15,
+   "CorrectnessRisk": 0.05
+  },
+  "BCF": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.65,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.3
+  },
+  "FLA": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.55,
+   "SizeCost": 0.45,
+   "CorrectnessRisk": 0.35
+  },
+  "SPLIT": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.45,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.1,
+   "CorrectnessRisk": 0.05
+  },
+  "IBR": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.55,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.3
+  },
+  "ICALL": {
+   "SecurityGain": 0.65,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.4
+  },
+  "IGV": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.25
+  }
+ },
+ "rationale": "sphereflake is a recursive floating-point ray-tracing benchmark (Large, Misc-C++), so the profile is dominated by dense FP/vector arithmetic, deep recursion, and a measured runtime, with sparse external interaction and few callsites/globals per function; SUB is weighted aggressively because algebraic substitution of FP and integer expressions is nearly free in time/size and directly obscures the vector-math inner loops, and SPLIT is kept cheap-and-enabled as a low-risk diversity add-on; FLA and BCF are security-valued but deliberately penalized on RuntimeCost/SizeCost since this benchmark's execution time and code footprint are part of its score and recursion plus FP loops amplify bogus-block overhead, so they should apply only to functions whose features (branchy, non-FP-dominated) favor them; IBR is moderately penalized because indirect branches disrupt the hot recursive traversal yet still add real disassembly resistance; ICALL carries the highest CorrectnessRisk weight since sphereflake has few indirect-call opportunities and forcing them through function pointers risks breaking the FP-heavy call patterns for modest gain; IGV is enabled moderately because hiding global configuration/geometry tables via indirection is cheap and low-risk in this workload.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Misc-C++__Large__sphereflake",
+  "run_id": "e10D_glm_agent_sphereflake_1_85649",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T11:21:17Z"
+ }
+}

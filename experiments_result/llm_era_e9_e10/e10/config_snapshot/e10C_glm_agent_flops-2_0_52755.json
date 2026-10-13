@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.8,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.9
+  },
+  "BCF": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.3,
+   "RuntimeCost": 0.95,
+   "SizeCost": 0.9,
+   "CorrectnessRisk": 0.6
+  },
+  "FLA": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.4,
+   "RuntimeCost": 0.95,
+   "SizeCost": 0.85,
+   "CorrectnessRisk": 0.7
+  },
+  "SPLIT": {
+   "SecurityGain": 0.3,
+   "DiversityGain": 0.4,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.4
+  },
+  "IBR": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.9,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.6
+  },
+  "ICALL": {
+   "SecurityGain": 0.3,
+   "DiversityGain": 0.3,
+   "RuntimeCost": 0.85,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.7
+  },
+  "IGV": {
+   "SecurityGain": 0.2,
+   "DiversityGain": 0.2,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.5
+  }
+ },
+ "rationale": "flops-2 is a tiny (527-byte text, 2-function) pure floating-point compute kernel where essentially all execution time sits in one hot numeric loop, so the dominant constraint is runtime preservation: RuntimeCost weights are set high (0.85-0.95) across the board so hot-loop functions are shielded from expensive transforms. BCF and FLA are further suppressed via high SizeCost (0.9/0.85) because bogus blocks and dispatcher state machines bloat a 527-byte binary disproportionately relative to the marginal security they add to code with no secrets, algorithms, or licensing logic to protect; their CorrectnessRisk is also elevated because aggressive restructuring of FP-dominated loops can disturb scheduling and value semantics. SUB gets moderate Security/Diversity weight but the highest CorrectnessRisk (0.9) since arithmetic substitution on FP code risks changing rounding/NaN behavior and yields little benefit on float ops; if it applies, it should confine itself to integer address/index computations. SPLIT and IBR are kept as the middle ground \u2014 cheap, modest diversity gains on the small control flow \u2014 while ICALL and IGV are weighted toward disabling: with a single main function, no meaningful call graph to indirect, and almost no globals, they add indirect-call/dispatch overhead and debugging-hostile indirection with essentially zero reverse-engineering payoff. Net effect: the table permits only low-overhead diversity (SPLIT, occasional SUB on integer code, light IBR) and effectively vetoes the heavy structural passes, which is the right trade for a benchmark stub whose RE value is minimal and whose runtime fidelity is the point.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Misc__flops-2",
+  "run_id": "e10C_glm_agent_flops-2_0_52755",
+  "arm": "C",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T02:12:48Z"
+ }
+}

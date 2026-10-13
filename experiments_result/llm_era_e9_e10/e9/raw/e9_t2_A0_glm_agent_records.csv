@@ -1,0 +1,2422 @@
+run_id,level,e9_arm,sample_id,function,symbol,prompt_sha256,model,cosine,elem_constants,elem_calls,elem_structs,elem_idents,hits,score_T2,tokens_in,tokens_out,response_raw,latency_s,status
+t2_glm_agent_A0_dc_NewAdcViewCntl_4328,L1,A0,ms__MultiSource__Benchmarks__NPB-serial__dc,FUN_00104d60,NewAdcViewCntl,a58ebe31857dca0a,glm_agent,0.1598,1.0,0.4,1.0,0.218,2,S2,9281,5789,"## Part 1 — What the function does
+
+This is an initialization/""file-open"" routine for an **ADC view control record** (consistent with the `AdcFileOpen` error strings and the `NewAdcViewCntl` naming). It:
+
+1. Allocates a ~4.5 KB (`0x11a8`) control structure and populates it from a caller-supplied descriptor `param_1` (which has the layout: `uint id`, 1 flag byte, a 512-byte base-name string at `+5`, a second 512-byte string at `+0x205`, then header words `param_1[0x102..0x106]` = dimensions/metadata) plus a view number `param_2`.
+2. Builds filenames of the form `<base>.<ext>.<view>.<id>` (a `.%d` id suffix is appended after each `sprintf`), stored in seven 512-byte name slots.
+3. Opens seven files: a main output file (ext from `DAT_00109d3c`, mode `""w""`), the required input `<base>.dat.<id>` (`""rb""`), and creates `view.dat`, `chunks.dat`, `groupby.dat`, `viewsz.dat` (`""wb+""`), plus reads `view.sz` (`""r""`). `FILE*` handles are stored at `0x1080` + 8*i.
+4. **Hard failures:** if the `.dat` input file or `view.sz` cannot be opened, it sets `status = 4` (field `0x200`), zeroes the corresponding handle slot, and returns early. Failures on the output files only print an error to stderr and continue with a `NULL` handle.
+
+The decompiled body is truncated after the `viewsz.dat` open, but the pattern is uniform from there.
+
+(Consistent with the three examples, this protection arm leaves the decompiled logic identical to the baseline — the ""obfuscation"" is invisible at this level.)
+
+## Part 2 — Structured pseudocode
+
+```c
+// Offset map of the returned record (base = malloc'd 0x11a8 buffer):
+//   0x000  char   baseName[0x200]      <- strcpy from param_1+5
+//   0x200  int    status               0 = OK, 4 = fatal open error
+//   0x208  int    field (zeroed)
+//   0x20c  uint   f_106   = param_1[0x106]
+//   0x210  int    viewNum = param_2
+//   0x214  uint   id      = param_1[0]          (also used as "".%d"" suffix)
+//   0x218  uint   dimA    = param_1[0x102]
+//   0x21c  uint   dimB    = param_1[0x103]
+//   0x220  uint   dimA2   = param_1[0x102]      (duplicate copy)
+//   0x224  uint   dimC    (read back at 0x24c; likely set via a wide store)
+//   0x228  uint   f_104   = param_1[0x104]
+//   0x230,0x240     zeroed ints
+//   0x248  uint   size1 = dimA*4 + dimB*8
+//   0x24c  uint   size2 = dimB*8 + dimC*4
+//   0x250  uint   f_105 = param_1[0x105]
+//   0x280..0xE80  char fname[7][0x200]
+//   0x1080+8*i    FILE *fp[i]   (i = 0..6)
+//   0x1190..0x11A7  zeroed tail
+
+char *NewAdcViewCntl(uint *desc, int viewNum) {
+    ctl = malloc(0x11a8);
+    if (ctl == NULL) return NULL;
+
+    id    = desc[0];
+    dimA  = desc[0x102];  dimB = desc[0x103];
+    ctl->status   = 0;
+    ctl->field208 = 0;
+    ctl->viewNum  = viewNum;
+    ctl->id       = id;
+    ctl->dimA     = dimA;   ctl->dimB = dimB;   ctl->dimA2 = dimA;
+    ctl->f_104    = desc[0x104];
+    ctl->size1    = dimA*4 + dimB*8;
+    ctl->size2    = dimB*8 + ctl->dimC*4;
+    ctl->f_105    = desc[0x105];
+    ctl->f_106    = desc[0x106];
+    zero(ctl->field230); zero(ctl->field240); zero(ctl->tail_1190);
+
+    strcpy(ctl->baseName, (char *)desc + 5);          // base name
+
+    sprintf(sfx, "".%d"", id);                          // shared "".<id>"" suffix
+
+    // --- 1. main output file: ""<base>.<EXT>.<view><.id>"" ---
+    sprintf(ctl->fname[0], ""%s.%s.%d"", ctl->baseName, EXT_00109d3c, viewNum);
+    strcat (ctl->fname[0], sfx);
+    ctl->fp[0] = fopen(ctl->fname[0], ""w"");
+    if (!ctl->fp[0])
+        fprintf(stderr, ""AdcFileOpen: Cannot open the file %s errno = %d\n"", ...);
+
+    // --- 2. required input file: ""<base>.dat.<id>"" (FATAL on failure) ---
+    strcpy(ctl->fname[1], (char *)desc + 0x205);      // dead: overwritten below
+    sprintf(ctl->fname[1], ""%s.%s.%d"", ctl->baseName, ""dat"", id);
+    ctl->fp[1] = fopen(ctl->fname[1], ""rb"");
+    if (!ctl->fp[1]) {
+        fprintf(stderr, ""AdcFileOpen: Cannot open the file %s errno = %d\n"", ...);
+        ctl->fp[1] = NULL;
+        ctl->status = 4;
+        return ctl;                                   // early exit #1
+    }
+
+    // --- 3..6. created output files, same pattern (non-fatal) ---
+    open_created(ctl, 2, fname+0x680, ""view.dat"",   viewNum, sfx, ""wb+""); // fp[2]
+    open_created(ctl, 3, fname+0x880, ""chunks.dat"", viewNum, sfx, ""wb+""); // fp[3]
+    open_created(ctl, 4, fname+0xa80, ""groupby.dat"",viewNum, sfx, ""wb+""); // fp[4]
+
+    // --- 5. required sizes file: ""<base>.view.sz.<id>"" (FATAL on failure) ---
+    sprintf(ctl->fname[5], ""%s.%s.%d"", ctl->baseName, ""view.sz"", id);
+    ctl->fp[5] = fopen(ctl->fname[5], ""r"");
+    if (!ctl->fp[5]) {
+        fprintf(stderr, ""AdcFileOpen: Cannot open the file %s errno = %d\n"", ...);
+        ctl->fp[5] = NULL;
+        ctl->status = 4;
+        return ctl;                                   // early exit #2
+    }
+
+    // --- 6. ""<base>.viewsz.dat.<view><.id>"" (body truncated in listing) ---
+    sprintf(ctl->fname[6], ""%s.%s.%d"", ctl->baseName, ""viewsz.dat"", viewNum);
+    strcat (ctl->fname[6], sfx);
+    ctl->fp[6] = fopen(ctl->fname[6], ""wb+"");
+    if (!ctl->fp[6]) fprintf(stderr, ""AdcFileOpen: ..."");   // non-fatal
+
+    return ctl;
+}
+```
+
+Key behavioral points:
+- **Naming convention:** every generated file is `<basename>.<extension>.<viewNum>`, with `.<id>` appended (`dat`/`view.sz` use `id` directly in place of the view number).
+- **Two-tier error policy:** input/side-info files (`.dat`, `view.sz`) are mandatory → `status = 4` + early return; output files (`adc`, `view.dat`, `chunks.dat`, `groupby.dat`, `viewsz.dat`) are best-effort → log and continue with `NULL` handle.
+- The `strcpy` of the second descriptor string into slot `0x480` is dead — it is immediately overwritten by the `.dat` filename `sprintf`.",106.1,ok
+t2_glm_agent_A0_dc_MultiWayMerge_4434,L1,A0,ms__MultiSource__Benchmarks__NPB-serial__dc,FUN_00103c60,MultiWayMerge,1834647ed661caca,glm_agent,0.0172,1.0,0.0,0.333,0.017,1,S1,9011,22917,"I'll analyze this function. Let me first check the working directory for any additional materials (e.g., the full, untruncated decompilation or related files).",494.6,ok
+t2_glm_agent_A0_dc_SharedSortAggregate_4929,L1,A0,ms__MultiSource__Benchmarks__NPB-serial__dc,FUN_00103680,SharedSortAggregate,23088b2deffe3dee,glm_agent,0.0321,1.0,0.0,0.0,0.013,1,S1,8752,4339,"I'll first check whether the workspace contains the original source or the unprotected counterpart of this function, to ground the reconstruction. `grep -rl ""SharedSortAggregate"" /home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_param_sensitivity/builds 2>/dev/null | head` and also check the session dir. It looks like this query has no previous turns to work with, so I'll treat this message as the start of the conversation.
+
+If grep doesn't hit anything quickly, I'll proceed with analysis of the decompilation alone.",87.0,ok
+t2_glm_agent_A0_dc_ComputeGivenGroupbys_5016,L1,A0,ms__MultiSource__Benchmarks__NPB-serial__dc,FUN_00105ca0,ComputeGivenGroupbys,882a35706bea1dd2,glm_agent,0.1191,0.667,0.391,1.0,0.25,2,S2,8981,6027,"## 1. Natural-language description
+
+This is the top-level driver of the **`ComputeGivenGroupbys`** pipeline (the embedded error strings — `RunFormation`, `PrefixedAggregate`, `SharedSortAggregate`, `MultiWayMerge`, `WriteViewToDisk` — give it away). It implements a classic **external-memory aggregation engine** driven by a file of group-by configuration records:
+
+- It reads 8-byte records one at a time from a config file (`FILE*` at `param_1+0x10a0`) and processes each in a loop until EOF.
+- For each record it parses the group-by spec (`FUN_00101340`, `FUN_00106ef0`), extracts a bit-field/shift configuration, zeroes the per-record accumulator buffers, classifies the record into a processing ""mode"" via `FUN_001064e0`, and sizes the output rows (`num_values*4 + num_counts*8` bytes, stored at `+0x24c`).
+- It then dispatches to one of several aggregation strategies: **mode 3** (and the default) runs *RunFormation* and then either streams the in-memory view straight to disk (*WriteViewToDisk*) or, if the run spilled, performs a *MultiWayMerge*; **mode 1** runs *PrefixedAggregate*; **mode 2** runs *SharedSortAggregate* (after seeking the data file to the record's stored offset).
+- After each record it finalizes (`FUN_00106480`), accumulates byte/row statistics (`+0x240`, `+0x230`) and per-strategy invocation counters (`+0x119c/+0x11a0/+0x11a4`), rewinds two scratch files, and adds this record's per-group counts into a running totals buffer (pairwise 64-bit adds merging `+0x1128` into `+0x1148`).
+- On any strategy/write failure it prints the corresponding `""ComputeGivenGroupbys.<phase> failed.""` message to stderr and returns nonzero (1 or the sub-error).
+
+Note: the listing is truncated mid-way through the final merge loop, so the loop-exit condition and the success return value are inferred.
+
+## 2. Structured pseudocode
+
+```c
+int ComputeGivenGroupbys(Context *ctx)          // param_1
+{
+    Record rec;                                  // local_80/local_78/local_74 (parsed fields)
+    uint   record_idx = 0;                       // uVar13
+
+    if (fread(&rec, 8, 1, ctx->cfg_file /*+0x10a0*/) == 0)
+        return 0;                                // EOF: nothing to process
+
+    do {
+        record_idx = uVar13;                     // current record number
+        ncounts    = ctx->num_counts;            // +0x21c
+        zero(ctx->counts /*+0x1128*/, ncounts * 8);      // per-record accumulators
+
+        /* --- parse & classify the record --- */
+        ParseRecord(&rec);                                   // FUN_00101340
+        ExpandGroupbys(rec, ctx->gb_buf /*+0x10d8*/, ctx->nbits /*+0x218*/);  // FUN_00106ef0
+        ctx->field_117c = (rec.bits >> ((64 - nbits) & 63)) << (nbits & 31);  // bit-field extract
+
+        mode = Classify(ctx);                                // FUN_001064e0 -> 1 / 2 / 3 / other
+        if (mode != 3)
+            AuxTransform(rec, ctx->field_1184, ctx->gb_buf, ctx->nbits);  // FUN_00107030
+
+        /* --- size the output --- */
+        nvalues = rec.num_values;                            // local_74
+        ctx->num_values = nvalues;                           // +0x224
+        zero(ctx->buf_10b8, ncounts * 8);
+        // (loop over nvalues with no retained side effect — decompiler artifact / no-op)
+
+        row_size      = nvalues * 4 + ncounts * 8;           // -> +0x24c
+        ctx->spilled  = 0;                                   // +0x270
+        ctx->field_118c = (mode != 3);
+        ctx->field_22c  = 0;
+
+        /* --- dispatch on aggregation strategy --- */
+        if (mode == 3) {
+            /* everything fits / precomputed layout */
+            ctx->off_220   = ctx->nbits;
+            ctx->field_1188 = ctx->field_228;
+            ctx->off_248   = ncounts * 8 + ctx->nbits * 4;
+
+            if ((rc = RunFormation(ctx)))                    // FUN_00104870
+                return fail(""ComputrGivenGroupbys.RunFormation failed.\n"", rc);
+            ctx->n_runformation++;                           // +0x119c
+            goto emit_or_merge;
+
+        } else {
+            /* common setup for modes 1, 2 and default */
+            ctx->off_220 = ctx->field_1180;
+            fseek(ctx->data_file /*+0x1090*/, ctx->offset_238, SEEK_SET);
+            ctx->field_1188 = ctx->field_234;
+            ctx->off_248   = ncounts * 8
+                           + (uint)ctx->off_220 * 4          // low word
+                           + (int)(ctx->off_220 >> 32) * 4;  // high word
+
+            if (mode == 2) {
+                if ((rc = SharedSortAggregate(ctx)))         // FUN_00103680
+                    return fail(""ComputeGivenGroupbys.SharedSortAggregate failed.\n"", rc);
+                ctx->n_sharedsort++;                         // +0x11a4
+            }
+            else if (mode == 1) {
+                if ((rc = PrefixedAggregate(ctx)))           // FUN_00104310
+                    return fail(""ComputeGivenGroupbys.PrefixedAggregate failed.\n"", 1);
+                ctx->n_prefixed++;                           // +0x11a0
+            }
+            else {
+                if ((rc = RunFormation(ctx)))
+                    return fail(""ComputrGivenGroupbys.RunFormation failed.\n"", rc);
+                ctx->n_runformation++;
+emit_or_merge:
+                if (ctx->spilled == 0) {
+                    bytes = 0;
+                    rows  = *(ctx->view /*+0x268*/ + 5);     // rows in view
+                    ctx->field_22c = rows;
+                    ctx->field_230 += rows;
+                    if ((rc = WriteViewToDisk(ctx, ctx->view, &bytes)))  // FUN_00108540
+                        return fail(""ComputeGivenGroupbys.WriteViewToDisk: Write error.\n"", 1);
+                } else {
+                    if ((rc = MultiWayMerge(ctx)))           // FUN_00103c60
+                        return fail(""ComputeGivenGroupbys.MultiWayMerge failed.\n"", rc);
+                }
+            }
+        }
+
+        /* --- bookkeeping for this record --- */
+        Finalize(ctx);                                       // FUN_00106480
+        ctx->total_bytes /*+0x240*/ += (uint64)(row_size * ctx->field_22c);
+        fseek(ctx->file_1098, 0, SEEK_SET);                  // rewind scratch files
+        fseek(ctx->file_1088, 0, SEEK_SET);
+
+        /* --- merge this record's counts into running totals --- */
+        for (i = 0; i + 1 < ncounts; i += 2) {               // unrolled x2
+            totals[i]   += counts[i];                        // +0x1148 += +0x1128
+            totals[i+1] += counts[i+1];
+        }
+        /* tail element + loop control truncated in listing */
+
+    } while (more records from cfg_file);
+
+    return 0;   // success (inferred; tail truncated)
+}
+
+// fail(msg, rc): fwrite(msg, strlen(msg), 1, stderr); return rc;
+```
+
+**Key state offsets in `ctx`:** `+0x218/0x228/0x234/0x238` = record params (bit count, sizes, file offset); `+0x21c` = group-count buffer length; `+0x10a0` = config `FILE*`, `+0x1090` = data `FILE*`, `+0x1088/+0x1098` = scratch `FILE*`; `+0x24c` = output row size; `+0x270` = ""spilled to disk"" flag; `+0x119c/+0x11a0/+0x11a4` = per-strategy invocation counters; `+0x240/+0x230` = byte/row statistics; `+0x1128/+0x1148` = per-record counts / running totals; `+0x268` = current view object.
+
+(Consistent with the examples given, the protected build's decompilation is functionally identical to what an unprotected build would yield — the MIXCOMPILE arm used here leaves this function's pseudocode unchanged, so the reconstruction above applies to both.)",117.5,ok
+t2_glm_agent_A0_dc_PrefixedAggregate_5134,L1,A0,ms__MultiSource__Benchmarks__NPB-serial__dc,FUN_00104310,PrefixedAggregate,2bfc93c2ee6f43d8,glm_agent,0.1465,1.0,0.417,0.667,0.377,2,S2,8844,5897,"## Part 1 — What the function does
+
+The error strings (`""PrefixedAggregate: wrong parent view order.""`, `""wrong KeyComp() result.""`) identify this as a **PrefixedAggregate** routine: an aggregation pass over a temporary file that has been pre-sorted by a ""parent view"" key.
+
+In short:
+
+- Each input record (read with `fread`, size `ctx+0x248`) contains a fixed **value prefix** (`2 × nLong` ints, where `nLong = *(int*)(ctx+0x21c)`) followed by **parent-view** ints that are first permuted into canonical order via a stored permutation table (`ctx+0x10d8`).
+- Consecutive records whose parent-view parts compare **equal** (via helper `FUN_00107f00`, i.e. `KeyComp`) belong to the same group: their value prefixes are summed as 64-bit values into an accumulator.
+- When a strictly **greater** key arrives, the finished group is appended to an in-memory output buffer. When the buffer holds `bufSize / outRecSize` records (`bufSize = *(ctx+0x250)`, `outRecSize = *(ctx+0x24c)`), the entire buffer is written to the **end of the same file** (`ftell` → `fseek(END)` → `fwrite` → `fseek` back), so the file is extended in place while still being consumed as input — an external, run-by-run aggregation.
+- For every emitted group it updates two per-slot accumulators in the context: a plain sum (`ctx+0x10b8`) and a weighted checksum modulo `0x7ab7` (= 31415) with the group's ordinal as weight (`ctx+0x1128`) — evidently for verification/integrity checking.
+- If a record's key is **smaller** than its predecessor (file not sorted) or the comparator returns an unexpected value, it prints an error to stderr and `exit(1)`.
+
+Note: as with the three example pairs, the MIXCOMPILE-protected decompilation is behaviorally identical to what an unprotected build would show — the protection does not restructure the logic visible at this level.
+
+## Part 2 — Structured pseudocode
+
+Context fields (all offsets relative to `param_1`):
+
+| Offset | Meaning |
+|---|---|
+| `0x21c` | `nLong` — number of 64-bit value slots in the prefix |
+| `0x224` | `nParent` — number of parent-view key ints |
+| `0x248` | input record size (bytes) |
+| `0x24c` | output (aggregated) record size (bytes) |
+| `0x250` | output buffer size (bytes) |
+| `0x258` | pointer to output buffer |
+| `0x10b8` | `long sumAcc[nLong]` — running sums |
+| `0x1128` | `long chkAcc[nLong]` — running weighted checksums (mod 31415) |
+| `0x10d8` | `int perm[nParent]` — parent-field permutation |
+| `0x1188` | `nRecs` — number of input records |
+
+```text
+function PrefixedAggregate(ctx, file):
+    nLong   = ctx.nLong          # value slots (64-bit each)
+    nParent = ctx.nParent        # parent-view key ints
+    inRecSz = ctx.inRecSz
+    outRecSz= ctx.outRecSz
+    bufCap  = ctx.bufSz / outRecSz   # records per output buffer
+
+    total = 2*nLong + nParent    # ints per reassembled record
+    zero prev[total], agg[total] # prev = last record, agg = current group
+
+    if ctx.nRecs == 0: goto FINISH
+
+    outCount = 0                 # groups currently in output buffer
+    bufOff   = 0                 # byte offset in output buffer
+    written  = 0                 # records appended to file so far
+
+    for i in 1 .. ctx.nRecs:
+        fread(raw, inRecSz, 1, file)
+
+        # --- reassemble record: copy value prefix verbatim ---
+        for j in 0 .. 2*nLong-1:
+            cur[j] = raw[j]
+
+        # --- permute parent-view fields into canonical positions ---
+        for j in 0 .. nParent-1:
+            cur[2*nLong + j] = raw[perm[j] + 2*nLong - 1]
+
+        if i == 1:
+            agg = cur[0 .. outRecSz)          # first record starts group 1
+        else:
+            c = KeyComp(cur + 2*nLong,        # compare parent-view suffix
+                        prev + 2*nLong, nParent)
+
+            if c == 0:                        # same group: sum prefixes
+                for j in 0 .. nLong-1:
+                    agg[j] += cur[j]          # 64-bit adds
+            elif c == 1:                      # larger key: emit group
+                outBuf[bufOff ..] = agg[0 .. outRecSz)
+                outCount += 1
+                for j in 0 .. nLong-1:
+                    ctx.sumAcc[j] += agg[j]
+                    ctx.chkAcc[j] += (agg[j] * outCount) % 31415
+                bufOff += outRecSz
+                agg = cur[0 .. outRecSz)      # start new group
+            elif c == -1:
+                fatal(""PrefixedAggregate: wrong parent view order.\n"")
+            else:
+                fatal(""PrefixedAggregate: wrong KeyComp() result.\n"")
+
+        # --- flush output buffer to end of file when full ---
+        if outCount == bufCap:
+            pos = ftell(file)
+            fseek(file, 0, SEEK_END)
+            fwrite(ctx.outBuf, outRecSz * bufCap, 1, file)   # must succeed
+            outCount = 0
+            fseek(file, pos, SEEK_SET)        # keep reading where we were
+            written += bufCap
+            bufOff = 0
+
+        prev = cur[0 .. outRecSz)             # remember for next comparison
+
+FINISH:
+    # (tail truncated in the listing; mirrors the in-loop emit code)
+    outBuf[bufOff ..] = agg[0 .. outRecSz)    # emit final group
+    outCount += 1
+    update sumAcc / chkAcc as above
+    if outCount == bufCap:                    # flush if buffer exactly full
+        ... append buffer to end of file ...
+    fwrite remaining outCount records to end of file
+    return ...
+```
+
+Key structural points:
+
+1. **Grouping key = permuted parent-view suffix; payload = value prefix.** This is the ""prefixed"" in the name — the prefix is what gets summed, the suffix is what defines groups.
+2. **Single-file external aggregation:** output is appended at the file's end while the read position is saved/restored, so aggregated runs accumulate behind the data still being read.
+3. **Sortedness is an precondition**, enforced fatally (`-1` ⇒ ""wrong parent view order"").
+4. The mod-31415 checksum array is a redundant invariant tracker, consistent with the other tuning examples' habit of computing verifiable aggregates.",123.1,ok
+t2_glm_agent_A0_AMGmk_hypre_CSRMatrixUnion_5257,L1,A0,ms__MultiSource__Benchmarks__ASC_Sequoia__AMGmk,FUN_00101e00,hypre_CSRMatrixUnion,7dbe2453e4495f1f,glm_agent,0.0377,1.0,0.0,0.0,0.035,1,S1,8974,17721,"I'll first check whether the original source (referenced in the assert strings) is available locally, so the reconstruction can be verified against ground truth.",344.8,ok
+t2_glm_agent_A0_AMGmk_GenerateSeqLaplacian_5602,L1,A0,ms__MultiSource__Benchmarks__ASC_Sequoia__AMGmk,FUN_00103990,GenerateSeqLaplacian,83e07fa4dc5e36fa,glm_agent,0.1267,1.0,0.222,1.0,0.5,3,S3,8914,13791,"## 1. What the function does
+
+`FUN_00103990` is a **sequential CSR sparse-matrix generator for a 3D, 7-point variable-coefficient Laplacian** on a structured `nx × ny × nz` grid (this matches the program name `GenerateSeqLaplacian`).
+
+Parameters map as:
+
+| Param | Meaning |
+|---|---|
+| `param_1`, `param_2`, `param_3` | grid dimensions `nx` (fastest-varying), `ny`, `nz` |
+| `param_4` | pointer to 4 doubles: stencil coefficients `[center, x, y, z]` |
+| `param_5..param_7` | additional vector/pointer arguments (used only in the truncated tail of the dump — likely output/work vectors) |
+
+It performs two passes over the `nx*ny*nz` grid points:
+
+1. **Row-count pass** — builds a row-pointer array (`rowptr[N+1]`, ints). For each grid node it counts `1` (diagonal) plus the number of in-bounds ±x, ±y, ±z neighbors, accumulating prefix sums. Note `iVar16 = nx*ny` is the z-stride, `param_1 = nx` the y-stride, `±1` the x-stride in column indices.
+2. **Fill pass** — allocates the column-index array (`int[nnz]`) and value array (`double[nnz]`) sized by the final row-pointer entry (`piVar4[N]`), then writes each row: the diagonal entry (column = node itself, value = `coef[0]`), and for each in-bounds neighbor the corresponding column (`node ∓ nx·ny`, `node ∓ nx`, `node ∓ 1`) with the directional coefficient (`coef[3]`, `coef[2]`, `coef[1]` respectively — symmetric stencil).
+
+It also allocates three length-N double vectors initialized to **1.0, 0.0, 0.0** (`0x3ff0000000000000` = 1.0 — typical of a solver setup: e.g. initial-guess/ones vector and two zero vectors), and returns a handle/struct bundling the matrix data (tail of the dump is truncated mid-fill, so the final assembly/return is inferred).
+
+The strange select-chains (`if (cond) iVar28 = iVar27;`), the peeled first x-element, and the 4-wide block stores are **LLVM vectorization artifacts**, not semantics (the `< 0x20` distance checks between the three arrays are vectorizer aliasing checks).
+
+## 2. Reconstructed pseudocode
+
+```c
+// FUN_00103990(nx, ny, nz, coef[4], aux5, aux6, aux7)
+// FUN_001038a0(n, size) = memory allocator (n elements of `size` bytes)
+
+Mat* GenerateSeqLaplacian(uint nx, int ny, int nz, double *coef, ...)
+{
+    int N = nx * ny * nz;                          // uVar17 = param_1*param_2*param_3
+
+    int    *rowptr = alloc(N + 1, sizeof(int));    // piVar4
+    double *ones   = alloc(N, sizeof(double));     // lVar5, filled with 1.0
+    double *zeroA  = alloc(N, sizeof(double));     // lVar6, filled with 0.0
+    double *zeroB  = alloc(N, sizeof(double));     // lVar7, filled with 0.0
+
+    // ---- Pass 1: CSR row pointers ------------------------------------
+    rowptr[0] = 0;
+    int n = 0;
+    for (i = 0; i < nz; i++)                       // iVar14, slowest
+      for (j = 0; j < ny; j++)                     // iVar26
+        for (k = 0; k < nx; k++, n++) {            // inner (vectorized in dump)
+            int cnt = 1;                           // diagonal
+            if (k > 0)      cnt++;                 // x-1   (col n-1)
+            if (k + 1 < nx) cnt++;                 // x+1   (col n+1)
+            if (j > 0)      cnt++;                 // y-1   (col n-nx)
+            if (j + 1 < ny) cnt++;                 // y+1   (col n+nx)
+            if (i > 0)      cnt++;                 // z-1   (col n-nx*ny)
+            if (i + 1 < nz) cnt++;                 // z+1   (col n+nx*ny)
+            rowptr[n + 1] = rowptr[n] + cnt;
+        }
+
+    // ---- Pass 2: column indices + values ------------------------------
+    int nnz    = rowptr[N];                        // piVar4[N]
+    int    *colidx = alloc(nnz, sizeof(int));      // lVar21
+    double *val    = alloc(nnz, sizeof(double));   // lVar19
+
+    int pos = 0;  n = 0;
+    for (i = 0; i < nz; i++)
+      for (j = 0; j < ny; j++)
+        for (k = 0; k < nx; k++, n++) {
+            colidx[pos] = n;        val[pos] = coef[0];  pos++;   // diagonal
+            if (i > 0) {
+                colidx[pos] = n - nx*ny;  val[pos] = coef[3];  pos++; }  // z-1
+            if (j > 0) {
+                colidx[pos] = n - nx;     val[pos] = coef[2];  pos++; }  // y-1
+            if (k > 0) {
+                colidx[pos] = n - 1;      val[pos] = coef[1];  pos++; }  // x-1
+            if (k + 1 < nx) {
+                colidx[pos] = n + 1;      val[pos] = coef[1];  pos++; }  // x+1
+            if (j + 1 < ny) {
+                colidx[pos] = n + nx;     val[pos] = coef[2];  pos++; }  // y+1
+            if (i + 1 < nz) {
+                colidx[pos] = n + nx*ny;  val[pos] = coef[3];  pos++; }  // z+1
+        }
+
+    // ---- Tail (truncated in dump, inferred) ----------------------------
+    // bundle {N, nnz, rowptr, colidx, val, ones, zeroA, zeroB, ...}
+    // together with aux5/aux6/aux7 into a result struct/handle and return it
+    return handle;
+}
+```
+
+**Notes / confidence:**
+- The 7-point symmetric stencil and the CSR structure are certain (neighbor column offsets `−nx·ny`, `−nx`, `±1` and the coefficient array `coef[0..3]` are directly visible).
+- The exact entry order *within* a row in the dump is: diagonal, z−1, y−1, x+1, (y+1, z+1 …) — the x−1 entry and the interior-x loop body fall in the truncated region; ordering within a row is semantically irrelevant for CSR correctness as long as indices are sorted or consistently generated.
+- The roles of the three initialized vectors (ones/zeros/zeros) and of `param_5..param_7` are inferred from the truncation point; the visible code never touches them after initialization, so they are almost certainly consumed in the missing tail (solver workspace / output vectors / result struct fields).",266.9,ok
+t2_glm_agent_A0_AMGmk_hypre_CSRMatrixMatvec_5868,L1,A0,ms__MultiSource__Benchmarks__ASC_Sequoia__AMGmk,FUN_001026b0,hypre_CSRMatrixMatvec,501aa76c0b3cd7ca,glm_agent,0.1635,0.667,0.118,0.667,0.391,2,S2,8913,21079,"I can reconstruct this confidently from the decompilation — the assertion string and source path embedded in the binary (`AMGmk/csr_matvec.c`, line 0x5b = 91) identify it as hypre's `hypre_CSRMatrixMatvec`. Since the original source tree referenced by the assert is available in the workspace, let me verify my reconstruction against it.
+
+## 1. What the function does
+
+This is **`hypre_CSRMatrixMatvec(alpha, beta, A, x, y)`** — the sparse matrix–vector multiply from the hypre library bundled with the AMGmk benchmark. It computes:
+
+**y = α·(A·x) + β·y**
+
+where `A` is a sparse matrix in CSR format (value array + column-index array + row-pointer array) and `x`, `y` are possibly multi-component vectors. Key behaviors visible in the decompilation:
+
+- **Structural assert**: it first checks that `x` and `y` have the same number of vectors (`num_vectors == hypre_VectorNumVectors(y)`), printing the assert message to `stderr` and invoking the hypre assert-failure handler (`FUN_00103710`, with file/line 91) on mismatch.
+- **α == 0 shortcut**: if `alpha == 0.0` (the `!NAN(param_1)` is just Ghidra rendering the *ordered* float compare — NaN is excluded by the equality itself), it skips the matrix entirely: `y = β·y` (or `y = 0` via `memset` when β == 0), then returns. The y length is `num_rows(A) · num_vectors(x)`.
+- **α folded into a pre-scale**: otherwise it forms `temp = β/α`, and only if `temp != 1.0` (constant at `DAT_00106120` is 1.0) scales `y` by `temp`, or zeroes `y` when `temp == 0`. Then it runs the SpMV loop **without** α (the store `y[i] = sum` has no multiply), so the result is correct after the final α scaling in the (truncated) tail.
+- **Row-density heuristic**: `(double)num_rows * DAT_00106128 <= (double)num_rownnz` (the constant at `DAT_00106128` is hypre's row-density threshold, ~0.5) selects between iterating **all rows** and iterating only the rows that actually contain nonzeros (`rownnz` optimization).
+- **Two loop variants**: a single-vector path (`num_vectors == 1`, `y[i] = y[i] + Σⱼ A_data[j]·x_data[A_j[j]]` over `j ∈ [A_i[i], A_i[i+1])`) and a multi-vector path using the x/y vector strides read from the vector structs (fields at offsets 0x18/0x1c).
+- The ×4-unrolled loops with scalar remainders (both the y-scaling loops and the inner SpMV accumulation) are LLVM unrolling artifacts, not source-level logic.
+
+## 2. Structured pseudocode
+
+```c
+hypre_CSRMatrixMatvec(alpha, beta, A, x, y):
+    # ---- unpack structures (Ghidra offsets → hypre fields) ----
+    A_data = A->data;  A_j = A->j;  A_i = A->i          # param_3[0..2]
+    num_rows  = A->num_rows                             # *(u32*)(A+0x18)
+    num_rownnz = A->num_rownnz                          # *(u32*)(A+0x30)
+    x_data = x->data;  y_data = y->data                 # param_4[0], param_5[0]
+    num_vectors = x->num_vectors                        # *(u32*)(x+0x10)
+
+    # ---- consistency check (hypre_assert, csr_matvec.c:91) ----
+    if x->num_vectors != y->num_vectors:
+        fprintf(stderr, ""hypre_assert failed: %s\n"",
+                ""num_vectors == hypre_VectorNumVectors(y)"")
+        hypre_assert_failed(__FILE__, 0x5b /*91*/, 1)   # FUN_00103710
+
+    size = num_rows * num_vectors                       # length of y
+
+    # ---- case 1: alpha == 0  →  y = beta*y ----
+    if alpha == 0.0:                                    # ordered compare
+        if beta != 1.0:
+            if beta == 0.0: memset(y_data, 0, size*8)
+            else:           for i in 0..size-1: y_data[i] *= beta   # unrolled ×4
+        return
+
+    # ---- case 2: fold alpha into pre-scaling ----
+    temp = beta / alpha
+    if temp != 1.0:                                     # vs constant 1.0 (DAT_00106120)
+        if temp == 0.0: memset(y_data, 0, size*8)
+        else:           for i in 0..size-1: y_data[i] *= temp       # unrolled ×4
+
+    # ---- case 3: SpMV: y += A*x  (alpha applied in truncated tail) ----
+    if (double)num_rows * C <= (double)num_rownnz:      # C = DAT_00106128
+                                                        # → matrix dense in rows: visit all rows
+        for i in 0..num_rows-1:
+            if num_vectors == 1:
+                sum = y_data[i]                         # starts from (beta/alpha)*y
+                for jj in A_i[i] .. A_i[i+1]-1:         # unrolled ×4 by compiler
+                    sum += A_data[jj] * x_data[A_j[jj]]
+                y_data[i] = sum
+            else:                                       # multi-vector path
+                y_off = i * y->vector_stride            # stride from *(int*)(y+0x1c)
+                x_off = i * x->vector_stride
+                for v in 0..num_vectors-1:
+                    sum = y_data[y_off + v*y->index_stride]
+                    for jj in A_i[i] .. A_i[i+1]-1:
+                        sum += A_data[jj] * x_data[x_off + v*x->index_stride + A_j[jj]]
+                    y_data[y_off + v*y->index_stride] = sum
+    else:
+        # (truncated in the dump) identical computation, but iterates only over the
+        # nonzero rows listed in A->rownnz to skip all-empty rows
+        for i in A->rownnz[0..num_rownnz-1]:
+            ...same inner accumulation...
+
+    # ---- tail (truncated) ----
+    if alpha != 1.0:
+        for i in 0..size-1: y_data[i] *= alpha
+    return
+```
+
+**Net effect**: `y = α·(A·x) + β·y`, with fast paths that avoid touching `x`/`A` when α = 0, avoid scaling when β/α = 1, avoid a separate zero-fill when β = 0, and skip empty rows when the matrix is sufficiently sparse row-wise.
+
+The function is cut off mid-way through the multi-vector inner loop in the dump, so the `rownnz` branch and tail are reconstructed from the standard hypre `csr_matvec.c` structure rather than read directly from the listing — but everything shown above the truncation matches the reconstruction exactly.",509.8,ok
+t2_glm_agent_A0_AMGmk_hypre_CSRMatrixMatvecT_6378,L1,A0,ms__MultiSource__Benchmarks__ASC_Sequoia__AMGmk,FUN_00102e40,hypre_CSRMatrixMatvecT,3f93f497b6f0c33f,glm_agent,0.7238,1.0,0.143,1.0,0.386,2,S2,8923,10818,"## Part 1 — What the function does
+
+This is `hypre_CSRMatrixMatvecT` from the AMGmk benchmark (Hypre's `csr_matvec.c`, confirmed by the assert message embedded in the code). It computes a **sparse matrix–transpose vector product with axpy scaling**:
+
+**y = alpha · Aᵀx + beta · y**
+
+Parameters: `param_1 = alpha`, `param_2 = beta`, `param_3 = A` (CSR matrix: `{data, i, j, num_rows, num_cols, ...}`), `param_4 = x`, `param_5 = y` (both multivectors: `{data, ..., num_vectors, vecstride, idxstride}`).
+
+Key behaviors:
+- **Assert**: `x.num_vectors == y.num_vectors`, else prints a `hypre_assert failed` message and invokes the assert-error handler (`csr_matvec.c`, line 0x102 = 258).
+- **alpha == 0 case**: y is simply scaled by `beta` (vector length = `num_vectors * num_cols`) and returns.
+- **alpha ≠ 0 case**: alpha is factored out — y is first scaled by `beta/alpha` (or zero-filled via `memset` if `beta/alpha == 0`; skipped if it equals 1.0, with NaN-safe comparisons against the constant `1.0` at `DAT_00106120`). Then Aᵀx is accumulated into y.
+- **Main loop**: for each row `i` of A (a column of Aᵀ), for each nonzero `jj` in that row, it does `y[A_j[jj]] += A_data[jj] * x[i]`. Two paths: a **single-vector fast path** with raw contiguous indexing, and a **general multi-vector path** with `x` indexed as `i*x_idxstride + v*x_vecstride` and `y` as `A_j[jj]*y_idxstride + v*y_vecstride`. Both inner loops are compiler-unrolled (odd-element peel + 2× unroll); the 4× unrolled scale loops are likewise vectorization artifacts, not logic.
+- The truncated tail completes the accumulation and (per the standard hypre factoring) rescales y by alpha, yielding `y = beta*y + alpha*Aᵀx`, then returns the error flag.
+
+## Part 2 — Structured pseudocode
+
+```text
+function hypre_CSRMatrixMatvecT(alpha, beta, A, x, y):
+
+    A_data = A.data ;  A_i = A.rowPtr ;  A_j = A.colIdx
+    num_rows  = A.num_rows
+    num_cols  = A.num_cols
+    x_data = x.data ;  y_data = y.data
+    num_vectors = x.num_vectors
+    x_vecstride = x.vecstride ;  x_idxstride = x.idxstride   # x indexing
+    y_vecstride = y.vecstride ;  y_idxstride = y.idxstride   # y indexing
+
+    # ---- assert: matching vector counts -------------------------------
+    if num_vectors != y.num_vectors:
+        fprintf(stderr, ""hypre_assert failed: %s\n"",
+                ""num_vectors == hypre_VectorNumVectors(y)"")
+        assert_fail(""csr_matvec.c"", 258, 1)
+
+    size = num_vectors * num_cols          # logical length of y
+
+    # ---- case alpha == 0:  y = beta * y -------------------------------
+    if alpha == 0.0 (and not NaN):
+        for k in 0 .. size-1:
+            y_data[k] *= beta
+        return
+
+    # ---- fold alpha out:  y = (beta/alpha) * y ------------------------
+    beta = beta / alpha
+    if beta != 1.0 (NaN-safe):
+        if beta == 0.0:
+            memset(y_data, 0, size * 8)
+        else:
+            for k in 0 .. size-1:
+                y_data[k] *= beta
+
+    # ---- accumulate A^T x:  y += A^T x --------------------------------
+    for i in 0 .. num_rows-1:              # rows of A = columns of A^T
+        jj = A_i[i] ;  end = A_i[i+1]
+
+        if num_vectors == 1:
+            # contiguous fast path (compiler-unrolled 2x with odd peel)
+            if jj < end:
+                if (end - jj) is odd:
+                    y[A_j[jj]] += A_data[jj] * x[i]
+                    jj += 1
+                while jj < end:
+                    y[A_j[jj]]   += A_data[jj]   * x[i]
+                    y[A_j[jj+1]] += A_data[jj+1] * x[i]
+                    jj += 2
+        else:
+            for v in 0 .. num_vectors-1:
+                xoff = v * x_vecstride
+                yoff = v * y_vecstride
+                k = jj
+                if k < end:
+                    if (end - k) is odd:
+                        col = A_j[k]
+                        y[col*y_idxstride + yoff] +=
+                            A_data[k] * x[i*x_idxstride + xoff]
+                        k += 1
+                    while k < end:
+                        col = A_j[k]
+                        y[col*y_idxstride + yoff] +=
+                            A_data[k] * x[i*x_idxstride + xoff]
+                        col = A_j[k+1]
+                        y[col*y_idxstride + yoff] +=
+                            A_data[k+1] * x[i*x_idxstride + xoff]
+                        k += 2
+
+    # ---- (truncated tail) rescale by alpha and return -----------------
+    for k in 0 .. size-1:
+        y_data[k] *= alpha                 # y = alpha*((beta/alpha)y + A^T x)
+    return 0                               # hypre_error_flag
+```
+
+**Net effect:** `y = alpha·Aᵀx + beta·y`, with the transpose handled by scattering each nonzero `A[jj]` from row `i` into output entry `colIdx[jj]`. Obfuscation note: in these paired samples the protected build's decompilation is identical to the baseline — MIXCOMPILE's protection here did not alter this function's control flow beyond the compiler's own unrolling.",204.3,ok
+t2_glm_agent_A0_AMGmk_hypre_CSRMatrixMatvec_FF_6583,L1,A0,ms__MultiSource__Benchmarks__ASC_Sequoia__AMGmk,FUN_00103310,hypre_CSRMatrixMatvec_FF,f6c6e756d90e8ab4,glm_agent,0.0683,1.0,0.111,1.0,0.327,2,S2,9024,3718,"## 1. What the function does
+
+This is **hypre's `hypre_CSRMatrixMatvecFF`** — a row/column-filtered sparse matrix–vector multiply:
+
+```
+y = alpha * (A x) + beta * y
+```
+
+but restricted to a **tagged subset of rows and entries**. The arguments map to:
+
+| Param | Meaning |
+|---|---|
+| `param_1` | `alpha` |
+| `param_2` | `beta` |
+| `param_3` | `A` (hypre_CSRMatrix): `[0]=data`, `[1]=i` (row offsets), `[2]=j` (col indices), `+24` = num_rows |
+| `param_4` | `x` (hypre_Vector): `[0]=data`, `[1]=size` |
+| `param_5` | `y` (hypre_Vector): `[0]=data`, `[1]=size` |
+| `param_6` | per-row int tag array (`tag[i] == param_8` ⇒ row *i* participates) |
+| `param_7` | per-entry/per-column int tag array (`tag[k] == param_8` ⇒ entry *k* contributes) |
+| `param_8` | the tag value being matched (e.g., off-process rank/marker) |
+
+Key implementation points visible in the decompilation:
+
+- **`alpha == 0` fast path**: only scale the tagged rows of `y` by `beta` (avoids the `beta/alpha` division).
+- Otherwise it computes `beta/alpha` and compares against a rodata constant `DAT_00106120` (which is `1.0`): if `beta/alpha == 1.0`, skip the y-scaling entirely; if `beta/alpha == 0.0`, zero the tagged rows of `y`; otherwise scale `y` by `beta/alpha`. This trick lets the SpMV loop accumulate directly into `y[i]` and apply the final `alpha` scaling once at the end, so the net result is `y[i] = beta*y[i] + alpha*Σ a_ij x_j` over tagged entries.
+- The odd ""overlap"" checks (`uVar8 < param_6 + … && param_6 < uVar8 + …`) before the zeroing loop and the 2×/4× unrolled loops with scalar tails are compiler vectorization artifacts (alignment/aliasing guards for SIMD), not semantic branches.
+- The final (truncated) block multiplies the tagged rows of `y` by `alpha` when `alpha != 1.0` — identical shape to the beta-scaling loop.
+
+The obfuscated (""protected"") version shown in the examples is byte-for-byte structurally identical to the baseline — this protection arm produces no decompiled-level difference.
+
+## 2. Structured pseudocode
+
+```c
+// y = alpha*A*x + beta*y, restricted to rows r with rowtag[r] == tag
+// and entries k with coltag[k] == tag
+void CSRMatrixMatvecFF(double alpha, double beta,
+                       Matrix *A, Vector *x, Vector *y,
+                       int *rowtag, int *coltag, int tag)
+{
+    int   nrows = A->num_rows;
+    double *yd  = y->data, *xd = x->data;
+    double *ad  = A->data;
+    int    *ai  = A->i, *aj = A->j;
+
+    // ---- Case 1: alpha == 0  =>  y = beta * y (on tagged rows only)
+    if (alpha == 0.0) {
+        for (i = 0; i < nrows; i++)
+            if (rowtag[i] == tag)
+                yd[i] *= beta;
+        return;
+    }
+
+    // ---- Case 2: alpha != 0; fold alpha into beta (beta/alpha)
+    double b = beta / alpha;
+
+    bool have_rows = (nrows >= 1);
+
+    if (b != 1.0) {                          // DAT_00106120 == 1.0
+        if (b != 0.0) {
+            // y[i] *= b on tagged rows
+            for (i = 0; i < nrows; i++)
+                if (rowtag[i] == tag) yd[i] *= b;
+        } else {
+            // y[i] = 0 on tagged rows
+            for (i = 0; i < nrows; i++)
+                if (rowtag[i] == tag) yd[i] = 0.0;
+        }
+    }
+    // b == 1.0: no scaling needed
+
+    // ---- SpMV accumulate: y[i] = y[i] + sum_j a_ij * x_j   (tagged only)
+    for (i = 0; i < nrows; i++) {
+        if (rowtag[i] != tag) continue;
+        double sum = yd[i];                  // beta-scaled y already in place
+        for (k = ai[i]; k < ai[i+1]; k++) {
+            if (coltag[k] == tag)            // entry participates
+                sum += ad[k] * xd[aj[k]];
+        }
+        yd[i] = sum;
+    }
+
+    // ---- Final scaling: y[i] *= alpha on tagged rows (if alpha != 1.0)
+    if (alpha != 1.0 && have_rows) {
+        for (i = 0; i < nrows; i++)
+            if (rowtag[i] == tag) yd[i] *= alpha;
+    }
+    return;
+}
+```
+
+Notes on the decompiled artifacts:
+
+- The **`NAN(...)` clauses** are Ghidra's rendering of floating-point ""unordered"" comparisons (needed for correct NaN semantics on `==`/`!=`), not extra logic.
+- The **pointer-overlap check** before the zeroing loop and the **unroll-by-2 / unroll-by-4 loops with scalar remainder** (`uVar3 & 1`, `uVar3 & 0xfffffffe`, `(uVar3 >> 2) << 4`) are auto-vectorized code shapes; the scalar remainder handles odd/trailing counts.
+- Net effect per tagged row: `y[i] ← beta·y[i] + alpha·Σ_{k tagged, ai[i]≤k<ai[i+1]} A->data[k]·x[A->j[k]]` — i.e., the off-process/filtered variant of `hypre_CSRMatrixMatvec` used by hypre's IJMatrix off-processor assembly.",74.7,ok
+t2_glm_agent_A0_linpack-pc_dgesl_6657,L1,A0,ss__SingleSource__Benchmarks__Linpack__linpack-pc,FUN_001030c0,dgesl,9512546503d04104,glm_agent,0.2769,1.0,0.4,1.0,0.324,2,S2,8895,4330,"## Part 1 — What the function does
+
+This is **LINPACK's `DGESL`** (the routine name is even encoded in the run directory: `linpack-pc_dgesl`). Given the LU factorization of an N×N matrix `A` produced by `DGEFA` (stored in place, column-major, with leading dimension `LDA`, plus the pivot vector `IPVT`), it solves a linear system and overwrites `B` with the solution vector:
+
+- **`JOB == 0`**: solve `A·x = b` — first forward-solve `L·y = b` (applying row interchanges and the stored multipliers), then back-substitute `U·x = y`.
+- **`JOB != 0`**: solve `Aᵀ·x = b` — forward-solve `Uᵀ·y = b` (dot products divided by diagonal), then back-solve `Lᵀ·x = y` (dot products plus pivot swaps in reverse).
+
+The apparent complexity (pointer walks like `lVar30 + uVar36*4`, 8-element unrolled inner loops, the `uVar28 < 8` overlap checks, etc.) is just the compiler's SIMD/unrolled `DAXPY`/`DDOT` kernels with aliasing guards. The `(float)((uint)fVar39 ^ _DAT_00106060)` idiom is a sign-bit flip, i.e. negating the scalar before the `DAXPY` (`T = -B(K)`).
+
+Parameter map: `param_1 = a`, `param_2 = lda`, `param_3 = n`, `param_4 = ipvt`, `param_5 = b`, `param_6 = job`.
+
+## Part 2 — Structured pseudocode
+
+```c
+// A: n x n LU factors from dgefa (column-major, leading dimension lda)
+// IPVT: pivot indices;  B: rhs, overwritten with solution
+void dgesl(float a[], int lda, int n, int ipvt[], float b[], int job)
+{
+    if (job == 0) {
+        // ---------- Solve  A * x = b ----------
+
+        // Step 1: forward solve  L * y = b  (uses multipliers stored below diagonal)
+        for (k = 0; k < n - 1; k++) {
+            l = ipvt[k];
+            t = b[l];
+            if (l != k) {            // apply row interchange
+                b[l] = b[k];
+                b[k] = t;
+            }
+            if (t != 0.0) {          // daxpy: b[k+1..n-1] += t * A[k+1..n-1, k]
+                for (i = k + 1; i < n; i++)
+                    b[i] += t * a[i + k*lda];
+            }
+        }
+
+        // Step 2: back solve  U * x = y
+        for (k = n - 1; k >= 0; k--) {
+            b[k] /= a[k + k*lda];                    // divide by diagonal
+            t = -b[k];                               // (sign-bit XOR trick)
+            for (i = 0; i < k; i++)                  // daxpy: b[0..k-1] += t * A[0..k-1, k]
+                b[i] += t * a[i + k*lda];
+        }
+    }
+    else {
+        // ---------- Solve  A^T * x = b ----------
+
+        // Step 1: forward solve  U^T * y = b
+        for (k = 0; k < n; k++) {
+            t = 0.0;
+            for (i = 0; i < k; i++)                  // ddot: t = A[0..k-1, k] . b[0..k-1]
+                t += a[i + k*lda] * b[i];
+            b[k] = (b[k] - t) / a[k + k*lda];
+        }
+
+        // Step 2: back solve  L^T * x = y
+        for (k = n - 2; k >= 0; k--) {
+            t = 0.0;
+            for (i = k + 1; i < n; i++)              // ddot: t = A[k+1..n-1, k] . b[k+1..n-1]
+                t += a[i + k*lda] * b[i];
+            b[k] += t;
+            l = ipvt[k];                             // undo row interchange
+            if (l != k) {
+                float tmp = b[l];
+                b[l] = b[k];
+                b[k] = tmp;
+            }
+        }
+    }
+}
+```
+
+### Correspondence with the decompilation (JOB = 0 branch, which the snippet covers)
+
+| Decompiled construct | Source construct |
+|---|---|
+| `uVar19 = param_3 - 1`, outer do-while `uVar37 != uVar19` | `for (k = 0; k < n-1; k++)` |
+| `uVar20 = *(uint *)(param_4 + uVar23*4)` | `l = ipvt[k]` |
+| swap of `fVar39` into `b[k]`/`b[l]` | `t = b[l]; b[l] = b[k]; b[k] = t` |
+| `fVar39 != 0.0 \|\| NAN(fVar39)` guard | `if (t != 0.0)` before the DAXPY |
+| `iVar24 = iVar24 + iVar27` with `iVar27 = lda + 1` | column stride: `A(k+1,k)` lives at `a[k*(lda+1) + 1]` |
+| 8-wide pointer-copy inner loop + odd/even scalar tails | unrolled `daxpy(n-k-1, t, &a[k*lda+k+1], 1, &b[k+1], 1)` with alignment peel + aliasing check |
+| second loop: `b[l] / a[l + l*lda]` descending | `b(k) = b(k)/a(k,k)` in the U back-substitution |
+| `fVar39 = (float)((uint)fVar39 ^ uVar29)` where `uVar29 = _DAT_00106060` (= 0x80000000) | `t = -b(k)` before `daxpy(k-1, t, a(1,k), 1, b, 1)` |
+
+The snippet is truncated mid-back-substitution, but the visible forward-elimination and the start of the descending division loop uniquely pin it down as `DGESL`, matching the reference implementation above.",81.9,ok
+t2_glm_agent_A0_linpack-pc_daxpy_6739,L1,A0,ss__SingleSource__Benchmarks__Linpack__linpack-pc,FUN_00105840,daxpy,2a4a562da24dc1e1,glm_agent,0.0627,0.0,0.0,1.0,0.348,1,S1,8778,1999,"## 1. What the function does
+
+This is **SAXPY** (single-precision A·X Plus Y, the Linpack/BLAS `daxpy` kernel specialized to `float`): given a scalar `a`, a length-`n` vector `x` with stride `incx`, and a length-`n` vector `y` with stride `incy`, it performs the in-place update:
+
+```
+y[i] = a * x[i] + y[i]   for i = 0 .. n-1
+```
+
+Parameters map as: `param_1 = a`, `param_2 = n`, `param_3 = x`, `param_4 = incx`, `param_5 = y`, `param_6 = incy`. It returns early if `n < 1` or `a == 0.0` (matching the reference BLAS guard, including the `a != a` NaN check so NaNs still propagate through the early-exit test as ""not zero"").
+
+The protected build adds no semantic changes — only compiler-generated structure:
+
+- **Fast path** (`incx == incy == 1`): an 8-wide unrolled loop with the loads hoisted, plus a scalar tail (odd element handled first, then a 2-at-a-time tail loop).
+- **Aliasing/overlap guard**: when `x` and `y` ranges overlap, or `n < 8`, it falls back to the scalar loop instead of the unrolled one.
+- **Strided path**: the same unrolled-8 loop for the contiguous case, otherwise a scalar loop stepping `x` by `incx*4` bytes and `y` by `incy*4` bytes, two elements per iteration. The expression `inc >> 31 & (1-n)*inc` is a branchless select computing the start offset for negative strides (so indexing still proceeds from the first touched element).
+
+## 2. Structured pseudocode
+
+```text
+function saxpy(a: float, n: uint, X: ptr<float>, incx: int, Y: ptr<float>, incy: int):
+
+    # ---- guard ----
+    if n < 1 or a == 0.0:            # NaN a passes through (a != a → not taken)
+        return
+
+    # ============================================================
+    # Case 1: unit strides (incx == 1 && incy == 1)
+    # ============================================================
+    if incx == 1 and incy == 1:
+        if n >= 8 and ranges(X[0..n), Y[0..n)) do NOT overlap:
+            # vectorizable main loop: 8 elements per iteration
+            for j in 0 .. (n & ~7) step 8:
+                Y[j .. j+7] += a * X[j .. j+7]
+            if (n & ~7) == n:
+                return
+            m = n & ~7                # tail start index
+        else:
+            m = 0
+
+        # scalar tail
+        if n is odd:
+            Y[m] += a * X[m]
+            m |= 1
+            if m == n: return
+
+        repeat while m != n:          # 2 elements per iteration
+            Y[m]   += a * X[m]
+            Y[m+1] += a * X[m+1]
+            m += 2
+        return
+
+    # ============================================================
+    # Case 2: general strides
+    # ============================================================
+    # Branchless select: start offset = (1-n)*inc when inc < 0, else 0
+    offX = (incx >> 31) & ((1 - n) * incx)
+    offY = (incy >> 31) & ((1 - n) * incy)
+
+    # Contiguous fast path (strides are 1, n > 15, no overlap)
+    if n > 15 and incx == 1 and incy == 1 and ranges don't overlap:
+        for j in 0 .. (n & ~7) step 8:
+            Y[offY + j .. offY + j+7] += a * X[offX + j .. offX + j+7]
+        offX += n & ~7
+        offY += n & ~7
+        if (n & ~7) == n:
+            return
+        done8 = n & ~7
+    else:
+        done8 = 0
+
+    # scalar loop, 2 elements per iteration
+    if n is odd:
+        Y[offY] += a * X[offX]
+        offX += incx
+        offY += incy
+        done8 += 1
+
+    if done8 != n:
+        yNext = Y + offY + incy        # second element's address (in elements)
+        repeat:
+            Y[offY]  += a * X[offX]
+            yNext[0] += a * X[offX + incx]
+            offX += incx * 2
+            offY += incy * 2
+        until remaining count reaches 0
+    return
+```
+
+Key structural notes for the reconstruction:
+
+- **Semantics are identical to netlib `saxpy`**; every deviation in the decompiled body (unrolling by 8, hoisted loads, the odd/even tail split, the `>> 31 &` offset computation, the overlap predicate `Y < X+4n && X < Y+4n`) is LLVM loop-vectorization and branchless-codegen artifact, not obfuscation-induced behavior change.
+- The overlap check exists purely to keep the 8-wide unrolled loop safe when `X` and `Y` (unit stride) alias; overlap forces the scalar loop, which is always correct.
+- The generic strided loop processes two elements per iteration with pointer arithmetic `p += inc*4` bytes per element, which is why the decompiler shows `param_5 + lVar23 * 8` per iteration.",43.4,ok
+t2_glm_agent_A0_linpack-pc_matgen_6783,L1,A0,ss__SingleSource__Benchmarks__Linpack__linpack-pc,FUN_001029b0,matgen,db73973f33c85fce,glm_agent,0.196,0.833,0.667,1.0,0.368,3,S3,8157,6627,"## 1. What the function does
+
+This is the classic **`matgen` routine from the LINPACK benchmark** (single-precision variant), compiled with the loop vectorizer and runtime aliasing checks exposed in the decompilation.
+
+It takes an `n × n` matrix `a` (`param_1`) with leading dimension `lda` (`param_2`), an output vector `b` (`param_4`) of length `n`, and a pointer to a scalar (`param_5`, the ""norm""). It:
+
+1. **Generates a pseudo-random matrix** using the well-known LINPACK linear congruential generator: seed starts at `1325` (`0x52d`), each step `init = (3125 * init) mod 65536` (`* 0xc35 & 0xffff`), and each element is `(init − 32768) / 16384`. The constant `DAT_00106028` is therefore `1/16384 = 6.103515625e-05`. While generating, it tracks the **maximum entry** into `*param_5` (initialized to 0, so only positive maxima count — matching the original `if (a[..] > norma)`).
+
+2. **Builds the right-hand-side vector `b`**: it zeroes `b` (the `memset`), then for each row/column `i` of `a`, adds the whole strip into `b` element-wise: `b[k] += a[i*lda + k]`. In the standard column-major LINPACK layout this makes `b[i]` the **row sum of row `i`**, i.e. `b = a·1` — so the true solution of the linear system `a·x = b` is the all-ones vector, which is exactly the trick `matgen` exists for.
+
+The two branches in the second half are **not obfuscation** — they are compiler-generated: a runtime overlap check between `b`'s range `[param_4, param_4 + n*4)` and the current row of `a` (since the compiler can't prove `b` doesn't alias `a`). If `n < 8` or the ranges may overlap, a scalar loop with odd-element peeling and a tail runs; otherwise an 8-wide unrolled/vectorized version runs. Both compute the identical sums.
+
+## 2. Structured pseudocode
+
+```c
+/* matgen: generate pseudo-random matrix a and RHS b = a * 1 (all-ones solution) */
+void matgen(float *a, int lda, int n, float b[], float *norma)
+{
+    unsigned init = 1325;                 /* 0x52d — fixed LINPACK seed   */
+    const double scale = 1.0 / 16384.0;   /* DAT_00106028                 */
+
+    *norma = 0.0f;
+
+    if (n > 0) {
+
+        /* ---- Phase 1: fill a with LCG values, track the max entry ---- */
+        for (i = 0; i < n; i++) {                 /* strip index (col-major: column i) */
+            for (j = 0; j < n; j++) {             /* offset within the strip           */
+                init = (init * 3125) % 65536;     /* uVar20 = uVar20 * 0xc35 & 0xffff  */
+                a[j + i*lda] = (float)((double)(init - 32768) * scale);
+                if (a[j + i*lda] > *norma)
+                    *norma = a[j + i*lda];
+            }
+        }
+
+        /* ---- Phase 2: b = sum of all strips of a (row sums, col-major) ---- */
+        memset(b, 0, n * sizeof(float));
+
+        for (i = 0; i < n; i++) {
+            /* compiler-generated dispatch: vectorized path only when safe */
+            if (n >= 8 && !overlap(b, b + n, &a[i*lda], &a[i*lda] + n)) {
+                /* 8-wide vectorized accumulation: */
+                for (j = 0; j < n; j += 8)
+                    for (k = 0; k < 8; k++)
+                        b[j + k] += a[j + k + i*lda];
+            } else {
+                /* scalar path (with odd-element peel + tail): */
+                for (j = 0; j < n; j++)
+                    b[j] += a[j + i*lda];
+            }
+        }
+    }
+    /* norm and b are outputs; solution of a·x = b is x = (1,1,...,1) */
+}
+```
+
+Key constant correspondences:
+
+| Decompiled | Meaning |
+|---|---|
+| `0x52d` | 1325, the LCG seed |
+| `0xc35` | 3125, LCG multiplier |
+| `& 0xffff` | mod 65536 |
+| `uVar20 - 0x8000` | `init − 32768` (center to signed range) |
+| `DAT_00106028` | `1/16384` (scale to `[−2, 2)`) |
+| `memset(param_4, 0, n*4)` | zero the RHS vector `b` |
+| overlap `if` + `LAB_00102ada` | vectorizer guard; scalar fallback vs. 8-wide SIMD, same semantics |",184.8,ok
+t2_glm_agent_A0_linpack-pc_ddot_6967,L1,A0,ss__SingleSource__Benchmarks__Linpack__linpack-pc,FUN_00105b20,ddot,f5ee5780f16b6bd7,glm_agent,0.1969,0.0,0.333,1.0,0.409,1,S1,7663,7897,"## 1. What the function does
+
+This is **LINPACK's `sdot`/`ddot` — a single-precision dot product with stride increments** (consistent with the sample set name `linpack-pc_ddot`). It computes:
+
+**sum = Σᵢ₌₀ⁿ⁻¹ sx[i·incx] · sy[i·incy]**
+
+- `param_1` = n (element count), `param_2`/`param_4` = the two vectors (byte addresses), `param_3`/`param_5` = the strides `incx`/`incy`.
+- Returns `0.0` when `n < 1`.
+- **Unit-stride fast path** (`incx == 1 && incy == 1`): a 4-way unrolled accumulation loop plus a scalar remainder loop for `n mod 4` elements.
+- **General strided path**: a 2-way unrolled loop plus a single-element tail for odd `n`. Negative strides are handled branchlessly — if a stride is negative, the walk starts at the *last* element of the reversed view, i.e. offset `-(n-1)·inc`, and moves toward 0. The Ghidra expression `param_3 >> 0x1f & -(param_1 - 1) * param_3` is just the compiler's branchless form of `if (incx < 0) ix = -(n-1)*incx; else ix = 0;`.
+
+The decompiler's odd byte offsets (`+0xc`, `+4`) and `* 4` terms are just `float` indexing (4-byte elements).
+
+## 2. Structured pseudocode
+
+```c
+float sdot(int n, float sx[], int incx, float sy[], int incy)
+{
+    if (n < 1)
+        return 0.0f;
+
+    float sum = 0.0f;
+
+    /* ---- fast path: both increments == 1 ---- */
+    if (incx == 1 && incy == 1) {
+        int i = 0;
+        for (; i < (n & ~3); i += 4) {          // 4-way unrolled main loop
+            sum += sx[i+0] * sy[i+0]
+                 + sx[i+1] * sy[i+1]
+                 + sx[i+2] * sy[i+2]
+                 + sx[i+3] * sy[i+3];
+        }
+        for (; i < (n & 3) + (n & ~3); i++)     // scalar remainder: n mod 4 elems
+            sum += sx[i] * sy[i];
+        return sum;
+    }
+
+    /* ---- general path: arbitrary (possibly negative) strides ---- */
+    int ix = 0, iy = 0;
+    if (incx < 0) ix = -(n - 1) * incx;         // decompiled as (incx>>31) & -(n-1)*incx
+    if (incy < 0) iy = -(n - 1) * incy;         //  -> start at element n-1, walk toward 0
+
+    int pairs = n & ~1;                          // even part of n
+    while (pairs != 0) {                         // 2-way unrolled loop
+        sum += sx[ix]       * sy[iy]
+             + sx[ix + incx] * sy[iy + incy];
+        ix += 2 * incx;
+        iy += 2 * incy;
+        pairs -= 2;
+    }
+
+    if (n & 1)                                   // odd n: one leftover element
+        sum += sx[ix] * sy[iy];                  // (also covers n == 1 entirely)
+
+    return sum;
+}
+```
+
+**Notes on the reconstruction:**
+- The `n == 1` strided case is folded into the tail: `pairs = 0` skips the loop and the odd-tail multiplies element 0.
+- For negative strides the summation *order* is reversed (element `n-1` first), but the set of accumulated terms is identical to a forward walk — the branchless start offset preserves the original Fortran/`linpack.c` semantics.
+- The only obfuscation-related artifacts visible here are the branchless sign-mask idioms for the negative-stride start offsets and the fused/unrolled accumulation expressions; control flow and semantics otherwise match the unprotected LINPACK `ddot` reference. (Consistent with the three paired examples, where the protected output is identical to baseline for this protection arm.)",162.7,ok
+t2_glm_agent_A0_linpack-pc_idamax_7130,L1,A0,ss__SingleSource__Benchmarks__Linpack__linpack-pc,FUN_00105660,idamax,0f39f0915d4a2cd9,glm_agent,0.0495,0.0,0.0,0.5,0.048,1,S1,7633,8911,"I'll first check whether the original source for this benchmark (linpack-pc) is available in the workspace, to verify the indexing details.",186.8,ok
+t2_glm_agent_A0_Pathfinder_parseFile_7317,L1,A0,ms__MultiSource__Benchmarks__DOE-ProxyApps-C__Pathfinder,FUN_00102920,parseFile,34930c49f17a583a,glm_agent,0.4366,0.4,0.314,0.75,0.399,1,S1,8942,2537,"## Part 1: What the function does
+
+This is `parseFile` from `parsing.c` — a **control-flow-graph (CFG) file loader**. Given a filename, it parses a text-format CFG description and builds an in-memory graph structure. The file format it expects is:
+
+- Header lines `Functions: N` and `Basic blocks: N` (counts, validated and registered).
+- Node-definition sections: blocks of parsed node records terminated by `----------` separators.
+- A section of **outer-node groupings** (a node ID followed by its member/interior nodes), also `----------`-separated.
+- An optional `SYSTEM CALLS` section mapping node IDs to syscall targets (space-separated).
+
+The function stores the strdup'd filename in the graph, assigns each node a sequential index, groups interior nodes under outer nodes, and finally runs a **edge-resolution pass** (`resolveNodeEdges`) that walks the node list and rewrites edge references to actual node pointers, erroring on references to undefined nodes. On any malformed input (missing header, undefined outer node) it prints an error to stderr and returns NULL. Notably, in this protection arm the protected and baseline decompilations are **identical** — the obfuscator left this function's logic untouched (both examples above show zero diff).
+
+## Part 2: Structured pseudocode
+
+```c
+CFG* parseFile(char *filename) {
+    if (filename == NULL)
+        return NULL;
+
+    FILE *f = fopen(filename, ""r"");
+    if (f == NULL) {
+        printf(""Could not open data file: %s (parsing.c:parseFile)\n"", filename);
+        return NULL;
+    }
+
+    CFG *cfg = createGraph();              // FUN_001015e0
+    if (cfg == NULL) return NULL;
+    cfg->filename = strdup(filename);      // offset 0
+
+    LineBuf *lb = lineBufAlloc(0x400);     // FUN_00105730
+    readLine(lb, f);                       // FUN_00105830
+
+    // ---- Header: ""Functions: N"" ----
+    if (feof(f) || !strncmp(line, ""Functions:"", 10) == 0) {
+        fprintf(stderr, ""Malformed file, Function count not specified in first line\n"");
+        return NULL;
+    }
+    uint nFuncs = strtol(line + 10);
+    printf(""\t%d functions specified\n"", nFuncs);
+    registerCount(""Functions"", nFuncs);    // FUN_00106170
+
+    // ---- Header: ""Basic blocks: N"" ----
+    readLine(lb, f);
+    if (feof(f) || !startsWith(line, ""Basic blocks:"")) goto malformed;
+    uint nBlocks = strtol(line + 13);
+    printf(""\t%d basic blocks specified\n"", nBlocks);
+    registerCount(""Basic Blocks"", nBlocks);
+
+    NodeBuf *nb = allocNodeBuf(8);         // FUN_00105490
+
+    // ---- Pass 1: top-level node definitions ----
+    while (!feof(f)) {
+        readLine(lb, f);
+        if (feof(f)) break;
+        if (startsWith(line, ""----------"")) break;   // end of definitions
+        if (parseNodeRecord(nb, line) > 0) {          // FUN_00105590
+            Node *n = createNode(nb);                 // FUN_00102730
+            if (n != NULL) {
+                graphAppend(cfg, n);                  // FUN_00101680
+                n->index = cfg->nodeCount;            // offset 4; counter at cfg+8
+                cfg->nodeCount++;
+            }
+        }
+        clearNodeBuf(nb);
+    }
+
+    // ---- Pass 2: outer-node groupings (until ""SYSTEM CALLS"") ----
+    bool haveSyscalls = false;
+    if (!feof(f)) {
+        readLine(lb, f);
+        if (!feof(f)) {
+            while (true) {
+                if (startsWith(line, ""SYSTEM CALLS"")) { haveSyscalls = true; break; }
+
+                uint outerId = 0xffffffff;
+                if (isdigit(line[0]))
+                    outerId = (uint)strtol(line);
+                Node *outer = findOuterNode(cfg, outerId, 0);  // FUN_001016d0
+                if (outer == NULL) {
+                    fprintf(stderr, ""Error in parseFile: Node %d undefined as an outer node\n"", outerId);
+                    break;                                   // haveSyscalls = false
+                }
+                // consume member nodes until separator
+                while (!feof(f)) {
+                    readLine(lb, f);
+                    if (startsWith(line, ""----------"")) break;
+                    if (parseNodeRecord(nb, line) < 1) { clearNodeBuf(nb); continue; }
+                    if (nb->id != outer->id) {               // new sub-node
+                        Node *n = createNode(nb);
+                        if (n != NULL) {
+                            graphAppend(cfg, n);
+                            n->index = cfg->nodeCount++;
+                        }
+                    } else {
+                        addInteriorNode(outer, nb);          // FUN_00102690
+                    }
+                    clearNodeBuf(nb);
+                }
+                if (feof(f)) break;
+                readLine(lb, f);
+                if (feof(f)) break;
+            }
+        }
+    }
+
+    // ---- Function-count table ----
+    cfg->funcTable = allocFuncArray(nFuncs);   // FUN_00104b80, stored at cfg+0x20
+    if (cfg->funcTable == NULL) {
+        freeNodeBuf(nb);                       // FUN_001054e0
+        return NULL;
+    }
+
+    // ---- Pass 3: SYSTEM CALLS section ----
+    if (haveSyscalls) {
+        while (!feof(f)) {
+            readLine(lb, f);
+            if (feof(f)) break;
+            if (!isdigit(line[0])) continue;
+            long id = strtol(line);
+            if (id < 0) continue;
+            uint pos = 1;                      // scan for first ' ' token
+            while (line[pos-1] != '\0') {
+                if (line[pos-1] == ' ') {
+                    findOrCreateNode(cfg, id, 1);          // FUN_001016d0(flag=1)
+                    // (syscall target string at line+pos is consumed here)
+                    break;
+                }
+                pos++;
+            }
+        }
+    }
+
+    freeLineBuf(lb);                           // FUN_00105780
+
+    // ---- Final pass: resolveNodeEdges ----
+    for (ListNode *e = cfg->nodeList; e != NULL; e = e->next) {   // cfg+0x10
+        resolveNodeEdges(cfg, e->node, 1);     // FUN_001027f0
+        for (Edge *ed = e->node->edges; ed != NULL; ed = ed->next) {  // node+0x20
+            uint *tgt = ed->target;
+            for (Ref *r = tgt->refs; r != NULL; r = r->next) {
+                Node *n = findOuterNode(cfg, r->id, 0);
+                if (n == NULL) {
+                    n = findInteriorNode(tgt->owner, r->id);   // FUN_00101720
+                    if (n == NULL) {
+                        fprintf(stderr,
+                          ""resolveNodeEdges: Interior node %d has edge reference ""
+                          ""to undefined node: %d\n"", tgt->id, r->id);
+                        // (truncated in listing; presumably cleanup + return NULL)
+                    }
+                }
+                // ... link resolved successor (remainder truncated)
+            }
+        }
+    }
+    return cfg;   // (truncated epilogue: free nb, return cfg)
+}
+```
+
+**Field/inference notes:**
+- `FUN_001015e0` = graph/CFG constructor; `+0` = filename, `+0x10` = node linked list head, `+0x18` = node counter, `+0x20` = function table.
+- `FUN_001016d0` is a dual-purpose lookup: `flag 0` = strict find (outer node), `flag 1` = find-or-create (used in the SYSTEM CALLS pass).
+- `FUN_001027f0` is `resolveNodeEdges`, identified by its own error string in the tail of the function.
+- The listing is truncated mid-resolution loop; the remaining logic (per the error message) continues binding interior-node edge references and then returns the populated CFG.",64.0,ok
+t2_glm_agent_A0_Pathfinder_parseConfigFile_7381,L1,A0,ms__MultiSource__Benchmarks__DOE-ProxyApps-C__Pathfinder,FUN_00103000,parseConfigFile,719568311c13e51f,glm_agent,0.044,0.0,0.0,0.0,0.0,0,S0,8915,1290,"I'll first check whether the baseline (unprotected) counterpart of this binary is available locally, so I can verify the truncated tail of the function.",44.1,ok
+t2_glm_agent_A0_Pathfinder_findAndLogAllPossibleLegs_7425,L1,A0,ms__MultiSource__Benchmarks__DOE-ProxyApps-C__Pathfinder,FUN_00103cd0,findAndLogAllPossibleLegs,8e0e633add93272c,glm_agent,0.0774,0.0,0.0,0.333,0.009,0,S0,8333,1778,Looking at the working directories for the original Pathfinder source to confirm my read of this function.,46.6,ok
+t2_glm_agent_A0_Pathfinder_testStats_7472,L1,A0,ms__MultiSource__Benchmarks__DOE-ProxyApps-C__Pathfinder,FUN_001047e0,testStats,bf932d8b225e2f6c,glm_agent,0.0829,1.0,0.333,1.0,0.375,2,S2,8253,5321,"## Part 1 — What the function does
+
+This is a small **test-statistics harness** for a sequence of ""length"" values. It:
+
+1. Allocates a 40-byte statistics record and, inside it, a histogram object (via `FUN_00105490(0x10)`, capacity 16).
+2. Initializes the record: `min = INT_MAX`, `max = 0`, `avg = 0.0`, `std_dev = 0.0`, counts pointer = `NULL`.
+3. **Records a fixed workload of lengths** into the histogram, updating min/max inline before each recording:
+   - the range **2–9** (loop), then
+   - the hardcoded list **1, 4, 5, 6, 5, 5, 4, 5, 6, 5, 5** (the deeply nested `if` chains are just this list fully unrolled by the compiler — 11 values).
+4. Calls `FUN_00104690` to **finalize** the statistics (computing the average and standard deviation into the record).
+5. **Prints** `avg`, `std dev`, and a **histogram** listing how many times each length from `min` to `max - 1` occurred.
+
+The `while (__ptr == NULL)` ""retry"" loop in the decompilation is an artifact of the null-check being folded into the loop counter; semantically it just means ""skip recording if allocation failed.""
+
+Struct layout (40 bytes):
+
+| Offset | Field |
+|---|---|
+| `0x00` | histogram object pointer (`FUN_00105490`) |
+| `0x08` | `min` (int, init `0x7fffffff`) |
+| `0x0c` | `max` (int, init `0` — written together with min as one 64-bit store) |
+| `0x10` | `avg` (double, init 0.0) |
+| `0x18` | `std_dev` (double, init 0.0) |
+| `0x20` | pointer to raw counts array (used at print time) |
+
+Helpers: `FUN_00105490(n)` = histogram create, `FUN_00105510(h, len)` = record one length, `FUN_00104690(s)` = compute avg / std dev.
+
+## Part 2 — Reconstructed pseudocode
+
+```c
+void print_length_stats(void)
+{
+    Stats *s = malloc(sizeof(Stats));            // 40 bytes
+
+    if (s != NULL) {
+        s->hist    = hist_create(16);            // FUN_00105490(0x10)
+        s->avg     = 0.0;
+        s->std_dev = 0.0;
+        s->min     = INT_MAX;
+        s->max     = 0;
+        s->counts  = NULL;
+
+        if (s->hist == NULL) {
+            free(s);
+            s = NULL;
+        }
+    }
+
+    // --- workload, part 1: lengths 2..9 ---
+    for (int len = 2; len < 10; len++) {
+        if (s == NULL) continue;
+        record(s, len);
+    }
+
+    // --- workload, part 2: hardcoded length list ---
+    if (s != NULL && s->hist != NULL) {
+        static const int extra[] = { 1, 4, 5, 6, 5, 5, 4, 5, 6, 5, 5 };
+        for (int i = 0; i < 11; i++)
+            record(s, extra[i]);
+    }
+
+    // --- finalize and report ---
+    finalize(s);                                  // FUN_00104690: fills s->avg, s->std_dev
+
+    printf(""avg: %f\nstd dev: %f\n"", s->avg, s->std_dev);
+    puts(""Histogram:"");
+    for (int len = s->min; len < s->max; len++)   // note: max excluded
+        printf(""\tlength %d appeared %d times\n"", len, s->counts[len]);
+    return;
+}
+
+// inlined helper — update running min/max, then record into histogram
+static void record(Stats *s, int len)
+{
+    if (s->hist == NULL) return;
+    if (len < s->min) s->min = len;
+    if (len > s->max) s->max = len;
+    hist_record(s->hist, len);                    // FUN_00105510
+}
+```
+
+Notes on the reconstruction:
+
+- The long chain of nested `if (5 < s->min) ... record(...)` blocks in the decompiled output is exactly the `extra[]` loop above after full loop unrolling — each block is `update-min/max; hist_record(len)` for the next value in the list.
+- The `(int)` casts on the `printf(""avg: %f\n"", (int)__ptr[2], ...)` arguments are Ghidra variadic-signature artifacts; the fields are doubles.
+- The histogram print loop covers `min .. max-1` (upper bound exclusive, as written); whether that off-by-one is intended depends on the original source, but it matches the binary.
+- If either allocation fails, the function still falls through to the reporting block (which would dereference `NULL`) — a latent bug preserved from the original.",105.1,ok
+t2_glm_agent_A0_Pathfinder_SearchDiagram_build_7577,L1,A0,ms__MultiSource__Benchmarks__DOE-ProxyApps-C__Pathfinder,FUN_001040d0,SearchDiagram_build,63b197b9438a4911,glm_agent,0.3816,0.0,0.167,0.667,0.242,1,S1,8265,6308,"## 1. What the function does
+
+This is a **graph-to-adjacency-structure converter** (a ""search diagram"" builder, as in pathfinding benchmarks). It takes:
+
+- `param_1` — a linked list of list-nodes, each holding `{Node* node; ListNode* next}`
+- `param_2` — the total number of nodes expected across all lists
+
+Each `Node` (as inferred from offsets) has:
+- `+0x20` — head of a linked list of its **children** (same `{node, next}` layout)
+- `+0x28` — head of a linked list of **edges** (`{target_node @+8, next @+0x10}`)
+- `+0x30`, `+0x34` — two int size fields whose sum is the node's slot-array capacity
+
+The function builds a flat table of `count` 16-byte records `{Node* node; Record* slots}` plus a NULL terminator pair, in two phases:
+
+1. **Registration/allocation phase:** top-level nodes are registered at the *front* of the table (indices 0, 1, 2, …); each node's children are registered from the *back* (indices `count-1`, `count-2`, …). Every record gets a per-node slot array (16 bytes per slot, NULL-terminated) sized by `size@0x34 + size@0x30`, allocated only if the sum is nonzero and doesn't signed-overflow (otherwise NULL). A consistency check verifies the forward and backward fills met exactly; on mismatch it prints `""Bummer. outerIdx: %d, innerIdx: %d, node count: %d""`.
+
+2. **Edge-filling phase:** for every node (top-level forward, children backward — same order as phase 1), its edge list is converted into its slot array as `(neighbor Node*, pointer to neighbor's record in the table)` pairs. The neighbor's record is found by a **linear scan** of the table comparing node pointers.
+
+The result is a pointer-based adjacency structure where each node's neighbors can be traversed without index arithmetic — suited for fast graph search. Returns `NULL` if the input list is NULL, the count is 0, or any allocation fails.
+
+## 2. Structured pseudocode
+
+```text
+record Pair      { Node* node; Slots* slots; }        // 16 bytes
+record Slots     { Pair entry[];  NULL-terminated }   // each: {Node* neighbor; Slots* neighborRec}
+record ListNode  { Node* node; ListNode* next; }
+record Node {
+    ...            // +0x00 .. +0x18
+    ListNode* children;   // +0x20
+    Edge*     edges;      // +0x28
+    int       sizeA;      // +0x30
+    int       sizeB;      // +0x34
+}
+record Edge { Node* target; /*+8*/ Edge* next; /*+0x10*/ }
+
+function allocSlots(cap: int) -> Slots*:
+    if cap == 0 or signed_overflow(sizeB + sizeA): return NULL
+    s = malloc(cap * 16 + 16)
+    s[cap] = {NULL, NULL}                 // terminator pair
+    return s
+
+function findRecord(table, target) -> Slots*:
+    p = table
+    while p.node != target: p = p + 1     // linear scan of 16-byte pairs
+    return p.slots
+
+function fillEdges(dst: Slots*, edgeHead: Edge*, table):
+    j = 0
+    for e in edgeHead..:
+        dst[j].neighbor    = e.target
+        dst[j].neighborRec = findRecord(table, e.target)
+        j++
+
+function buildSearchDiagram(list: ListNode*, count: uint) -> Pair*:
+    if list == NULL or count == 0: return NULL
+
+    table = malloc(count * 16 + 16)
+    if table == NULL: return NULL
+    table[count] = {NULL, NULL}           // NULL terminator pair
+
+    // ---- Phase 1: register nodes, allocate slot arrays ----
+    fwd = 0
+    bwd = count - 1
+    for ln in list..:
+        n = ln.node
+        table[fwd].node  = n              // top-level node  -> front
+        table[fwd].slots = allocSlots(n.sizeB + n.sizeA)
+        fwd++
+        for c in n.children..:            // child nodes     -> back (descending)
+            m = c.node
+            table[bwd].node  = m
+            if m.sizeA < 1: table[bwd].slots = NULL
+            else:           table[bwd].slots = allocSlots(m.sizeB + m.sizeA)
+            bwd--
+    if bwd + 1 != fwd:
+        printf(""Bummer. outerIdx: %d, innerIdx: %d, node count: %d"",
+               fwd, bwd, count)
+
+    // ---- Phase 2: convert edge lists into slot arrays ----
+    fwd = 0
+    bwd = count - 1
+    for ln in list..:
+        n = ln.node
+        if n.edges != NULL:
+            fillEdges(table[fwd].slots, n.edges, table)
+        fwd++
+        for c in n.children..:
+            m = c.node
+            if m.edges != NULL:
+                fillEdges(table[bwd].slots, m.edges, table)
+            bwd--
+    return table
+```
+
+**Key observations:**
+- The table layout `{node, slots}` pairs with a `{NULL, NULL}` sentinel replaces per-node counts with pointer-walkable termination.
+- The front/back register-then-fill scheme packs two ""levels"" (a frontier and its children) into one array; the `Bummer` diagnostic guards against `param_2` disagreeing with the actual node count.
+- The decompiler's `SCARRY4(...) != (sum < 0)` check is a signed-overflow guard on `sizeA + sizeB`; combined with `sum == 0 → NULL`, it avoids `malloc(0)` and overflow-sized allocations.
+- Precondition: a node's edge-list length must not exceed its declared size fields, otherwise phase 2 writes past its slot array (the decompiled code does no bounds check on the edge fill).",133.4,ok
+t2_glm_agent_A0_Puzzle_Puzzle_7710,L1,A0,ss__SingleSource__Benchmarks__Stanford__Puzzle,FUN_001019f0,Puzzle,cfee534e9a14e78a,glm_agent,0.0763,0.2,0.167,1.0,0.111,1,S1,9836,25094,"## Part 1 — What the function does
+
+`FUN_001019f0` is a **global state-initialization (""new game / board setup"") routine** for the puzzle program. It builds the puzzle's initial state entirely in globals, in this order:
+
+1. **Default-fills a record table** (`0x10b8a0`, 0x800 bytes) with a 16-byte constant record taken from `0x103010`, i.e. 128 identical 16-byte entries (each loop iteration stores the 16-byte pattern 8× to cover 0x80 bytes).
+2. **Clears bookkeeping counters** inside that table: 25 groups of 5 ints at int-index `73 + 8*i + 64*j` (`i,j ∈ 0..4`) — a 5×5 cluster of 5-element counters.
+3. **Wipes the main workspace** with `memset(0x1050b0, 0, 0x67f0)` — everything between the header block and the record table.
+4. **Writes a header** at `0x105060`: three 16-byte constants (from `0x103020/0x103040/0x103060`) and a field set to `0x49` (`'I'`, or the value 73 — notably the int index where the flag region starts).
+5. **Places initial pieces/markers on a board**: cells of 0x20 bytes, 8 cells per 0x100-byte row. Two cells (0, 1) and cells at rows 32/33 get the default 16-byte record; ~35 other cells at fixed (row, col) positions — rows 8–9, 16–17, 24, 40–43, 48, 56, 64–66, 72, 80–81, 88–89, 96–97 — get value `1` (some as `1,1` pairs, i.e. two adjacent ints). These look like pre-filled/occupied squares of a hardcoded starting position.
+6. **Initializes a config/status struct** at `0x10c0a0`: count `= 12`, a 12-byte tail copied from the constant at `0x103070`, two 16-byte strings (from `0x103030/0x103050`), flags `3` and `0`.
+7. **Registers occupancy flags**: decomposes the 16-byte default record at `0x1050a0` into 4 dwords and, in 3 rounds over a 12-entry flag table (starting at int index 73 = byte `0x124` = `0xb9c4`), sets a flag to 1 when the corresponding dword is nonzero. (Ghidra renders this as a tangled short-circuit chain; the source was almost certainly a simple byte-wise loop — note the `DAT_001050a0 = (int)_DAT_00103010; _DAT_001050a0 = uVar1;` artifact.)
+8. **Starts scanning the flag table** from index 73 (`uVar5 = 0x49`), looking for the first zero entry (branch to `LAB_0010205a`) — presumably locating the first free slot. **The excerpt is truncated here**, so the tail of the function (and the `LAB_00101f1d` / `LAB_0010205a` targets) is unknown.
+
+Note: in all three paired examples this protection arm produces decompilation **identical** to the baseline, so the reconstruction above applies equally to the unprotected original.
+
+## Part 2 — Structured pseudocode
+
+```c
+// ---- deduced layout ----
+// TBL   : 0x10b8a0, 0x800 bytes = rec[128] of 16 bytes = int t[512]
+//         flag region starts at t[73] (byte 0x124)
+// HDR   : 0x105060  (three 16-byte strings + 8-byte field)
+// BRD   : 0x1050a0, cell[r][c] at 0x1050a0 + r*0x100 + c*0x20, cell = 32 bytes
+// CFG   : 0x10c0a0  (int count; bytes; two 16-byte strings; int; int)
+// P0..K5: 16-byte constants at 0x103010, 0x103020, ... 0x103070
+
+void setup(void)
+{
+    // 1. fill record table with the default 16-byte record
+    for (off = 0; off < 0x800; off += 0x80)
+        memcpy(TBL + off, &P0, 0x80);              // 8 records per iter
+
+    // 2. zero 5x5 groups of 5 counters inside the table
+    for (j = 0; j < 5; j++)
+        for (i = 0; i < 5; i++)
+            for (k = 0; k < 5; k++)
+                t[73 + 8*i + 64*j + k] = 0;
+
+    // 3. wipe board/workspace
+    memset(0x1050b0, 0, 0x67f0);
+
+    // 4. header
+    copy16(HDR + 0x00, S1);
+    copy16(HDR + 0x10, S2);
+    copy16(HDR + 0x20, S3);
+    HDR.f30 = 0x49;                                // 'I' / 73 = flag-table start index
+    copy16(cell(0,0), P0);
+    copy16(cell(0,1), P0);
+
+    // 5. hardcode the starting position: mark cells as filled
+    //    (pairs mean two adjacent ints set to 1)
+    cell( 8,0..3) = {1,1};  cell( 9,0) = {1,1};
+    cell(16,0..3) = 1;      cell(17,0..3) = 1;
+    cell(24,0..3) = {1,1};
+    cell(32,0) = cell(33,0) = P0;                  // 16-byte record cells
+    cell(40..43, 0..1) = 1;
+    cell(48,0) = {1,1,1};
+    cell(56,0..2) = 1;
+    cell(64,0) = cell(65,0) = cell(66,0) = 1;
+    cell(72,0..1) = {1,1};
+    cell(80,0) = cell(81,0) = {1,1};
+    cell(88,0..1) = cell(89,0..1) = 1;
+    cell(96,0..1) = cell(97,0..1) = 1;             // ints 0 and 1
+
+    // 6. config/status struct
+    CFG.count  = 12;
+    memcpy(&CFG.f04, K5 + 4, 12);
+    CFG.f10 = CFG.f18 = 0;
+    copy16(CFG.f20, S2);
+    copy16(CFG.f30, S4);
+    CFG.f40 = 3;
+    CFG.f44 = 0;
+
+    // 7. register flags: mark slots whose dword of the default record is nonzero
+    words = P0 as uint32[4];
+    flags = &t[73];                                // 12 flags = 3 rounds x 4 words
+    for (round = 0; round < 3; round++)
+        for (w = 0; w < 4; w++)
+            if (words[w] != 0)
+                flags[round*4 + w] = 1;
+            // decompiler artifact: if word set but flag already set -> LAB_00101f1d
+
+    CFG.count = 12;                                // (re)store active-slot count
+
+    // 8. find first free slot in the flag table (rest truncated)
+    for (u = 73; ; u++)
+        if (t[u] == 0)
+            goto LAB_0010205a;                     // first zero entry found
+        /* ... excerpt ends here ... */
+}
+```
+
+**Caveats:** the actual values of the constants (`0x103010`–`0x103078`) aren't recoverable from the decompilation alone, the `_DAT/_UNK` reads are constant-pool placeholders, and the function is cut off mid-loop — so the exact game semantics (what the 12 flags and the `1`-marked cells represent in the original source) can't be pinned down further without the binary or more of the listing.",512.0,ok
+t2_glm_agent_A0_Puzzle_Trial_8222,L1,A0,ss__SingleSource__Benchmarks__Stanford__Puzzle,FUN_001015b0,Trial,3a8f7382766dfc7e,glm_agent,0.1063,1.0,0.0,1.0,0.273,2,S2,8794,6066,"## Part 1 — What the function does
+
+`FUN_001015b0` is the recursive search core of a **packing-puzzle solver** (exact-cover/backtracking style, like the 8-queens routine in Example 3, but for placing pieces instead of queens):
+
+- The **board** is a 256-cell array (`DAT_0010b8a0`, 0 = free, 1 = occupied), indexed linearly. `param_1` is the position from which to keep filling.
+- There are **13 piece slots**. Each slot has a 256-entry shape bitmap at `DAT_001050a0 + slot*0x200` (nonzero = piece occupies that cell, anchored at cell 0), a cell count at `DAT_00105060[slot]`, and the slot order maps through `DAT_0010c0b0[]` to a **remaining-copy count** per piece id at `DAT_0010c0a0[]`.
+- On every invocation a **global counter** (`DAT_0010c0e4`) is incremented — a search-node/statistics counter.
+- For each slot (0…12): skip if the piece has no copies left; **conflict-test** whether any of the piece's set cells would land on an occupied board cell (at `param_1 + i`); if clear, **place** it (set those board cells to 1, decrement its count), find the **first empty board cell** at or after `param_1`, and **recurse** from there (the decompiler dropped the argument; `iVar12` — the next free position — is what's passed).
+- If the board is **full** (no empty cell found, encoded as 0 by the scan) or the recursive call returns 1, return 1 — **leaving the solved board in place**. Otherwise **unplace** the piece (clear its cells, restore its count) and try the next slot.
+- Returns 0 when no piece fits at this position → the caller backtracks.
+
+The duplicated 8-wide loops (`uVar13 += 0x20` with four cells each) and the `uVar2 < 7` branches are just LLVM's vectorized/scalar-tail versions of the same per-cell loop; the `-1 < (int)uVar2` guard skips slots with an empty shape.
+
+## Part 2 — Structured pseudocode
+
+```text
+Globals:
+  board[256]          // DAT_0010b8a0: 0 = empty, 1 = occupied
+  remaining[pid]      // DAT_0010c0a0: copies left per piece id
+  order[13]           // DAT_0010c0b0: piece id tried at each slot
+  ncells[13]          // DAT_00105060: (number of shape cells) - 1 per slot
+  shapes[13][256]     // DAT_001050a0: shape bitmap per slot (anchored at cell 0)
+  nodes               // DAT_0010c0e4: global search-node counter
+
+function solve(pos):                      // pos: first position to fill
+    nodes += 1
+
+    for slot in 0 .. 12:                  // try every piece slot
+        pid   = order[slot]
+        shape = shapes[slot]
+        if remaining[pid] == 0:
+            continue                      // no copies of this piece left
+
+        n = ncells[slot]                  // piece cells are i in 0..n with shape[i] != 0
+        if n < 0:
+            continue                      // empty/unused slot
+
+        // ---- conflict test: overlap with occupied cells ----
+        if exists i in 0..n where shape[i] != 0 and board[pos + i] != 0:
+            continue                      // doesn't fit here -> next piece
+
+        // ---- place piece ----
+        for i in 0..n where shape[i] != 0:
+            board[pos + i] = 1
+        remaining[pid] -= 1
+
+        // ---- find first empty cell at or after pos (0 if none) ----
+        next = NONE
+        for p in pos .. 255:
+            if board[p] == 0: next = p; break
+
+        // ---- recurse ----
+        result = solve(next)              // argument = next free position
+        if next == NONE:
+            return 1                      // board completely filled -> solution
+        if result == 1:
+            return 1                      // solution found deeper; keep board as-is
+
+        // ---- backtrack: remove piece ----
+        for i in 0..n where shape[i] != 0:
+            board[pos + i] = 0
+        remaining[pid] += 1
+
+    return 0                              // nothing fits at pos -> dead end
+```
+
+**Return semantics:** `1` = a complete packing was found (board holds the solution), `0` = no placement possible from this state. The driver program calls it with `pos = 0` on a cleared board and uses `nodes` for statistics; pieces whose bitmaps have leading zero cells effectively anchor at a later cell than `pos`, which is how pieces ""snap"" to the first gap in the board.",184.5,ok
+t2_glm_agent_A0_Puzzle_Place_8407,L1,A0,ss__SingleSource__Benchmarks__Stanford__Puzzle,FUN_00101200,Place,8dc7656cf7e6fadc,glm_agent,0.0987,1.0,0.333,1.0,0.25,2,S2,7772,12889,"## Part 1 — What the function does
+
+This is a ""place / find next free slot"" helper of a backtracking puzzle solver (same family as the 8‑queens `try` routine in Example 3). Given an entity index `param_1` (e.g., a row/piece/number) and an anchor position `param_2`, it does three things:
+
+1. **Mark blocked cells.** It reads `n = A[param_1]` (a per-entity ""last active index"", `-1` = nothing to mark) from `DAT_00105060`. For every `i` in `0..n` where the per-entity pattern `B[param_1][i]` (`DAT_001050a0`, row stride 512 ints) is non-zero, it sets the global occupancy flag `C[param_2 + i] = 1` (`DAT_0010b8a0`) — i.e., it stamps the entity's occupied/blocked cells into the shared board, anchored at `param_2`.
+2. **Bookkeeping.** Unconditionally decrements a counter `D[E[param_1]]` (`DAT_0010c0a0` indexed via the entity→group table `DAT_0010c0b0`), e.g., ""one fewer to place for this group"".
+3. **Find next free slot.** Scans `C[param_2 .. 511]` and returns the index of the first entry still `0` — the next available position at or after `param_2`. Returns `0` if every slot from `param_2` to 511 is occupied (0 acts as the ""none found"" sentinel).
+
+The scary-looking 8-wide loop is not extra logic: it is LLVM auto-vectorization of the mark loop (8 ints per iteration via `DAT_001050b0`/`DAT_0010b8b0`, which are just base+16 bytes, plus a scalar remainder), exactly the pattern visible in Example 1. Likewise `(bool)(~(*piVar8 == 0) & 1)` is simply `*piVar8 != 0`.
+
+## Part 2 — Structured pseudocode
+
+```c
+/* Globals (Ghidra names) */
+// A      = DAT_00105060 : int per entity; last active index (-1 = none)
+// B      = DAT_001050a0 : int B[?][512]; per-entity occupancy/blocked pattern (row stride 0x800 bytes)
+// C      = DAT_0010b8a0 : int C[512];    global board occupancy flags
+// D      = DAT_0010c0a0 : int per group; remaining/undo counters
+// E      = DAT_0010c0b0 : int per entity; entity -> group/counter mapping
+
+int place(int id, int start)                       /* FUN_00101200 */
+{
+    int last = A[id];                              /* (&DAT_00105060)[id] */
+
+    /* 1. stamp this entity's blocked cells into the board (vectorized 8x by compiler) */
+    if (last >= 0) {
+        for (int i = 0; i <= last; i++) {
+            if (B[id][i] != 0)                     /* (&DAT_001050a0)[id*512 + i] */
+                C[start + i] = 1;                  /* (&DAT_0010b8a0)[start + i]  */
+        }
+    }
+
+    /* 2. bookkeeping: decrement the counter of the group this entity belongs to
+          (executed even when the mark loop is skipped) */
+    D[ E[id] ]--;
+
+    /* 3. first free slot at or after 'start' */
+    if (start < 512) {
+        for (int j = start; j < 512; j++) {
+            if (C[j] == 0)
+                return j;                          /* next available position */
+        }
+    }
+    return 0;                                      /* board full from 'start' on */
+}
+```
+
+**Notes / reconstruction caveats**
+
+- `DAT_001050b0`, `DAT_0010b8b0`, … are offsets of +4 ints inside the same 8-element chunk; the two 4-int halves in the vector body are one 8-wide `B[id][i..i+7]` → `C[start+i .. start+i+7]` copy-and-test.
+- The vectorized bound is `(last+1) & ~7` elements, with the scalar tail covering the remainder — identical semantics to the plain loop shown above.
+- `C` is only ever set to 1 here, never cleared; the caller must reset the flag table between attempts (or the marks are intentionally cumulative).
+- The `0` return is overloaded: slot 0 being free and ""no free slot"" both yield 0, so the caller presumably starts searches at `start ≥ 1` or tracks completion separately.",277.1,ok
+t2_glm_agent_A0_Puzzle_Remove_8684,L1,A0,ss__SingleSource__Benchmarks__Stanford__Puzzle,FUN_001013f0,Remove,48b5550af812f7e0,glm_agent,0.0799,1.0,0.5,1.0,0.286,3,S3,7643,5103,"## 1. What the function does
+
+This is an **""eliminate / remove"" step of a constraint-style puzzle solver** (the vector/scalar loop split in the listing is just LLVM `-O2` 8-wide loop vectorization with a scalar epilogue — same shape as the tuning samples, not obfuscation; `(~(x == 0) & 1)` is simply `x != 0`).
+
+Given an entry index `param_1` and a base offset `param_2`, it:
+
+1. Looks up `n = G_count[param_1]` (`DAT_00105060`) — the number of flag entries stored for that entry.
+2. If `n >= 0`, scans flag entries `0..n` (inclusive, so `n+1` slots) in that entry's row of a per-entry flag table (`DAT_001050a0`, row stride `0x800` bytes = 512 ints). Wherever a flag is non-zero, it clears the corresponding slot `param_2 + i` in a global candidate/state array (`DAT_0010b8a0`) — i.e., ""for every position still marked in this entry's mask, knock out the candidate at that position.""
+3. Unconditionally increments a hit counter `G_hits[G_map[param_1]]` (`DAT_0010c0a0` indexed via `DAT_0010c0b0`), recording that this entry was processed/removed. This happens even if `n < 0` (the elimination loop is skipped, but the tally still occurs).
+
+A negative count therefore means ""no eliminations to apply,"" but the entry is still counted as handled.
+
+## 2. Reconstructed pseudocode
+
+```c
+// Globals (addresses from the protected binary):
+// G_count : int[]        @ 0x00105060   per-entry flag count (n)
+// G_table : int[][512]   @ 0x001050a0   per-entry flag/mask rows (stride 0x800 bytes)
+// G_cand  : int[]        @ 0x0010b8a0   global candidate/state array
+// G_hits  : int[]        @ 0x0010c0a0   per-bucket hit counters
+// G_map   : int[]        @ 0x0010c0b0   per-entry bucket id
+
+void remove_entry(int idx, int base)        // FUN_001013f0
+{
+    int n = G_count[idx];                   // uVar2 = (&DAT_00105060)[idx]
+
+    if (n >= 0) {
+        for (int i = 0; i <= n; i++) {      // n + 1 iterations
+            if (G_table[idx][i] != 0) {
+                G_cand[base + i] = 0;
+            }
+        }
+    }
+
+    G_hits[G_map[idx]] += 1;                // unconditional tally at LAB_00101543
+}
+```
+
+Notes on the decompiled shape:
+
+- The `do/while` pair in the listing is one `for` loop: the first pass handles `floor((n+1)/8) * 8` elements in 8-int (0x20-byte) vector chunks (the two 4-int reads at `DAT_001050a0`/`DAT_001050b0` are the two halves of one 8-wide chunk), and the tail pass handles the remaining `(n+1) mod 8` elements. Source index `idx * 0x200 + i` and destination index `base + i` line up across both halves.
+- The `uVar8 == uVar7` early exit is the no-remainder case of the vectorized loop.
+- No values are returned and the only outputs are zeroed slots in `G_cand` and the incremented counter in `G_hits`.",134.8,ok
+t2_glm_agent_A0_Puzzle_Fit_8819,L1,A0,ss__SingleSource__Benchmarks__Stanford__Puzzle,FUN_00101190,Fit,db6c27036ffced79,glm_agent,0.1167,1.0,0.333,1.0,0.6,3,S3,6906,2006,"## Part 1 — What the function does
+
+This is a **placement-validity (collision) check** for a puzzle-fitting solver — the same family as Example 3's backtracking search, factored out into a helper.
+
+It answers: *""Can the anchor of a piece be placed at row `param_1`, column `param_2` without colliding with already-occupied cells?""*
+
+It consults two static tables:
+
+- `DAT_00105060[param_1]` — the number of shape cells (offsets) associated with row `param_1` (−1 meaning ""no check needed / skip"").
+- `DAT_001050a0` — a per-row list of shape-cell offsets, with a stride of `0x200` bytes (128 ints) per row. Entry `lVar1` of row `param_1` is `DAT_001050a0[param_1 * 128 + lVar1]`.
+- `DAT_0010b8a0` — the flat board/occupancy array of ints.
+
+For each offset `lVar1` in the row's cell list, it tests whether that cell is part of the current shape (`mask[offset] != 0`) **and** whether the corresponding board cell at flat index `param_2 + lVar1` is occupied. If any such overlap exists, the placement is illegal and it returns `0`. If the loop finishes with no overlap, the placement is legal and it returns `1`.
+
+The obfuscation added nothing structurally visible here (consistent with all three examples, where the protected decompilation is byte-for-byte equivalent to the baseline): the protection arm leaves this helper's logic intact.
+
+## Part 2 — Structured pseudocode
+
+```c
+// Static data:
+//   count_table[.]  : int  @ DAT_00105060  -- per-row number of shape offsets (or -1 to skip)
+//   offset_table[.] : int  @ DAT_001050a0  -- per-row shape offsets, ROW_STRIDE = 128 ints (0x200 bytes)
+//   board[.]        : int  @ DAT_0010b8a0  -- flat occupancy grid
+
+bool can_place(int row /*param_1*/, int col /*param_2*/)
+{
+    int n = count_table[row];
+
+    if (n < 0)                      // sentinel: no cell list for this row
+        return true;                //   -> nothing to collide with
+
+    for (int off = 0; off <= n; off++)   // loop runs while off != n + 1
+    {
+        // cell is part of the shape at this row ...
+        if (offset_table[row * ROW_STRIDE + off] != 0)
+        {
+            // ... and the board cell it would land on is occupied
+            if (board[col + off] != 0)
+                return false;       // collision -> placement invalid
+        }
+    }
+    return true;                    // no overlap -> placement valid
+}
+```
+
+**Key details:**
+
+| Aspect | Observation |
+|---|---|
+| Return value | `0` = conflict found (cannot place), `1` = safe (can place) |
+| Loop bound | `count_table[param_1] + 1` entries (off-by-one style `!=` loop), guarded by the `-1` sentinel check |
+| Addressing | Board index is `param_2 + lVar1` — the column anchor plus a precomputed per-row cell offset; the row dimension is baked into the offset table, so only a flat 1-D board probe is needed |
+| Role in solver | Called by the backtracking routine (cf. Example 3) before marking cells occupied; the caller then sets `board[...]` cells and recurses on success |
+
+In plain terms: **`can_place(row, col)` returns whether the precomputed shape footprint for `row`, anchored at column `col`, has no overlapping cells with the current board state.**",60.2,ok
+t2_glm_agent_A0_security-sha_sha_transform_8879,L1,A0,ms__MultiSource__Benchmarks__MiBench__security-sha,FUN_00101310,sha_transform,c61230df5b2e77d7,glm_agent,0.0608,0.197,0.25,1.0,0.188,1,S1,8311,7774,"## 1. What the function does
+
+This is the **SHA-0 message-block compression function** (the original FIPS 180 ""SHA"", later replaced by SHA-1). Identification is unambiguous:
+
+- The four round constants `0x5A827999`, `0x6ED9EBA1`, `0x8F1BBCDC`, `0xCA62C1D6` mark the four groups of 20 rounds.
+- The round functions match SHA exactly: `(B&C)|(~B&D)`, `B^C^D`, `(B&C)|(B&D)|(C&D)`, `B^C^D`, with `A rol 5` and `B rol 30` per round.
+- The Davies–Meyer feed-forward (`state[i] += final[i]`) at the end.
+
+The key discriminator between SHA-0 and SHA-1 is the message-schedule expansion:
+
+```c
+W[i] = W[i-3] ^ W[i-8] ^ W[i-14] ^ W[i-16];
+```
+
+**with no `<<< 1` rotation** — SHA-1 would be `(W[i-3] ^ W[i-8] ^ W[i-14] ^ W[i-16]) <<< 1`. So this is SHA-0, not SHA-1.
+
+Input convention: `param_1` points to a hash context laid out as `{ uint state[5]; uint count[2]; uint block[16]; }` — the chaining state is read from `param_1[0..4]`, and the 64-byte block is loaded from `param_1[7..22]` into `W[0..15]` (the 8 quadword loads at the top). Ghidra has split the single 80-word stack array `W[80]` into the fragments `auStack_1b8` / `auStack_198` / `auStack_184` / `local_178…auStack_138`; they are all one contiguous buffer.
+
+The compiled code also unrolls each round loop **two rounds per iteration**, which is why every loop body contains two fused round computations and steps the index by 2.
+
+## 2. Reconstructed pseudocode
+
+```c
+// param_1 -> context: uint state[5]; uint count[2]; uint block[16];
+// state at ctx[0..4], message block at ctx[7..22]
+void sha0_transform(uint *ctx)
+{
+    uint W[80];
+
+    /* Load chaining state */
+    uint a = ctx[0];
+    uint b = ctx[1];
+    uint c = ctx[2];
+    uint d = ctx[3];
+    uint e = ctx[4];
+
+    /* Load 16-word message block */
+    for (int i = 0; i < 16; i++)
+        W[i] = ctx[7 + i];
+
+    /* Message schedule expansion — NOTE: no <<<1 rotation => SHA-0, not SHA-1 */
+    for (int i = 16; i < 80; i++)
+        W[i] = W[i-3] ^ W[i-8] ^ W[i-14] ^ W[i-16];
+
+    /* 80 rounds, four groups of 20 (binary emits 2 rounds per iteration) */
+    for (int i = 0; i < 80; i++) {
+        uint f, k;
+        if (i < 20)      { f = (b & c) | (~b & d);            k = 0x5A827999; }
+        else if (i < 40) { f = b ^ c ^ d;                     k = 0x6ED9EBA1; }
+        else if (i < 60) { f = (b & c) | (b & d) | (c & d);   k = 0x8F1BBCDC; }
+        else             { f = b ^ c ^ d;                     k = 0xCA62C1D6; }
+
+        uint t = rotl(a, 5) + f + e + k + W[i];
+        e = d;
+        d = rotl(b, 30);          // emitted as (b << 30) | (b >> 2)
+        c = b;
+        b = a;
+        a = t;
+    }
+
+    /* Davies–Meyer feed-forward into the chaining state */
+    ctx[0] += a;
+    ctx[1] += b;
+    ctx[2] += c;
+    ctx[3] += d;
+    ctx[4] += e;
+}
+```
+
+Correspondence with the decompiled loop structure:
+
+| Decompiled loop | Rounds | Constant | f |
+|---|---|---|---|
+| `lVar1 = 0x1 … 0x15` | 0–19 | `0x5A827999` | `(B&C)\|(~B&D)` |
+| `lVar1 = 0x15 … 0x29` | 20–39 | `0x6ED9EBA1` | `B^C^D` |
+| `lVar1 = 0x29 … 0x3D` | 40–59 | `0x8F1BBCDC` | `(B&C)\|(B&D)\|(C&D)` |
+| `lVar1 = 0x3D … 0x51` | 60–79 | `0xCA62C1D6` | `B^C^D` |
+
+In each unrolled iteration, the first statement computes round `i` and the second computes round `i+1`, with the register variables (`uVar9`=A, `uVar3`/`uVar4`/etc.) rotating roles between them — a standard -O2 two-way unrolling of the SHA round loop.",65.1,ok
+t2_glm_agent_A0_security-sha_sha_stream_8944,L1,A0,ms__MultiSource__Benchmarks__MiBench__security-sha,FUN_00101650,sha_stream,203212d68d460c2f,glm_agent,0.0841,0.0,0.333,1.0,0.786,2,S2,8246,2577,"## Part 1 — What the function does
+
+This is an **inlined SHA-1 ""hash a file"" routine** (`sha1_file`-style): it initializes a SHA-1 state, streams the contents of a `FILE*` through it, and performs SHA-1 finalization (padding + length append + final block transform) all in one function.
+
+Evidence:
+
+- **State initialization at the top**: `param_1` is a context struct whose first three words are loaded from a constant table (`_DAT_00102010`, `_UNK_00102018`) followed by the hardcoded `0xc3d2e1f0` — that's the SHA-1 initial chaining value H₀…H₄ (H₂ = 0x98badcfe and H₃ = 0xefcdab89 come from the table, H₄ = 0xc3d2e1f0 is written literally). The fourth 8-byte field is zeroed — the 64-bit message bit counter.
+- **Context layout**: `h[5]` at offset `0x00`, bit counter (8 bytes, little-endian) at `0x14`, and a 64-byte block buffer at `0x1c..0x5c`.
+- **Streaming update loop**: `fread(local_2038, 1, 0x2000, param_2)` reads the file in 8 KiB chunks. The bit counter is updated by `bytes * 8` with carry propagation into the high word. Full 64-byte blocks are copied into the context buffer, then `FUN_00101250(buf)` (message-schedule/compute-W) and `FUN_00101310(ctx)` (compression rounds) are invoked — the SHA-1 block transform split across two helpers. The tail (< 64 bytes) is `memcpy`'d into the buffer and the next chunk is read.
+- **Finalization**: after EOF, `0x80` is appended after the buffered remainder, the block is zero-padded (with an extra-block branch when there's less than 9 bytes of room), the 64-bit big-endian bit length is written into the last 8 bytes of the final block (`0x54`/`0x58`), and one last transform runs.
+
+The obfuscation pass made no structural change here — the protected counterpart matches the baseline; the two helper calls are simply the transform split into schedule/rounds phases.
+
+## Part 2 — Structured pseudocode
+
+```c
+// Context layout (param_1):
+//   +0x00 : uint32 h[5]        // SHA-1 chaining variables
+//   +0x14 : uint64 bit_count   // little-endian total message length in bits
+//   +0x1c : uint8  buffer[64]  // pending message block
+
+void sha1_hash_file(SHA1_CTX *ctx, FILE *stream)
+{
+    uint8  chunk[0x2000];
+    uint64 len;
+
+    // --- Init ---
+    ctx->h[0] = 0x67452301;   // from constant table (_DAT_00102010)
+    ctx->h[1] = 0xefcdab89;   // from constant table (_UNK_00102018)
+    ctx->h[2] = 0x98badcfe;   // from constant table
+    ctx->h[3] = 0x243f6a88;   // from constant table  (table-stored H values)
+    ctx->h[4] = 0xc3d2e1f0;   // hardcoded in code
+    ctx->bit_count = 0;
+
+    // --- Stream update ---
+    len = fread(chunk, 1, 0x2000, stream);
+    while ((long)len > 0) {
+        // bit_count += len * 8 (64-bit, with carry)
+        lo = low32(ctx->bit_count);
+        low32(ctx->bit_count)  = lo + (uint32)len * 8;
+        high32(ctx->bit_count) += ((len >> 29) & 7) + CARRY4(lo, (uint32)len * 8);
+
+        uint8 *p    = chunk;
+        size_t left = len;
+
+        // process all full 64-byte blocks
+        while (left >= 64) {
+            memcpy(ctx->buffer, p, 64);       // decompiler unrolled this as 16 word stores
+            sha1_expand_W(ctx->buffer);       // FUN_00101250: message schedule
+            sha1_compress(ctx);               // FUN_00101310: 80 rounds, update h[]
+            p    += 16;                       // (words) = 64 bytes
+            left -= 64;
+        }
+
+        memcpy(ctx->buffer, p, left);         // buffer the tail
+        len = fread(chunk, 1, 0x2000, stream);
+    }
+
+    // --- Finalize ---
+    size_t pos = (low32(ctx->bit_count) >> 3) & 0x3f;   // bytes in last block
+    ctx->buffer[pos] = 0x80;                            // padding marker
+
+    if (pos < 0x38) {
+        memset(ctx->buffer + pos + 1, 0, 0x37 - pos);   // pad in current block
+    } else {
+        memset(ctx->buffer + pos + 1, 0, 0x3f - pos);   // no room for length:
+        sha1_expand_W(ctx->buffer);                     // flush this block...
+        sha1_compress(ctx);
+        memset(ctx->buffer, 0, 64);                     // ...start a fresh one
+    }
+
+    sha1_expand_W(ctx->buffer);
+    // append 64-bit big-endian bit length in the final 8 bytes
+    store_be32(ctx->buffer + 0x38 + 4, high32(ctx->bit_count) ... );
+    // decompiler form:
+    //   *(uint32*)(ctx->buffer + 0x38) = high32(ctx->bit_count);  // +0x54
+    //   *(uint32*)(ctx->buffer + 0x3c) = low32(ctx->bit_count);   // +0x58
+    // (decompiler shows uVar4 = bit_count high word -> +0x54, old len word -> +0x58)
+    sha1_compress(ctx);
+
+    // digest = ctx->h[0..4], big-endian; caller reads it from ctx
+    return;
+}
+```
+
+**Note on the length append**: the decompiler shows the bit-length words going to buffer offsets `0x54` (=`0x38` within the block) and `0x58` (=`0x3c` within the block) — i.e., the standard SHA-1 8-byte big-endian length trailer. The `uVar3`/`uVar4` registers hold the bit counter's low/high words captured before finalization.
+
+**Semantic summary**: `sha1_hash_file(void *ctx, FILE *f)` — initializes SHA-1, feeds the whole file through the update loop in 8 KiB reads, then performs standard PKCS-style SHA-1 padding and the final compression. The final digest resides in `ctx->h[0..4]` for the caller. The `FUN_00101250`/`FUN_00101310` pair is the SHA-1 block transform (W-schedule expansion + 80-round compression), kept as separate non-obfuscated helpers.",60.5,ok
+t2_glm_agent_A0_security-sha_byte_reverse_9005,L1,A0,ms__MultiSource__Benchmarks__MiBench__security-sha,FUN_00101250,byte_reverse,a883ec84434a8572,glm_agent,0.1019,1.0,0.667,1.0,0.625,4,S3,9608,5821,"## Part 1 — What the function does
+
+This is the classic **SHA-2 endianness fix-up routine** (`byte_reverse` / word-swap): it takes a 64-byte buffer (one SHA message block = 16 big-endian `uint32` words) and **reverses the byte order of every 4-byte group in place**, converting between big-endian and little-endian word layout.
+
+Evidence from the decompilation:
+
+- The parameter is a pointer to 16-byte vectors; four of them (`*param_1`, `param_1[1..3]`) are loaded — exactly 64 bytes, one SHA block. The listing is truncated but each 16-byte chunk is processed identically and stored back.
+- Per 16-byte chunk, the compiler-generated SSE2 sequence is:
+  1. **Unpack bytes to 16-bit lanes with zero** (the long chains like `auVar64[0]=b8, auVar64[1]=0, …` are Ghidra's rendering of `punpcklbw/punpckhbw` against a zeroed register — byte→word widening).
+  2. **`pshuflw(x, x, 0x1b)` + `pshufhw(x, x, 0x1b)`** — reverses the word order within each 64-bit lane (`0x1b` = select words 3,2,1,0).
+  3. **`packuswb`-style repack** — the expression `(0 < s) * (s < 0x100) * byte - (0xff < s)` is exactly *pack with unsigned saturation*: `s ≤ 0 → 0`, `0 < s < 256 → s`, `s ≥ 256 → (byte)-1 = 0xFF`. Since every word here is a zero-extended byte (0–255), the saturation never fires — it is an identity repack. Ghidra just renders the `packuswb` semantics this way.
+- Tracing the lane data confirms the net effect on bytes `b0…b15` of a chunk: stores are `b3,b2,b1, b0, b7,b6,b5, b4, b11,b10,b9, b8, b15,b14,b13, b12` — i.e. **each aligned 32-bit word is byte-swapped** (`bswap32` per dword). This is precisely the SSE2-only (pre-SSSE3, no `pshufb`) codegen GCC/Clang emit for a vectorized per-dword byte reversal.
+
+## Part 2 — Reconstructed pseudocode
+
+```c
+// Original source-level reconstruction
+// param_1: pointer to a 64-byte block (16 uint32 words), modified in place.
+// Typical context: SHA-256/SHA-1 preprocessing — convert the input block
+// from big-endian (file/network order) to the host's little-endian layout.
+
+void FUN_00101250(uint8_t *buf)   // decompiled as: void (uint8_t (*param_1)[16])
+{
+    uint32_t *w = (uint32_t *)buf;
+
+    for (int i = 0; i < 16; i++) {
+        w[i] = __builtin_bswap32(w[i]);
+    }
+}
+```
+
+Equivalent byte-level form:
+
+```c
+void FUN_00101250(uint8_t *buf)
+{
+    for (int i = 0; i < 64; i += 4) {
+        uint8_t t = buf[i];
+        buf[i + 0] = buf[i + 3];
+        buf[i + 3] = t;
+        t          = buf[i + 1];
+        buf[i + 1] = buf[i + 2];
+        buf[i + 2] = t;
+    }
+}
+```
+
+Vectorized form actually implemented (4 unrolled iterations, one per 16-byte chunk):
+
+```
+for each 128-bit chunk C of the 64-byte buffer:        // 4 chunks total
+    lo16 = unpack_low_bytes_to_words (C, 0)            // punpcklbw with zero
+    hi16 = unpack_high_bytes_to_words(C, 0)            // punpckhbw with zero
+    lo16 = shuffle_words(lo16, 0x1b)                   // pshuflw: reverse w0..w3
+    lo16 = shuffle_words_hi(lo16, 0x1b)                // pshufhw: reverse w4..w7
+    hi16 = shuffle_words(hi16, 0x1b)                   // same pair on high half
+    hi16 = shuffle_words_hi(hi16, 0x1b)
+    out  = pack_words_to_bytes_unsigned_sat(lo16, hi16) // packuswb (saturation
+                                                         //  is a no-op here)
+    store C <- out                                     // bytes now dword-reversed
+```
+
+Net effect: `buf[4i..4i+3] <- buf[4i+3..4i]` for `i = 0…15` — a pure in-place endian conversion of 16 32-bit words, matching the `byte_reverse()` helper found in common public-domain SHA-256 implementations.",116.7,ok
+t2_glm_agent_A0_security-sha_sha_update_9121,L1,A0,ms__MultiSource__Benchmarks__MiBench__security-sha,FUN_001011b0,sha_update,a3665e71db560620,glm_agent,0.0934,1.0,0.4,0.5,0.529,3,S3,7644,1509,"## 1. What this function does
+
+This is the **`update` (streaming input) function of a SHA-256 implementation** — i.e. `sha256_update(ctx, data, len)`.
+
+- `param_1` is the hash context (`ctx`), `param_2` the input data, `param_3` the byte length.
+- First it extends the **bit counter** stored in the context by `len * 8` (a 32-bit low word at `ctx+0x14` with carry propagated into a high word at `ctx+0x18` — the carry is explicit via `CARRY4`).
+- Then, while at least **64 bytes (one SHA-256 block)** remain, it copies 16 dwords of input into the 64-byte block buffer at `ctx+0x1c`, invokes the compression step (`FUN_00101250` = block transform on the buffer, `FUN_00101310` = folding the working state back into the chained hash state), and advances the input pointer by 64 bytes, decrementing the remaining length.
+- Finally, any tail of 0–63 bytes is buffered with `memcpy` into `ctx+0x1c` awaiting the next update or a final `digest` call.
+
+The confusing store sequence (`0x4c` down to `0x1c`) is just the decompiler's scheduling of a plain 64-byte copy `buffer[i] = data[i]` for `i = 0..15`.
+
+## 2. Structured pseudocode
+
+```c
+// Context layout (inferred):
+//   ctx+0x00 .. 0x13 : (hash chaining state, not touched here)
+//   ctx+0x14         : bit counter, low  32 bits
+//   ctx+0x18         : bit counter, high 32 bits
+//   ctx+0x1c .. 0x5b : 64-byte block buffer (16 x uint32)
+
+void sha256_update(ctx, const uint8_t *data, size_t len)
+{
+    uint32_t *buf_words = (uint32_t *)(ctx + 0x1c);
+    uint32_t lo = *(uint32_t *)(ctx + 0x14);
+    uint32_t hi = *(uint32_t *)(ctx + 0x18);
+    size_t   remaining = (uint32_t)len;
+
+    // --- extend bit count by len*8, with carry ---
+    uint32_t add      = (uint32_t)len * 8;
+    uint32_t carry    = (lo + add < lo) ? 1 : 0;   // CARRY4(lo, add)
+    *(uint32_t *)(ctx + 0x14) = lo + add;
+    *(uint32_t *)(ctx + 0x18) = hi + ((len >> 29) & 7) + carry;
+
+    // --- process all full 64-byte blocks ---
+    while (remaining >= 0x40) {
+        for (int i = 0; i < 16; i++)          // decompiled as 16 dword stores
+            buf_words[i] = ((uint32_t *)data)[i];
+
+        sha256_block_transform(ctx + 0x1c);   // FUN_00101250: compression rounds
+        sha256_state_foldback(ctx);           // FUN_00101310: add working vars into hash state
+
+        data      += 0x40;                    // param_2 + 0x10 dwords
+        remaining -= 0x40;
+    }
+
+    // --- buffer the 0..63 leftover tail bytes ---
+    memcpy(ctx + 0x1c, data, remaining);
+}
+```
+
+**Notes on the decompilation artifacts:**
+- The unrolled, out-of-order stores (`0x4c`, `0x50`, … then `0x3c`, `0x38`, …) are the compiler vectorizing/spilling the 64-byte buffer copy; semantically it is `memcpy(ctx+0x1c, data, 64)`.
+- `param_2 = param_2 + 0x10` confirms the pointer advance is 64 bytes (16 dwords).
+- The `(param_3 >> 0x1d) & 7` term is the high-order contribution of `len*8` to the upper counter word (bits 35:32 of `len*8`), consistent with a standard 64-bit bit counter in SHA-2 style.
+- The tail-copy loop condition `while (0x7f < uVar2)` after `remaining -= 0x40` is equivalent to `while (remaining >= 64)` at the loop top.",41.7,ok
+t2_glm_agent_A0_security-sha_sha_final_9163,L1,A0,ms__MultiSource__Benchmarks__MiBench__security-sha,FUN_001015b0,sha_final,020699979dbe23ff,glm_agent,0.1024,0.667,0.75,1.0,0.5,4,S3,7165,4216,"## 1. What this function does
+
+`FUN_001015b0` is a **hash finalization function** — the ""final"" step of a SHA-family (SHA-1/SHA-256 style, most likely SHA-256) Merkle–Damgård hash. Given a context object (`param_1`), it performs the classic padding-and-length-encoding epilogue:
+
+- Reads the message bit length from `ctx+0x14` (64-bit, read as low/high dwords).
+- Appends the `0x80` terminator byte into the 64-byte block buffer at `ctx+0x1c`, at position `(bitlen >> 3) & 0x3f` (i.e., `datalen mod 64`).
+- Zero-pads to byte 55 (56-byte pad zone). If `0x80` + length don't fit in the current block (`datalen mod 64 >= 0x38/56`), it pads to the block end, compresses the block (`FUN_00101250`), and zeroes the buffer to start a fresh block.
+- Appends the 64-bit **big-endian** bit length into the last 8 bytes of the block (`data[56..63]`: high dword at `data[56]` = `ctx+0x54`, low dword at `data[60]` = `ctx+0x58`).
+- Compresses the final block. `FUN_00101310` runs after each compression (post-transform state normalization, e.g., endianness fix-up of the state words).
+
+## 2. Structured pseudocode
+
+Inferred context layout:
+- `ctx + 0x14` : `uint64 bitlen` (total bits processed; read here as lo/hi dwords)
+- `ctx + 0x1c` : `uint8 data[64]` (pending block buffer)
+- `FUN_00101250(data)` = block compression (transform)
+- `FUN_00101310(ctx)` = post-transform state fix-up
+
+```c
+void sha_final(ctx)
+{
+    uint32 len_lo = ctx.bitlen >>  0;        // ctx+0x14
+    uint32 len_hi = ctx.bitlen >> 32;        // ctx+0x18
+    uint   off    = (len_lo >> 3) & 0x3f;    // = (bitlen / 8) mod 64 = datalen mod 64
+    uint8 *data   = ctx.data;                // ctx+0x1c
+
+    // --- append 0x80 and pad ---
+    data[off] = 0x80;
+
+    if (off < 56) {
+        // 0x80 + 8-byte length fit in this block: zero-pad up to byte 55
+        memset(&data[off + 1], 0, 55 - off);
+    } else {
+        // no room for the length: finish this block, start a new one
+        memset(&data[off + 1], 0, 63 - off);
+        sha_transform(data);        // FUN_00101250
+        sha_state_fixup(ctx);       // FUN_00101310
+        memset(data, 0, 64);        // fresh zeroed block
+    }
+
+    // --- append 64-bit big-endian bit length ---
+    store_be32(&data[56], len_hi);  // ctx+0x54
+    store_be32(&data[60], len_lo);  // ctx+0x58
+
+    // --- process the last block ---
+    sha_transform(data);            // FUN_00101250
+    sha_state_fixup(ctx);           // FUN_00101310
+}
+```
+
+**Notes:**
+- The `off < 0x38` (56) threshold and the two-step ""transform → new block → append length → transform"" flow is the canonical SHA-256 (and SHA-1) padding structure; combined with the 64-byte block and 8-byte length field, this is `sha*_final(ctx)`, not a compression function itself.
+- Only the byte at `data[off]` is explicitly set to `0x80`; in the `off >= 56` path the original `0x80` position byte is re-zeroed as part of the full `memset(data, 0, 64)` — note the branch does *not* re-set `0x80`, which is correct because the whole 64-byte buffer is cleared before the final length is written.
+- The `memset` lengths seen in the decompilation are exact: `0x37 - off` bytes fills indices `off+1 .. 55` (leaving 8 bytes for the length); `off ^ 0x3f` = `63 - off` bytes fills indices `off+1 .. 63`.",84.9,ok
+t2_glm_agent_A0_FloatMM_Mm_9248,L1,A0,ss__SingleSource__Benchmarks__Stanford__FloatMM,FUN_00101270,Mm,714e166c2f9d050d,glm_agent,0.1236,1.0,0.4,1.0,0.333,2,S2,7570,14775,"## Part 1 — What the function does
+
+This is a **40×40 single-precision matrix-multiply benchmark kernel** (the run name confirms it: *FloatMM*). It has three phases:
+
+1. **Matrix initialization from an LCG.** It seeds a 16-bit linear congruential generator with 74755 (`0x12403`), advances it as `state = (state*1309 + 13849) mod 2^16` (the classic Numerical-Recipes-style LCG used by PolyBench-style init code), and derives values `(state mod 120) − 60` (the `/0x78 * -0x78` idiom is the compiler's strength-reduced modulo). Each value is converted to `float` and divided by a constant scale factor read from `DAT_00102004`, filling two 40×40 matrices `A` and `B`.
+
+2. **Matrix multiply.** It computes `C = A × B` with `i, j, k` loops over 1..40. The row stride of 41 (`0x29`, `0xa4`) shows the arrays are declared `[41][41]` with 1-based indexing (row/column 0 unused — old-PolyBench `mm` style). The `k` loop is unrolled ×2 in the binary with a single accumulator.
+
+3. **Output.** If `param_1 < 40`, it prints one element of the product — the diagonal element `C[param_1][param_1]` — via `printf(""%f\n"", ...)`.
+
+Notably, in all three paired examples the baseline and protected decompilations are **identical**, and the target likewise shows no obfuscation artifacts at the decompiler level — only ordinary compiler idioms (modulo-by-division, ×2 unrolling). The protection arm is semantically transparent here.
+
+## Part 2 — Reconstructed pseudocode
+
+```c
+#define N 40
+#define STRIDE (N + 1)                 /* [41][41] arrays, 1-based: row/col 0 unused */
+
+static int rng_state;                  /* DAT_00104040 */
+static const float SCALE = ...;        /* float constant at DAT_00102004 */
+
+static int rnd(void)                   /* returns value in [-60, 59] */
+{
+    rng_state = (rng_state * 1309 + 13849) & 0xFFFF;
+    return (rng_state % 120) - 60;
+}
+
+void float_mm(int idx)                 /* FUN_00101270 */
+{
+    float A[STRIDE][STRIDE];           /* base ≈ DAT_001040f8 - 42*4 */
+    float B[STRIDE][STRIDE];           /* base ≈ DAT_00105b48 - 42*4 */
+    float C[STRIDE][STRIDE];           /* base ≈ DAT_001074f0 - 42*4 */
+
+    /* --- 1. initialize A and B --- */
+    rng_state = 74755;                 /* 0x12403 */
+    for (int i = 1; i <= N; i++)
+        for (int j = 1; j <= N; j++)
+            A[i][j] = (float)rnd() / SCALE;
+
+    for (int i = 1; i <= N; i++)
+        for (int j = 1; j <= N; j++)
+            B[i][j] = (float)rnd() / SCALE;
+
+    /* --- 2. C = A * B --- */
+    for (int i = 1; i <= N; i++)
+        for (int j = 1; j <= N; j++) {
+            float acc = 0.0f;
+            for (int k = 1; k <= N; k += 2)          /* unrolled ×2 in binary */
+                acc = A[i][k + 1] * B[k + 1][j]      /* note: high-k term first */
+                    + A[i][k]     * B[k][j]
+                    + acc;
+            C[i][j] = acc;
+        }
+
+    /* --- 3. print one element of the result --- */
+    if (idx < N)
+        printf(""%f\n"", (double)C[idx + 1][idx + 1]); /* diagonal element */
+}
+```
+
+**Indexing verification** (how the Ghidra addresses map back): with `C[i][j]` at `base_C + 41*i + j`, the write `&DAT_001074f0 + lVar5*4 + lVar2*0xa4` decodes to `(lVar2, lVar5)` = `(i, j)`; the print `(&DAT_00107598)[param_1 * 0x2a]` decodes to `base_C + 42 + 42*param_1` = `C[param_1+1][param_1+1]` — i.e., the diagonal element of the computed product. The multiply's `A`-side pointer `&DAT_001040fc = &A[1][2]` with the first access at `puVar3[-1] = A[1][1]`, and the `B`-side pointer starting exactly at `&B[1][1]`, confirms the clean `C[i][j] = Σ_k A[i][k]·B[k][j]` semantics.
+
+The only behavior the caller observes is the single printed diagonal value (plus RNG/FP side effects on globals), so behavioral equivalence checking would compare the diagonal of the product for each `param_1 < 40`.",283.1,ok
+t2_glm_agent_A0_FloatMM_rInitmatrix_9531,L1,A0,ss__SingleSource__Benchmarks__Stanford__FloatMM,FUN_00101170,rInitmatrix,1772f89c81f2d592,glm_agent,0.1128,1.0,0.333,1.0,0.5,3,S3,7003,3796,"## 1. What the function does
+
+This is a matrix initializer (it corresponds to the `rInitmatrix`/`initmat` routine of the classic FloatMM benchmark). It fills the inner **40×40 region of a padded float matrix** with pseudo-random values generated by a 16-bit linear congruential generator (LCG) whose state lives in the global `DAT_00104040` (carried across calls, unlike Example 2 which reseeded it with `0x12403`).
+
+Per element:
+- LCG step: `seed = (seed * 1303 + 13849) & 0xffff` (0x51d = 1303, 0x3619 = 13849)
+- Reduce modulo 120 (`0x78`), subtract 60 → integer in **[-60, 59]**
+- Convert to float and divide by the constant `DAT_00102004` (almost certainly `10.0f`), giving values in **[-6.0, 5.9]**
+
+The layout matches the padded matrices in Example 2: rows are 41 floats apart (`0xa4` bytes), and the writes start at `param_1 + 0xa8` — i.e., row 1, column 1 of a stride-41 grid based at `param_1 + 4`, leaving the border row/column untouched. It writes 40 rows (`lVar3` = 1..40) of 40 elements (`lVar4` = 0..39) each.
+
+## 2. Structured pseudocode
+
+```c
+// Globals
+uint16 rng_state;        // DAT_00104040, persists across calls
+const float SCALE;       // DAT_00102004 (expected 10.0f)
+
+void init_matrix(void *base)   // FUN_00101170
+{
+    // point at start of the inner (non-padded) region:
+    // row 1, col 1 of a stride-41 grid => byte offset 0xa8
+    float *p = (float *)base + 42;
+
+    for (int row = 1; row <= 40; row++) {        // 40 rows
+        for (int col = 0; col < 40; col++) {     // 40 columns
+            // 16-bit LCG step
+            uint32 x    = (uint32)rng_state * 1303u + 13849u;
+            rng_state   = (uint16)(x & 0xffff);
+
+            // r = x mod 120   (the (v + (v/0x78)*-0x78) & 0xffff idiom)
+            uint16 r    = (x & 0xffff) % 120;
+
+            // map to [-60, 59], scale to float
+            p[col] = (float)((int)r - 60) / SCALE;   // e.g. [-6.0, 5.9]
+        }
+        p += 41;   // advance by padded row stride (0xa4 bytes)
+    }
+    return;
+}
+```
+
+Key parameters at a glance:
+
+| Item | Value | Meaning |
+|---|---|---|
+| `0x51d`, `0x3619` | 1303, 13849 | LCG multiplier / increment (mod 2¹⁶) |
+| `0x78`, `0x3c` | 120, 60 | range reduction → `[−60, 59]` |
+| `DAT_00102004` | float const | divisor (≈ 10.0) |
+| `0x28` | 40 | columns / rows to fill |
+| `0xa4`, `0xa8` | 41×4, 42×4 bytes | padded row stride / start of inner region |
+
+No obfuscation distortion is visible in this sample — the protected and baseline bodies are control-flow identical, and the target follows the same LCG-plus-modulo fill pattern as the baseline init loops in Example 2.",102.2,ok
+t2_glm_agent_A0_FloatMM_rInnerproduct_9633,L1,A0,ss__SingleSource__Benchmarks__Stanford__FloatMM,FUN_00101200,rInnerproduct,b3ae2d8ef2aea9db,glm_agent,0.2035,1.0,0.5,1.0,0.778,4,S3,6986,4510,"## 1. What the function does
+
+This is the **row × column inner-product kernel of a single-precision matrix multiplication** — it computes **one element** `C[i][j]` of the product of two float matrices:
+
+- `param_2` = base of matrix **A** (left operand), `param_4` = row index `i`
+- `param_3` = base of matrix **B** (right operand), `param_5` = column index `j`
+- `param_1` = pointer where the scalar result `C[i][j]` is stored
+
+It accumulates `sum += A[i][k] * B[k][j]` for `k = 1..40` and stores the sum. The matrices use a **row stride of 41 floats** (`0xa4` bytes) and are **1-indexed with a padded border** at row/column 0 (consistent with Example 2, where the 40×40 data interior is embedded in a padded array, initialized by an LCG fill loop and consumed by an unrolled 4×4 matmul kernel). The result of this routine feeds that larger matmul.
+
+Decompiler artifacts to see through:
+- The loop is **unrolled by 2** (the ""vectorizer-friendly"" pairing visible in the baseline of Example 2 as well): odd `k` reads `A[i][k] * B[k][j]`, even `k` reads `A[i][k+1] * B[k+1][j]`, with `pfVar1` advancing `0x52` floats = 82 floats = 2 rows.
+- The repeated `*param_1 = fVar3` inside the loop is just the compiler sinking a store it can't prove non-aliasing; semantically the result is written once at the end.
+- `param_2` is a byte address, so `*(float *)(param_2 - 4 + lVar2*4)` is `A[i][lVar2-1]`.
+
+## 2. Structured pseudocode
+
+```c
+// Computes C[i][j] = sum_{k=1..40} A[i][k] * B[k][j]
+// A, B: float matrices with row stride 41 (0xA4 bytes); indices 1..40 are the
+//       valid data region, index 0 is padding.
+void mm_inner_product(float *out, float *A, float *B, int i, int j)
+{
+    float *a_row = A + i * 41;          // row i of A           (i * 0xA4 bytes)
+    float *b_col = B + 41 + j;          // &B[1][j]: column j, starting at row 1
+
+    float sum = 0.0f;
+
+    // unrolled by 2 over k
+    for (int k = 1; k <= 40; k += 2) {
+        sum += a_row[k]     * b_col[0];   // A[i][k]   * B[k][j]
+        sum += a_row[k + 1] * b_col[41];  // A[i][k+1] * B[k+1][j]
+        b_col += 82;                      // advance 2 rows (0x52 floats)
+    }
+
+    *out = sum;                           // C[i][j]
+}
+```
+
+Equivalently, in closed form:
+
+```
+out = Σ_{k=1}^{40} A[i][k] · B[k][j]
+```
+
+which is exactly the scalar inner product of row `i` of A with column `j` of B — the building block of the full 40×40 float matrix product (cf. the 4×-unrolled whole-matrix version in Example 2).",117.2,ok
+t2_glm_agent_A0_FloatMM_Rand_9751,L1,A0,ss__SingleSource__Benchmarks__Stanford__FloatMM,FUN_00101150,Rand,5e4c866577a4aead,glm_agent,0.1055,1.0,0.0,1.0,0.286,2,S2,6777,716,"## 1. What the function does
+
+This function advances a 16-bit linear congruential generator (LCG) by one step. It updates the global PRNG state at `DAT_00104040` using the recurrence:
+
+`state = (state * 0x51D + 0x3619) mod 2^16`
+
+This is confirmed by Example 2, where `DAT_00104040` is initialized to `0x12403` and then consumed by an inner loop using exactly this same update (`* 0x51d + 0x3619`, truncated to 16 bits) to fill the two matrices with pseudo-random values. So this target function is the LCG ""next-state"" step, likely an outlined/inlined helper (or a single iteration the obfuscator left as its own function) that the matrix-filling code calls or repeats.
+
+The `& 0xffff` mask is the modulus (65536); the parameters are multiplier 0x51D (1309) and increment 0x3619 (13849).
+
+## 2. Structured pseudocode
+
+```
+global uint16_t seed;   // DAT_00104040
+
+function LCG_next():
+    seed = (seed * 0x051D + 0x3619) & 0xFFFF
+    return
+```
+
+Equivalent C:
+
+```c
+uint32_t seed;  // DAT_00104040
+
+void FUN_00101150(void) {
+    seed = (uint32_t)((int)seed * 1309 + 13849) & 0xFFFF;
+}
+```
+
+Notes:
+- The decompiler shows a 64-bit store (`ulong`) because `DAT_00104040` is declared wider than 16 bits in the binary, but the `& 0xffff` guarantees only the low 16 bits are ever meaningful — matching the 16-bit PRNG arithmetic seen in Example 2 (`(uVar4 & 0xffff) * 0x51d + 0x3619`, with `DAT_00104040 = uVar4 & 0xffff`).
+- The `(int)DAT_00104040 * 0x51d` signed multiply is immaterial: with masking to 16 bits, signed vs. unsigned multiplication yields the same low 16 bits.
+- No input, no output; the only effect is mutating the global seed.",15.2,ok
+t2_glm_agent_A0_FloatMM_Initrand_9766,L1,A0,ss__SingleSource__Benchmarks__Stanford__FloatMM,FUN_00101140,Initrand,33d76b7477762071,glm_agent,0.0041,1.0,0.0,1.0,0.0,2,S2,6753,596,I'll verify against the workspace artifacts before answering.,8.7,ok
+t2_glm_agent_A0_voronoi_do_merge_9774,L1,A0,ms__MultiSource__Benchmarks__Olden__voronoi,FUN_00101a90,do_merge,8d9a97bb9c0a6a92,glm_agent,0.0821,1.0,0.235,1.0,0.471,2,S2,9057,6565,"## 1. What the function does
+
+This is the **merge step of a divide-and-conquer Voronoi/Delaunay construction** (Guibas–Stolfi style). The directory context (`voronoi_do_merge`) confirms it: it takes two already-built halves of the diagram and fuses them into one.
+
+Key evidence in the decompilation:
+
+- **Quad-edge-like representation.** Node pointers are 128-byte-block addresses carrying a slot index (`p & 0x7f`). `p ^ 0x40` is the ""sym"" flip (opposite direction of the same edge), and following a link adds `0x20` to the slot (`(slot+0x20) & 0x7f`) — the classic `rot`/`onext` navigation. Each node holds a pointer to a point `{x, y, z}` (doubles at offsets 0/1/2).
+- **Phase 1 — tangent search.** The two nested `while(true)` loops walk the left and right chains using only 2-D cross products on `(x, y)`, advancing one cursor while the other endpoint is ""inside"", flipping directions with `^ 0x40` — this locates the initial bridge (lower/upper tangent) between the two hulls.
+- **Phase 2 — in-circle deletion + splicing.** The main loop tests candidate edges with a 4-point 3-D determinant (three cross-2-D terms weighted by the third coordinate `z`, the lifted coordinate, typically `x²+y²`) — this is exactly the **in-circle / empty-circle test** of Voronoi/Delaunay. Edges that fail are unlinked by swapping their encoded link fields with their neighbours (the paired `undefined8` exchanges = `splice`/`deleteEdge`) and pushed onto a **global free list** threaded through offset +8 of each block, headed by `DAT_00106088`. Valid frontier edges from the two halves are then joined by link swaps (`connect`), and both cursors advance.
+- Returns a 16-byte value (two edge pointers in SIMD registers) — the boundary edges of the merged structure.
+
+## 2. Structured pseudocode reconstruction
+
+```text
+// Encoded edge pointer: base = p & ~0x7F, slot = p & 0x7F (0x00,0x20,0x40,0x60)
+//   sym(p)   = p ^ 0x40                          // opposite direction
+//   onext(p) = link[base + ((slot+0x20)&0x7F)],  // follow link, slot rotates +0x20
+//              result = base(that) | (slot(that)+0x20)
+//   org(p)   = *(Point**)sym(p)                  // Point = {x, y, z}, z = x²+y² (lifted)
+
+function do_merge(ctx /*param_1*/, l /*param_2*/, r /*param_3*/, aux /*param_4*/):
+
+    // ---------- Phase 1: locate the initial bridge (lower tangent) ----------
+    loop:                                        // outer repeat
+        while cross2d(org(r) - org(l), dest-side) <= 0:   // right_of test
+            r = onext(r)                         // walk right chain
+        l = sym(l)                               // flip direction
+        if not cross2d(org(l) - org(r), ...) <= 0: break  // tangent found
+        l = l.next                               // param_3[1] direct link
+
+    // ---------- Phase 2: merge walk ----------
+    lbase = r;  lorg  = org(l)                   // fixed origin point for det
+    rbase = ...; rorg = ...
+    do:
+        // -- validate left candidate: is next right vertex outside? --
+        if cross2d(org(onext-ish r), lorg) > 0:
+            z0 = lorg.z
+            loop:                                // delete failing edges
+                a, b, c = the three points around the candidate edge
+                vol = cross2d(b−p1, c−p1)*a.z
+                    + cross2d(c−p1, a−p1)*b.z
+                    + cross2d(a−p1, b−p1)*c.z    // = det3 on lifted coords
+                                                  //   = in-circle test
+                if vol <= 0: break
+                // splice edge out of the structure
+                swap link fields with both neighbours (2× pair exchanges)
+                push freed block onto global free list:
+                    *(block + 8) = free_head;  free_head = block
+                advance to next candidate around the face
+            re-read endpoints (lbase/lorg refresh)
+
+        // -- symmetric validation on the right side --
+        if cross2d(...) > 0:
+            z0 = lorg.z
+            loop:
+                if det3(3 pts, z0) <= 0: break
+                splice out edge; push onto free list
+                advance
+        // -- both valid: connect the two chains --
+        else:
+            exchange link fields of the left and right frontier edges  // connect
+            record freed slot on free list
+            l = l.next;  r = r.next              // advance both cursors
+    until the frontier closes (tangents meet / both valid walk completes)
+
+    return {ldo, rdo}                            // 16 bytes: boundary edges of merged hull
+```
+
+In short: **find the bridge between the two sub-hulls with 2-D orientation tests, then walk the merge frontier deleting every edge that fails the lifted-coordinate in-circle test (freeing it onto a global list) and splicing the two halves together, until the merged Voronoi/Delaunay structure is valid.**",206.4,ok
+t2_glm_agent_A0_voronoi_output_voronoi_diagram_9981,L1,A0,ms__MultiSource__Benchmarks__Olden__voronoi,FUN_00103380,output_voronoi_diagram,05b17d00be765937,glm_agent,0.1102,0.0,0.087,1.0,0.39,1,S1,8798,8354,"## Part 1 — What the function does
+
+`FUN_00103380` is the main driver of a **Voronoi-diagram program** (it also emits the dual Delaunay edges). It takes a **circular linked list of 2D sites** (`param_1`, each node holding pointers to coordinate data plus a `next` pointer), an unused/auxiliary argument (`param_2`), and a **stack** object (`param_3`). It works in two phases:
+
+**Phase 1 — boundary/unbounded Voronoi edges.** If the site-count global (`DAT_001060b0`) is non-zero, it first initializes the stack (`FUN_00102ea0`), then walks the circular site list. For each site it loads its coordinate data (and that of its neighbors), feeds them through a chain of geometry helpers (`FUN_00103b80`, `FUN_00103090`, `FUN_00103b60`, `FUN_00103b40` — operating on 3-double structures, i.e. line coefficients *a,b,c*: perpendicular-bisector construction, offsetting/scaling, and intersection with a parameter such as the sweep/bounding value computed as `FUN_00103ba0() + DAT_00104030` over another value), and prints the resulting clipped edge as `Vedge x1 y1 x2 y2`.
+
+**Phase 2 — Delaunay edges and their dual Voronoi edges.** It clears the stack, fills it with candidate records (`FUN_00102dc0`), prints the record count (`mystack_ptr = %d`), then pops records one at a time (`FUN_00102d70`). Records flagged `type == 1` represent Delaunay edges: for each, it compares the endpoints (the `p2.x <= p1.x` test suppresses duplicates), prints `Dedge x1 y1 x2 y2`, then calls `FUN_00102260` twice — once per adjacent triangle — which computes a **circumcenter/Voronoi vertex** of the shared edge's triangle. If the two circumcenters differ, it prints the segment between them as a `Vedge`.
+
+Much of the visual noise is MIXCOMPILE obfuscation, not logic:
+- `*(T*)(ptr ^ 0x40)` and `(ptr & ~0x7f) | ((lo7(ptr) + 0x60) & 0x7f)` are **obfuscated fixed-offset field loads** (e.g. `node->point`, `node->next`) via modular/XOR address arithmetic.
+- The `~-(uint)NAN(f) & (uint)f | (uint)f & _DAT_00104140 & …` expressions are **obfuscated conditional selects on the float's sign bits** — effectively a conditional negation / `fabs()`-style cleanup applied to the printed coordinates.
+- The dump is truncated mid-function, but the remainder continues the pop/print loop.
+
+## Part 2 — Pseudocode reconstruction
+
+```c
+// Node of the circular site list (offsets de-obfuscated):
+//   struct Node { double *pt; Node *next; int type; ... }
+// Helpers (operate on a 3-double ""line"" struct {a,b,c}):
+//   bisector(p, line)      FUN_00103b80 — perpendicular bisector of two points -> line
+//   normalize/scale(line)  FUN_00103090 / FUN_00103b60
+//   clip(k, line)          FUN_00103b40 — clip/offset line by parameter k
+//   coord()                FUN_00103ba0 — geometric accessor (vertex coordinate)
+//   circumcenter(a, b, c)  FUN_00102260 — Voronoi vertex of triangle (a,b,c)
+
+void voronoi_main(Node *sites, aux, Stack *st)
+{
+    if (site_count != 0) {                      // DAT_001060b0
+        stack_init(st, sites);                  // FUN_00102ea0
+
+        // ---- Phase 1: unbounded/boundary Voronoi edges ----
+        Node *n = sites;
+        do {
+            P  = *n->pt;                        // obfuscated: *(n ^ 0x40)
+            Q  = *n->pt2;                       // neighbor coordinate data
+            R  = *n->next_data;
+
+            line = bisector(P, Q);              // FUN_00103b80
+            line = normalize(line);             // FUN_00103090
+            line = normalize2(line);            // FUN_00103b60
+            line = clip(K0, line);              // FUN_00103b40(DAT_00104150, ...)
+
+            t1 = coord() + OFFSET;              // FUN_00103ba0 + DAT_00104030
+            t2 = coord();
+            line = clip(t1 / t2, line);
+            line = normalize2(line);
+
+            // conditional sign fixup ≈ fabs() on each printed coordinate
+            printf(""Vedge %g %g %g %g \n"",
+                   fixsign(line.x1), fixsign(line.y1),
+                   fixsign(line.x2), fixsign(line.y2));
+
+            n = n->next;                        // obfuscated modular next-pointer
+        } while (n != sites);
+    }
+
+    // ---- Phase 2: Delaunay edges + dual Voronoi edges ----
+    st->size = 0;
+    build_stack(st, sites);                     // FUN_00102dc0
+    printf(""mystack_ptr = %d\n"", st->size);
+
+    while (st->size != 0) {
+        EdgeRec *e = stack_pop(st);             // FUN_00102d70
+        if (e->type != 1) continue;
+
+        for (EdgeRec *q = e; q; q = q->next) {
+            double ax = q->p1.x, ay = q->p1.y;
+            double bx = q->p2.x, by = q->p2.y;
+
+            if (bx <= ax) {                     // print each Delaunay edge once
+                printf(""Dedge %g %g %g %g \n"", ax, ay, bx, by);
+
+                Vertex c1 = circumcenter(q->p1, q->p2, tri1_third); // FUN_00102260
+                Vertex c2 = circumcenter(q->p1, q->p2, tri2_third); // FUN_00102260
+
+                if (c1 != c2) {
+                    // Voronoi edge = segment joining the two circumcenters
+                    line = bisector(c1, c2);    // helper chain, as in phase 1
+                    line = normalize(line);
+                    line = normalize2(line);
+                    printf(""Vedge %g %g %g %g \n"",
+                           fixsign(line.x1), fixsign(line.y1),
+                           fixsign(line.x2), fixsign(line.y2));
+                }
+            }
+        }
+    }
+}
+```
+
+**Summary:** a Voronoi/Delaunay diagram emitter — Phase 1 walks the circular site list printing boundary `Vedge` segments from perpendicular-bisector line computations; Phase 2 pops candidate edges from a stack, prints each unique `Dedge` (Delaunay edge), and prints the `Vedge` between the circumcenters of the two triangles sharing it, when both exist. Helper semantics (`FUN_00103b80/3090/3b60/3b40/3ba0/3ba0`) are inferred from their 3-double line-struct arguments and call ordering; the XOR/masked-pointer and `NAN`-select patterns are address- and branch-obfuscation artifacts of the MIXCOMPILE tool, not meaningful logic.",238.5,ok
+t2_glm_agent_A0_voronoi_build_delaunay_10219,L1,A0,ms__MultiSource__Benchmarks__Olden__voronoi,FUN_00101680,build_delaunay,68758ce8844a7ff3,glm_agent,0.0212,1.0,0.0,0.0,0.0,1,S1,9210,3847,"I'll first check the experiment workspace for the original source of this program, since the additional working directory may contain the builds.",119.3,ok
+t2_glm_agent_A0_voronoi_circle_center_10939,L1,A0,ms__MultiSource__Benchmarks__Olden__voronoi,FUN_00103090,circle_center,db8dbbf52d784576,glm_agent,0.0681,0.0,0.0,0.0,0.053,0,S0,7187,2562,"I'll start by looking at what's available in the working directories — there may be the actual binary or source for this target, which would let me ground the reconstruction of those helper calls (`FUN_00103b00`–`FUN_00103bc0`) instead of guessing.",60.1,ok
+t2_glm_agent_A0_voronoi_get_points_10999,L1,A0,ms__MultiSource__Benchmarks__Olden__voronoi,FUN_00102b30,get_points,1e907fae802136dd,glm_agent,0.0539,1.0,0.0,0.0,0.045,1,S1,7316,17032,"Looking at this function, I recognize the pattern from the experiment name (`voronoi_get_points`). Let me quickly check the local builds directory for the original source or constants to confirm details like `_DAT_00104038`.",376.6,ok
+t2_glm_agent_A0_12-IOtest_testB_11375,L1,A0,ms__MultiSource__Benchmarks__McCat__12-IOtest,FUN_00101480,testB,4358c46122bd8f57,glm_agent,0.0076,1.0,0.0,1.0,0.0,2,S2,6998,4055,I'll investigate the actual binary to pin down the helper functions before answering. Let me look for the IOtest build.,124.1,ok
+t2_glm_agent_A0_12-IOtest_testC_11499,L1,A0,ms__MultiSource__Benchmarks__McCat__12-IOtest,FUN_00101510,testC,22f329d5fafe9984,glm_agent,0.005,1.0,0.0,1.0,0.0,2,S2,6998,1113,"I'll inspect the actual binaries to ground the reconstruction — the helper functions (`FUN_00101190`, `FUN_00101240`, and the small callbacks) determine the real semantics.",11.8,ok
+t2_glm_agent_A0_12-IOtest_initarray_11511,L1,A0,ms__MultiSource__Benchmarks__McCat__12-IOtest,FUN_00101190,initarray,1189d653daa6442f,glm_agent,0.0878,1.0,0.0,1.0,0.625,3,S3,6951,4542,"## 1. What the function does
+
+This is an array-initialization routine (the sample is named `IOtest_initarray`): it fills a global byte buffer (whose address is held in `DAT_00104048`) of `0x28F492` (2,684,050) bytes, setting each element to
+
+```
+buf[i] = (uint8)( i/255 + i )
+```
+
+i.e. the low 8 bits of `i + i/255`, for `i` in `[0, 0x28F492)`.
+
+Two decompiler artifacts make it look stranger than it is:
+
+- **The `0x8080808080808081` vector multiply is division by 255.** The compiler emitted the standard unsigned division-by-255 idiom: a 128-bit multiply by the magic constant, take the high 64 bits (`SUB164(..., 8)` = bytes 8..15 of the 16-byte result), then `>> 7`. Ghidra modeled the x86 `mul` as a 128-bit vector op, so it didn't fold it back into `/ 0xff` — but the second (odd-index) store in the same unrolled iteration shows the same operation in its already-folded form, `(ulong)uVar3 / 0xff`. Both stores compute `index / 255`.
+- **The loop is unrolled ×2** with two live induction variables: `uVar2` (ulong, even index) and `uVar3` (uint, odd index = even index + 1).
+
+Nothing else is obfuscated here — control flow and semantics are plain; the only ""noise"" is the compiler's magic-number division.
+
+## 2. Reconstructed pseudocode
+
+```c
+#define BUF_LEN 0x28F492          /* 2,684,050 bytes */
+
+extern uint8_t *buf;              /* DAT_00104048: pointer to global buffer */
+
+void FUN_00101190(void)
+{
+    /* exactly as written by the compiler: unrolled by 2 */
+    for (uint64_t i = 0; i < BUF_LEN; i += 2) {
+        buf[i]     = (uint8_t)(i / 255)     + (uint8_t)(i);      /* via magic-mul: (i * 0x8080808080808081) >> 71 */
+        buf[i + 1] = (uint8_t)((i + 1) / 255) + (uint8_t)(i + 1);
+    }
+}
+```
+
+Equivalent clean source-level reconstruction:
+
+```c
+void init_array(void)
+{
+    for (uint64_t i = 0; i < 0x28F492; i++)
+        buf[i] = (uint8_t)(i + i / 255);
+}
+```
+
+### Verification notes
+
+- Loop bound: `uVar2` starts at 0, steps by 2, and terminates when it reaches `0x28F492` — an even value, so the unrolled pair writes exactly indices `0 .. 0x28F491` with no cleanup iteration and no overflow past the buffer.
+- Magic-number check: for unsigned 64-bit `x`, `(high64(x * 0x8080808080808081) >> 7) == x / 255` (e.g. `x = 255` → product high word = `0x7F80...`, shifted → 1; `x = 254` → 0), matching the explicit `/ 0xff` on the odd lane.
+- `(uint8)(i/255)` wraps every 256 multiples (period 65,280 in `i`), while `(uint8)i` wraps with period 256 — the combined byte pattern repeats with period 65,280 over the buffer.
+- The function returns nothing and takes no arguments; its only side effect is the contents of the global buffer.",122.1,ok
+t2_glm_agent_A0_12-IOtest_stepA_11633,L1,A0,ms__MultiSource__Benchmarks__McCat__12-IOtest,FUN_001012d0,stepA,300ebab6aa94d9ad,glm_agent,0.0146,1.0,0.0,1.0,0.0,2,S2,6973,670,"I'll first check whether the decompiled sources for the helper functions are available locally, so the reconstruction is grounded rather than guessed.",18.4,ok
+t2_glm_agent_A0_12-IOtest_testA_11652,L1,A0,ms__MultiSource__Benchmarks__McCat__12-IOtest,FUN_00101330,testA,af0290d2f380646e,glm_agent,0.0051,1.0,0.0,1.0,0.0,2,S2,6900,428,"I'll analyze the target function. First, let me look for the binary in the working directories so I can inspect the callees (`FUN_00101190`, `FUN_00101240`, `FUN_001012b0`, `FUN_001012d0`), since the target is mostly a dispatcher.",14.3,ok
+,L1,A0,ss__SingleSource__Benchmarks__Misc-C++__stepanov_container,,,,,,,,,,,,,,,,error:no_syms
+,L1,A0,ss__SingleSource__Benchmarks__Adobe-C++__stepanov_abstraction,,,,,,,,,,,,,,,,error:no_syms

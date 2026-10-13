@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.2
+  },
+  "FLA": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.3
+  },
+  "SPLIT": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.1
+  },
+  "ICALL": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  },
+  "IGV": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.4
+  }
+ },
+ "rationale": "Treesort is a small, pointer-heavy Stanford benchmark whose hot path is recursive tree insertion/traversal with comparison-dominated branches, so the table favors cheap, correctness-safe passes (SUB, SPLIT, IBR) with low cost penalties so they apply broadly, including on the hot sort loop where instruction substitution and basic-block splitting add resistance at negligible runtime/size price; ICALL is strongly favored because indirecting call targets disrupts static call-graph recovery on this compact binary, with only a moderate runtime penalty so it avoids the tightest recursive kernels; BCF and FLA carry high SecurityGain but equally high RuntimeCost/SizeCost penalties so the selector restricts them to cold, security-critical functions rather than the comparison-hot traversal path, keeping overhead acceptable on this already branch-dense workload; IGV is retained with high Security/Diversity gain but the strongest RuntimeCost, SizeCost, and CorrectnessRisk penalties (its interprocedural transformations are the riskiest for recursive pointer-manipulating code), letting it fire only where features justify it, and any pass deemed too costly could simply be omitted; overall the weighting maximizes structural diversity (control flow, call targets, inter-block edges) while cost penalties act as the guardrail that keeps total runtime and size inflation bounded and correctness preserved for a recursion- and pointer-intensive program.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Stanford__Treesort",
+  "run_id": "e10D_glm_agent_Treesort_2_87562",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T11:53:22Z"
+ }
+}

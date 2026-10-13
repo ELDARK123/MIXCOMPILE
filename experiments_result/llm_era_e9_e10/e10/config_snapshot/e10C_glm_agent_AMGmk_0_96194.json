@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.15,
+   "SizeCost": 0.1,
+   "CorrectnessRisk": 0.05
+  },
+  "BCF": {
+   "SecurityGain": 0.35,
+   "DiversityGain": 0.45,
+   "RuntimeCost": 0.85,
+   "SizeCost": 0.55,
+   "CorrectnessRisk": 0.1
+  },
+  "FLA": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.8,
+   "SizeCost": 0.85,
+   "CorrectnessRisk": 0.15
+  },
+  "SPLIT": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.05
+  },
+  "IBR": {
+   "SecurityGain": 0.65,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.35
+  },
+  "ICALL": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.55,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.45
+  },
+  "IGV": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.15,
+   "CorrectnessRisk": 0.3
+  }
+ },
+ "rationale": "AMGmk is a dense sparse-linear-algebra multigrid solver whose hot code is arithmetic-heavy loops (hypre_CSRMatrixMatvec, MatvecT, Matvec_FF, relax, GenerateSeqLaplacian), so passes with low execution overhead should dominate: SUB gets the highest SecurityGain weight since arithmetic substitution is nearly free at runtime and this benchmark is rich in integer/float ops to transform, while SPLIT and IGV also receive strong security/diversity weights because basic-block splitting and indirect global-variable access add static-analysis friction with minimal loop-body cost. FLA and BCF are deliberately suppressed (high RuntimeCost/SizeCost weights, low SecurityGain weight) because flattening and bogus control flow inflate the branch-mispredict- and I-cache-sensitive inner loops of SpMV and relaxation and would bloat the already largest functions (hypre_CSRMatrixUnion, GenerateSeqLaplacian), keeping size overhead acceptable for a 16.5KB text footprint. IBR and ICALL sit in the middle: indirect branching/calls meaningfully raise reverse-engineering resistance on dispatch-like and cross-file call sites (45 functions across 12 files gives real inter-procedural diversity to exploit) but their indirect-branch and function-pointer costs and higher correctness risk (ICALL especially, given the codebase's memory-management and error-handling code in hypre_memory/hypre_error) warrant moderate weights and elevated CorrectnessRisk penalties so they are applied selectively only where function features strongly favor security gain.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__ASC_Sequoia__AMGmk",
+  "run_id": "e10C_glm_agent_AMGmk_0_96194",
+  "arm": "C",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T14:16:58Z"
+ }
+}

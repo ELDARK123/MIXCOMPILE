@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.4
+  },
+  "FLA": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.8,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.4
+  },
+  "SPLIT": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.3
+  },
+  "ICALL": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.3
+  },
+  "IGV": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  }
+ },
+ "rationale": "The sample is the Shootout 'random' benchmark: a tiny, hot-loop numeric program (iterative xorshift-style PRNG) with minimal profile metadata, so static analysis of its single dominant loop is the main threat and runtime overhead is the main constraint. FLA gets the highest SecurityGain/DiversityGain because flattening the loop's control flow is the strongest defense against automated CFG recovery, but its high RuntimeCost/SizeCost/CorrectnessRisk weights temper how aggressively it fires in the hot path. BCF is similar (good security, high runtime/size cost) and is kept slightly below FLA since bogus arithmetic on a loop this hot multiplies overhead without adding structural hiding beyond what FLA provides. IBR is a mid-cost structural option (indirect branches resist static edge recovery) with acceptable costs. SUB is cheap on runtime and very safe, making it a near-free baseline layer of arithmetic obfuscation that suits an ALU-bound numeric kernel, so its low cost weights let it apply broadly. IGV adds cheap diversity at modest cost. SPLIT has low standalone security value for a program with few functions/blocks, kept as a light diversity aid. ICALL is the weakest fit: this program is call-sparse, so indirect-call dispatch buys little while adding the kind of indirect-call overhead that hurts a tight numeric loop most, and its higher RuntimeCost keeps it from firing. Overall: stack cheap broad-coverage passes (SUB, SPLIT, IGV), enable structural passes (FLA, BCF, IBR) with cost-weighted restraint, and suppress the ill-fitting ICALL.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Shootout__random",
+  "run_id": "e10D_glm_agent_random_1_87225",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T11:47:28Z"
+ }
+}

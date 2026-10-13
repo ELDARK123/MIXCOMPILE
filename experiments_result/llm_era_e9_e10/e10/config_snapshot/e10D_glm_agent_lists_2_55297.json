@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.45,
+   "CorrectnessRisk": 0.2
+  },
+  "BCF": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.55,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.3
+  },
+  "FLA": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.35
+  },
+  "SPLIT": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.15
+  },
+  "IBR": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.55,
+   "CorrectnessRisk": 0.2
+  },
+  "ICALL": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.35
+  },
+  "IGV": {
+   "SecurityGain": 0.65,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.15,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.3
+  }
+ },
+ "rationale": "Round 1 compiled and ran correctly, so this round pushes obfuscation strength up while respecting the workload: this shootout benchmark is dominated by tiny, hot-loop functions (total text only ~1.7 KB; test_lists, heapsort, matrix, hash run in tight loops), so BCF and FLA get the highest SecurityGain weights to flatten control flow and break loop-structure recognition in exactly the functions a reverser would target first, but their RuntimeCost/SizeCost weights stay mid-range so the selector still prefers cheaper passes for the smallest functions. SUB is weighted high on SecurityGain/DiversityGain with low CorrectnessRisk since arithmetic substitution is safe and cheap for the arithmetic-heavy kernels (hash, heapsort, matrix). IBR keeps a high SizeCost weight because indirect branching bloats many tiny basic blocks quickly, while its security value justifies use on the larger functions. SPLIT stays a low-cost enhancer (cheap, safe) that improves FLA/BCF effectiveness. ICALL and IGV round out diversity against static call-graph and global-variable analysis with minimal loop-overhead and near-zero runtime cost respectively; moderate CorrectnessRisk weights on FLA/ICALL reflect the main correctness hazards seen in pointer-heavy list code, letting the selector skip them where features look fragile.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Shootout__lists",
+  "run_id": "e10D_glm_agent_lists_2_55297",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T02:55:22Z"
+ }
+}

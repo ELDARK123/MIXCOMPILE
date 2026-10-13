@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.15,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.85,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.6
+  },
+  "FLA": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.8,
+   "SizeCost": 0.65,
+   "CorrectnessRisk": 0.5
+  },
+  "SPLIT": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.15
+  },
+  "IBR": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.25
+  },
+  "ICALL": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.3
+  },
+  "IGV": {
+   "SecurityGain": 0.65,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.35
+  }
+ },
+ "rationale": "Round 0 built, ran correctly, and hit no ICE, so the constraints allow pushing obfuscation strength up from the conservative baseline. lpbench is a tiny (5064-byte text), compute-bound numeric benchmark whose hot functions (dgefa, dgesl, daxpy, matgen) are tight arithmetic loops, so I favor low-overhead transformations: SUB gets the highest weight since instruction substitution is cheap, composable, and directly obscures the floating-point and integer idioms of the LINPACK/FFT kernels; SPLIT and IGV follow (IGV especially for diversity, since global variable encoding reliably breaks pattern recognition in small binaries) while keeping their modest runtime/size cost weights low so they fire broadly. IBR and ICALL are kept at strong security weights with moderate cost sensitivity \u2014 indirect branching and calls frustrate static control-flow recovery and are affordable even in hot loops given the small code size. BCF and FLA are deliberately restrained (high RuntimeCost/SizeCost weights): bogus control flow and flattening multiply loop-body work in daxpy/dgefa where nearly all runtime is spent, and the 5 KB text budget leaves little headroom, so these passes should apply only where per-function cost features justify them rather than program-wide. CorrectnessRisk weights stay elevated for BCF/FLA to preserve the clean round-0 correctness result.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__CoyoteBench__lpbench",
+  "run_id": "e10D_glm_agent_lpbench_1_51639",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T01:54:32Z"
+ }
+}

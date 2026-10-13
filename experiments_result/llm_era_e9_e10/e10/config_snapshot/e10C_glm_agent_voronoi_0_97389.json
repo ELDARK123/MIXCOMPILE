@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.85,
+   "SizeCost": 0.85,
+   "CorrectnessRisk": 0.9
+  },
+  "BCF": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.25,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.7
+  },
+  "FLA": {
+   "SecurityGain": 0.65,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.55
+  },
+  "SPLIT": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.75,
+   "SizeCost": 0.75,
+   "CorrectnessRisk": 0.85
+  },
+  "IBR": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.55,
+   "CorrectnessRisk": 0.6
+  },
+  "ICALL": {
+   "SecurityGain": 0.45,
+   "DiversityGain": 0.4,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.5
+  },
+  "IGV": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.45,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.55
+  }
+ },
+ "rationale": "voronoi is a small (10.5 KB text, 46 functions) compute-bound Olden benchmark whose hot path (do_merge, build_delaunay, circle_center) is dense floating-point geometry with tight loops, so runtime-friendly passes dominate: SUB gets high weights across all dimensions since instruction substitution is nearly free in time and size and adds real arithmetic-level diversity to FP-heavy code, and SPLIT is favored on the few large functions (do_merge at ~2 KB) where splitting basic blocks adds structural diversity at negligible cost. FLA is the strongest control-flow obfuscator but flattening dispatch loops into hot geometry code carries heavy runtime penalty, so its SecurityGain is moderate while its RuntimeCost weight is kept low, effectively confining it (if applied) to the large, less loop-critical functions; BCF similarly inflates both runtime and size and is down-weighted, since on a 10 KB binary bogus-block expansion can multiply text size several-fold. IBR and IGV receive mid-range weights: indirect branching and global-variable indirection complicate static analysis meaningfully at moderate overhead, acceptable on the few larger functions. ICALL is lowest priority because voronoi contains few indirect-call opportunities and its dispatch-heavy recursion is better obscured via IBR/FLA, and its CorrectnessRisk weight stays modest to reflect that forcing indirection through the site-lookup recursion risks subtle miscompiles. CorrectnessRisk weights are kept high for the cheap, safe passes (SUB, SPLIT) and lower for the restructuring passes (FLA, IBR, ICALL) so the selector prefers low-risk transforms for correctness-sensitive FP code.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__Olden__voronoi",
+  "run_id": "e10C_glm_agent_voronoi_0_97389",
+  "arm": "C",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T14:36:58Z"
+ }
+}

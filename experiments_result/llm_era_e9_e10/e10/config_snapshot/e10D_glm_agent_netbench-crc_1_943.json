@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.25,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.55,
+   "CorrectnessRisk": 0.2
+  },
+  "FLA": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.55,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.3
+  },
+  "SPLIT": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.45,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.15
+  },
+  "IBR": {
+   "SecurityGain": 0.65,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.2
+  },
+  "ICALL": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.35
+  },
+  "IGV": {
+   "SecurityGain": 0.45,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.25
+  }
+ },
+ "rationale": "Round 0 built and ran correctly, so the safe move is to push obfuscation intensity up modestly rather than restructure. SUB gets the highest security/diversity weights because arithmetic substitution is cheap, correct, and effective on a CRC-dominated workload whose hot code (update_crc, gen_crc_table) is pure integer arithmetic \u2014 it maximally obscures the CRC polynomial constants and feedback masks. FLA and BCF stay moderately enabled with elevated RuntimeCost/SizeCost weights so the per-function feature scoring naturally throttles them on the hot loops (main, update_crc run per-packet) while still flattening and bogarding the larger, colder functions (main's setup path, gen_crc_table). IBR is kept fairly high on diversity since indirect branching pairs well with FLA to fragment the small control-flow graphs, and the tiny 1444-byte text budget can absorb modest block growth. ICALL keeps a moderate CorrectnessRisk weight because indirecting calls in a 6-function program with simple call sites adds little security but some risk; IGV stays low across the board since global-variable obfuscation on the 10k-line packet_lengths.h table region adds size with little gain. SPLIT remains a cheap diversity booster applied opportunistically. All seven passes are enabled since the previous candidate showed no correctness or build failures, but cost weights are tuned to keep total runtime and size overhead acceptable for this benchmark-shaped workload.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__Trimaran__netbench-crc",
+  "run_id": "e10D_glm_agent_netbench-crc_1_943",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T15:36:10Z"
+ }
+}

@@ -1,0 +1,84 @@
+run_id,level,e9_arm,sample_id,function_id,variant_seed,pool_size,prompt_sha256,model,model_version,response_raw,parse_status,top1_hit,rank,tokens_in,tokens_out,latency_s,cost_usd,agent_retry,harness_violation,status
+e9_L0_glm_agent_A1_0000_93980,L0,A1,ms__MultiSource__Benchmarks__MiBench__security-sha,FUN_00101310,1,13,292f64e7e2f2f03a,glm_agent,claude-opus-5-5(1571out),"## Reasoning
+
+**Target identification:** The target is a `processEntry entry` function from the protected binary. Its body is a minimal ELF entry stub: it loads `main` (`FUN_00102e90`), `argv`, and the stack into a call through `PTR___libc_start_main_00105fd8`, then falls into an infinite loop. No application logic at all.
+
+**Step 1 — Structural match:** F001 is *literally* the same function in the original binary: a `processEntry entry` that calls `__libc_start_main` with the identical argument pattern `(main, argv, &stack, 0, 0, param_1, auStack_8)` followed by the same do-nothing infinite loop. The only differences are the relocated pointer addresses (`PTR___libc_start_main_00103fd0` vs `00105fd8`) and the name of the referenced main (`FUN_00101810` vs `FUN_00102e90`), which is exactly what changes between an original and a re-obfuscated binary. This is the counterpart of the target.
+
+**Step 2 — Semantically linked function:** F013 (`FUN_00101810(int, long)`) is the `main` that the target entry passes to `__libc_start_main` — it's the immediate callee in the program flow the target represents, so it's the next most related, even though its body (file hashing logic) shares no code with the stub.
+
+**Step 3 — Remaining candidates:** None of the others resemble an entry stub:
+- F004 (`_FINI_0`) and F005 (`_INIT_0`) are small wrapper/init functions with a call and a conditional — the closest in shape (tiny, few calls, trivial control flow), so they come next.
+- F002 and F003 are empty return-only functions — trivially similar in size but with no relationship.
+- F006–F012 are the internals of a SHA-style hashing library (state init F006, block transform F008/F009, finalization F010, update F011, digest print F012, byte-count update F007). They are large or data-flow heavy with no structural resemblance to a two-line entry stub; they belong at the bottom, roughly ordered by size/complexity.
+
+**Final ranking (most → least similar):**
+
+{""ranking"": [""F001"", ""F013"", ""F005"", ""F004"", ""F002"", ""F003"", ""F012"", ""F006"", ""F009"", ""F010"", ""F008"", ""F007"", ""F011""]}",ok,1,1,154316,1453,46.8,1.262448,0,none,ok
+e9_L0_glm_agent_A1_0001_94027,L0,A1,ms__MultiSource__Benchmarks__MiBench__security-sha,FUN_00101650,1,13,93b1d38a863f2608,glm_agent,claude-opus-5-5(1326out),"Looking at the target function from the protected binary:
+
+```c
+/* WARNING: Removing unreachable block (ram,0x001010e3) */
+/* WARNING: Removing unreachable block (ram,0x001010ef) */
+void FUN_001010d0(void) { return; }
+```
+
+This is a tiny, trivial function: it takes no parameters, returns nothing, and consists of just a return — with two unreachable code blocks at addresses 0x001010e3 and 0x001010ef stripped by the decompiler.
+
+**Step-by-step comparison:**
+
+1. **F002** — This is *literally identical* to the target, down to the exact unreachable-block warning addresses (0x001010e3, 0x001010ef) and the same address `FUN_001010d0`. The target function was evidently not obfuscated (consistent with the task description: obfuscation is applied per-function based on code features, and an empty function offers nothing to obfuscate). This is an exact match.
+
+2. **F003** — Structurally identical shape: a trivial `void f(void) { return; }` with the same kind of unreachable-block warnings (at 0x00101124/0x00101130), just at a different address (`FUN_00101100`). Extremely similar but not the exact match.
+
+3. **F004** (`_FINI_0`) — A small void function with minimal control flow; notably it directly calls `FUN_001010d0` (the target). Still has conditional logic, so slightly less similar than F003.
+
+4. **F005** (`_INIT_0`) — Also a tiny void wrapper, just one call to `FUN_00101100`. Similar in size, marginally less related since it doesn't reference the target function.
+
+5. **F006** — Small function writing a few constants (SHA-256 state initialization: 0x6a09e667-family values ending in 0xc3d2e1f0). Small, but performs real stores.
+
+6. **F012** — Small function, but calls `printf` with five `%08x` hex values — clearly the hash-printing helper.
+
+7. **F009** — Larger SHA-256 compression-step function operating on a state buffer.
+
+8. **F008** — SIMD-style function manipulating 16-byte vectors (the SHA-256 message-schedule/round function).
+
+9. **F010** — Padding/finalization logic (0x80 byte, memset, block processing) — medium-large.
+
+10. **F007** — Large function updating counters by `len*8` — the SHA-256 update routine with many round constants.
+
+11. **F011** — The largest helper: full streaming hash of a FILE (reads, buffers, finalizes).
+
+12. **F013** — `main`: argument handling, fopen loop, calls F011/F012.
+
+13. **F001** — `_start`/process entry: calls `__libc_start_main` and contains an infinite do-nothing loop; least similar in content, though also small.
+
+{""ranking"": [""F002"", ""F003"", ""F004"", ""F005"", ""F006"", ""F012"", ""F009"", ""F008"", ""F010"", ""F007"", ""F011"", ""F013"", ""F001""]}",ok,1,1,154268,1136,14.3,0.7121527999999999,0,none,ok
+e9_L0_glm_agent_A1_0002_94041,L0,A1,ms__MultiSource__Benchmarks__MiBench__security-sha,FUN_00101810,1,13,fce824e84f6c8998,glm_agent,claude-opus-5-5(1327out),"## Reasoning
+
+**Step 1 — Analyze the target function.**
+The target is `FUN_00101100` in the protected binary:
+- Signature: `void (void)` — takes no parameters, returns nothing.
+- Body: a single `return;` — it does nothing.
+- Notably, it carries two decompiler warnings about removed unreachable blocks (`0x00101124`, `0x00101130`), meaning the original code had some dead instructions after the return (likely padding or obfuscation artifacts).
+- It is most plausibly an init/registration stub (compare with Example 3, where tiny helper functions survived obfuscation nearly unchanged).
+
+**Step 2 — Match against candidates by structure.**
+
+- **F003 (`FUN_00101100`)**: Identical in every visible respect — same name, same address (`0x00101100`), same void/no-arg signature, same `return;` body, and even the *same* two unreachable-block warnings at the *same addresses* (`0x00101124`, `0x00101130`). This is an exact match. The obfuscation pass simply didn't alter it (consistent with Example 3, where tiny functions pass through unchanged).
+
+- **F002 (`FUN_001010d0`)**: Structurally identical twin — void, no-arg, `return;` only, with the same kind of removed-unreachable-block warnings (at its own addresses `0x001010e3`, `0x001010ef`). Second-closest by structure, but it's a different address/function, so not the target.
+
+- **F005 (`_INIT_0`)**: A tiny wrapper that does exactly one thing — calls `FUN_00101100()`. Very closely related to the target (it's the caller), but its body contains a call, so it's not an empty function.
+
+- **F004 (`_FINI_0`)**: Also tiny and related to init/finalize, calls `FUN_001010d0()` (the twin of the target), but has a conditional branch and a library call — slightly further from the target's trivial structure.
+
+- **F001 (`entry`)**: Small, but does real work: invokes `__libc_start_main` via a function pointer and contains an infinite loop. Different purpose and structure.
+
+- **F012 (`FUN_001017f0`)**: Small, single `printf` of five hex words — a utility output function, unrelated in behavior but still tiny.
+
+- **F006–F011, F013**: Large, substantive functions (SHA-style hashing: state init `FUN_00101190`, block transform `FUN_00101250`, compression `FUN_00101310`, finalization `FUN_001015b0`, file hashing `FUN_00101650`, and main driver `FUN_00101810`). None resemble a trivial void stub. Among these, F006 is the shortest/most ""initialization-like"" (writes constants into a struct), then the others in rough order of increasing divergence from a no-op; F013 (main with file loops) is the least similar.
+
+**Step 3 — Conclusion.** The target is unambiguously F003 (same address, name, body, and decompiler warnings). F002 is its structural twin. F005 and F004 are its callers in the init/fini chain. Everything else decreases in similarity with size and behavioral distance from a no-op stub.
+
+{""ranking"": [""F003"", ""F002"", ""F005"", ""F004"", ""F001"", ""F012"", ""F006"", ""F007"", ""F008"", ""F009"", ""F010"", ""F011"", ""F013""]}",ok,1,1,154269,1212,37.8,0.6827536,0,none,ok

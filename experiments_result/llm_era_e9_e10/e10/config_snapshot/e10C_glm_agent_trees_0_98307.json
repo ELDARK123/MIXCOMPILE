@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.15,
+   "SizeCost": 0.15,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.55,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.2
+  },
+  "FLA": {
+   "SecurityGain": 0.9,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.55,
+   "CorrectnessRisk": 0.25
+  },
+  "SPLIT": {
+   "SecurityGain": 0.45,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.15,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.55,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.3
+  },
+  "ICALL": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.3
+  },
+  "IGV": {
+   "SecurityGain": 0.65,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.25
+  }
+ },
+ "rationale": "This program is tiny (3,629 text bytes total, 34 functions, largest function main at only 1,113 bytes), so absolute size and runtime budgets allow moderately aggressive transformation, but correctness must be preserved because the small C++ sources (tree.cpp/tree.h, 217 lines) leave little margin for transformation bugs in dense constructor code (_ZN4TreeC* functions at 176-252 bytes). FLA gets the highest SecurityGain (0.90) since control-flow flattening gives the strongest reverse-engineering resistance on the dominant main function and pairs well with SPLIT (high DiversityGain 0.70, very low cost weights), which creates more basic blocks for FLA/BCF to scramble. BCF is weighted strongly (0.85 SecurityGain) with moderate cost weights since its size bloat is tolerable at this binary scale. IBR and ICALL receive solid security weights (0.75/0.70) with elevated CorrectnessRisk weights (0.30) so the selection logic is appropriately cautious about applying indirection to the frequent method calls in the Tree class constructors and destructors. IGV adds global-variable indirection resistance at moderate weight. SUB is kept as a cheap, near-zero-risk baseline diversifier applied broadly. No pass is disabled: even the costlier ones are gated by their cost/risk weights rather than omitted, letting the feature-driven selector apply them only where function-level features justify it.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__Prolangs-C++__trees",
+  "run_id": "e10C_glm_agent_trees_0_98307",
+  "arm": "C",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T14:52:19Z"
+ }
+}

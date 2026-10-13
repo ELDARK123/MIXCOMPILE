@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.9,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.2
+  },
+  "FLA": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.45
+  },
+  "SPLIT": {
+   "SecurityGain": 0.3,
+   "DiversityGain": 0.45,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.25
+  },
+  "ICALL": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.4
+  },
+  "IGV": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.15,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.15
+  }
+ },
+ "rationale": "Blowfish's reverse-engineering value is concentrated in the cipher core (BF_encrypt's 16-round Feistel loop, BF_set_key's P-array/S-box initialization, and the CBC/CFB/OFB modes), so SUB gets the highest SecurityGain weight because arithmetic substitution obscures the Blowfish round constants and key schedule with near-zero runtime and size cost on these small hot loops; BCF and FLA provide the bulk of control-flow confusion but are weighted with elevated RuntimeCost/SizeCost because BF_encrypt and BF_cbc_encrypt are tight, performance-critical loops where bogus blocks and dispatcher flattening compound per-iteration, and FLA additionally carries a moderate CorrectnessRisk on the mode-mode state machines; SPLIT is kept cheap and low-risk to break up the large harness functions (test, print_test_data) for modest diversity without affecting the crypto path; IBR and ICALL get middle-of-range weights since this codebase is mostly direct calls and structured branches, so they add diversity at acceptable but non-trivial indirect-dispatch cost; and IGV is weighted strongly on DiversityGain with minimal cost, since interleaving/gathering instructions cheaply hardens the small 9.7KB text section against pattern-matching of the well-known Blowfish implementation without measurable slowdown, keeping overall overhead acceptable while correctness-sensitive passes (FLA, ICALL) are throttled by their risk weights.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__MiBench__security-blowfish",
+  "run_id": "e10C_glm_agent_security-blowfish_0_93342",
+  "arm": "C",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T13:29:36Z"
+ }
+}

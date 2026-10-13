@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.25,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.55,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.25
+  },
+  "FLA": {
+   "SecurityGain": 0.65,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.55,
+   "CorrectnessRisk": 0.25
+  },
+  "SPLIT": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.15,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  },
+  "ICALL": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.3
+  },
+  "IGV": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.25
+  }
+ },
+ "rationale": "Round 1 built and passed with no ICE, so this round escalates obfuscation strength across all seven passes while keeping risk dims low enough to preserve the clean correctness record. SUB is cheap and safe on this C++ benchmark's arithmetic-heavy code (Benchmark timing loops, ComplexBenchmark, Stepanov container ops), so it gets the highest SecurityGain with low RuntimeCost/CorrectnessRisk. IBR and SPLIT are also low-cost static diversifiers and are boosted since the binary is tiny (3243 bytes text) and can absorb size growth. BCF and FLA provide the core control-flow resistance targeted at main and Benchmark::time_both/time_one, but their RuntimeCost/SizeCost weights are kept mid-range because these are timing-sensitive benchmark loops where flattening plus bogus control flow compound hot-path overhead. ICALL and IGV stay enabled at moderate weights to break static call-graph and global-value recovery \u2014 valuable given heavy C++ name mangling already present \u2014 with CorrectnessRisk capped near 0.3 since virtual-call and linkage transformations are the likeliest source of subtle breakage in this codebase.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Misc-C++__oopack_v1p8",
+  "run_id": "e10D_glm_agent_oopack_v1p8_2_97347",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T14:35:54Z"
+ }
+}

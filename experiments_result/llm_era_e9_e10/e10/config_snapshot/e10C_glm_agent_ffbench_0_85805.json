@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.8,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.3
+  },
+  "FLA": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.2
+  },
+  "SPLIT": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.9,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.2
+  },
+  "ICALL": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.4,
+   "RuntimeCost": 0.8,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.3
+  },
+  "IGV": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  }
+ },
+ "rationale": "ffbench is a tiny, compute-bound double-precision benchmark whose execution is dominated by a single hot arithmetic loop, so the profile's lack of source metadata implies few functions and extreme execution concentration: per-instruction overhead in that loop translates almost directly into total-runtime cost, while code-size pressure is minimal. I therefore favor low-overhead, correctness-safe data-level transforms \u2014 SUB (cheap, applies well to dense FP/integer arithmetic) and SPLIT/IGV (near-free structural diversity) get high SecurityGain with low RuntimeCost/SizeCost/CorrectnessRisk weights so cost features suppress them only in genuinely hot inner-loop regions. Control-flow-heavy transforms get high cost weights: BCF's opaque predicates execute on every loop iteration, FLA destroys branch predictability and the compiler's ability to keep the FP pipeline fed, and IBR's indirect branches are especially damaging in tight loops, so all three are strongly penalized and will only apply where static features show they are outside the hottest paths. ICALL is penalized hardest among the call-level passes because ffbench is nearly call-free, giving it almost no security payoff while still risking indirect-call misprediction and FP-domain disruption. This yields strong static misdirection (substituted instructions, split/renamed state) at modest overhead while keeping the hot loop lean and FP semantics intact.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Misc__ffbench",
+  "run_id": "e10C_glm_agent_ffbench_0_85805",
+  "arm": "C",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T11:23:42Z"
+ }
+}

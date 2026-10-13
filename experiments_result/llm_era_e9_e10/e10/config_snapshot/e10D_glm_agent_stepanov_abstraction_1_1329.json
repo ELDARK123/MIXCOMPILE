@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.2
+  },
+  "FLA": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.55,
+   "CorrectnessRisk": 0.3
+  },
+  "SPLIT": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.15,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.25
+  },
+  "ICALL": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.35
+  },
+  "IGV": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.4
+  }
+ },
+ "rationale": "Round 0 compiled and ran cleanly, so this round raises obfuscation pressure on the strongest structural passes: FLA and BCF get high SecurityGain/DiversityGain since this benchmark's hot code (main at 8.5 KB plus templated heapsort/abstraction loops) is loop- and control-flow-rich where flattening and bogus control flow degrade static analysis most, with BCF's higher RuntimeCost weight kept below its security weights to cap overhead in the timer-critical benchmark kernels; SUB stays cheap and safe with low cost weights so arithmetic substitution applies broadly across the many small constant-folding and simple-types functions; IBR is boosted as a low-risk complement that fragments basic blocks and composes well with FLA/BCF; SPLIT remains a low-cost diversity filler for the mid-size functions; and ICALL/IGV are held at moderate security weights with the highest CorrectnessRisk of the set because this program is template-heavy (stepanov abstraction/vector), where indirect-call lowering and global variable indirection interact most with inlined template instantiations and are the most likely sources of miscompiles, so they apply selectively to larger functions rather than everywhere. Overall the table trades a bounded amount of runtime (weights kept in the 0.35-0.6 band for the expensive passes) for substantially higher reverse-engineering resistance, while correctness-sensitive passes are throttled to protect the template-instantiated code paths that round 0 exercised successfully.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Adobe-C++__stepanov_abstraction",
+  "run_id": "e10D_glm_agent_stepanov_abstraction_1_1329",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T15:42:36Z"
+ }
+}

@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.9,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  },
+  "FLA": {
+   "SecurityGain": 0.9,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.4
+  },
+  "SPLIT": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  },
+  "IBR": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.2
+  },
+  "ICALL": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.3
+  },
+  "IGV": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.2
+  }
+ },
+ "rationale": "Round 0 built and ran cleanly with no ICE, so this candidate shifts weights toward stronger obfuscation while throttling the passes that hurt most on this profile: exptree is a tiny (2639 text bytes, 14 functions), recursion-heavy benchmark (recSearch/doSearch/queens-style backtracking), so hot recursive loops are sensitive to control-flow overhead. SUB gets the most aggressive weights since instruction substitution is nearly free and directly obscures the arithmetic that dominates these kernels; BCF stays high because its cost is mostly static size, which this very small binary can easily absorb, while its runtime cost is near zero with well-formed opaque predicates. FLA keeps the highest SecurityGain (flattening is the strongest structural deterrent for search/recursion logic) but carries the largest RuntimeCost and CorrectnessRisk weights so the selector spares the deepest recursive hot paths and avoids miscompilation risk; SPLIT is kept as a cheap diversity amplifier that composes well with FLA by giving it more basic blocks to flatten. IBR and ICALL get solid security/diversity weights with moderate costs since indirect branching and calls cheaply break static call-graph recovery, which is high-value against reverse engineering of a program whose structure (game search) is otherwise easy to recognize. IGV is included but with the highest SizeCost weight, since global-variable indirection adds data-section growth with less benefit for a program with few globals and no meaningful static data to hide.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__McGill__exptree",
+  "run_id": "e10D_glm_agent_exptree_1_2406",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T16:00:49Z"
+ }
+}

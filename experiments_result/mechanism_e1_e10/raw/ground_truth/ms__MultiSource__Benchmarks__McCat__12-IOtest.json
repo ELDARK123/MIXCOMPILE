@@ -1,0 +1,166 @@
+{
+  "sample_id": "ms__MultiSource__Benchmarks__McCat__12-IOtest",
+  "rule": "k-th .text function (sorted by entry) of llvm reference pairs with k-th recovered function of target; offsets relative to first entry",
+  "functions": [
+    {
+      "name": "_start",
+      "addr": 4192,
+      "size": 38
+    },
+    {
+      "name": "getac",
+      "addr": 4432,
+      "size": 8
+    },
+    {
+      "name": "setac",
+      "addr": 4448,
+      "size": 38
+    },
+    {
+      "name": "initarray",
+      "addr": 4496,
+      "size": 96
+    },
+    {
+      "name": "array",
+      "addr": 4592,
+      "size": 12
+    },
+    {
+      "name": "min",
+      "addr": 4608,
+      "size": 9
+    },
+    {
+      "name": "max",
+      "addr": 4624,
+      "size": 9
+    },
+    {
+      "name": "add",
+      "addr": 4640,
+      "size": 4
+    },
+    {
+      "name": "mult",
+      "addr": 4656,
+      "size": 6
+    },
+    {
+      "name": "loop",
+      "addr": 4672,
+      "size": 49
+    },
+    {
+      "name": "main",
+      "addr": 4736,
+      "size": 37
+    },
+    {
+      "name": "initA",
+      "addr": 4784,
+      "size": 19
+    },
+    {
+      "name": "stepA",
+      "addr": 4816,
+      "size": 96
+    },
+    {
+      "name": "testA",
+      "addr": 4912,
+      "size": 67
+    },
+    {
+      "name": "initminB",
+      "addr": 4992,
+      "size": 16
+    },
+    {
+      "name": "initmaxB",
+      "addr": 5008,
+      "size": 16
+    },
+    {
+      "name": "initaddB",
+      "addr": 5024,
+      "size": 16
+    },
+    {
+      "name": "initmultB",
+      "addr": 5040,
+      "size": 16
+    },
+    {
+      "name": "stepminB",
+      "addr": 5056,
+      "size": 45
+    },
+    {
+      "name": "stepmaxB",
+      "addr": 5104,
+      "size": 45
+    },
+    {
+      "name": "stepaddB",
+      "addr": 5152,
+      "size": 45
+    },
+    {
+      "name": "stepmultB",
+      "addr": 5200,
+      "size": 45
+    },
+    {
+      "name": "testB",
+      "addr": 5248,
+      "size": 139
+    },
+    {
+      "name": "testC",
+      "addr": 5392,
+      "size": 139
+    },
+    {
+      "name": "initminB",
+      "addr": 5536,
+      "size": 16
+    },
+    {
+      "name": "stepminB",
+      "addr": 5552,
+      "size": 48
+    },
+    {
+      "name": "initmaxB",
+      "addr": 5600,
+      "size": 16
+    },
+    {
+      "name": "stepmaxB",
+      "addr": 5616,
+      "size": 48
+    },
+    {
+      "name": "initaddB",
+      "addr": 5664,
+      "size": 16
+    },
+    {
+      "name": "stepaddB",
+      "addr": 5680,
+      "size": 48
+    },
+    {
+      "name": "initmultB",
+      "addr": 5728,
+      "size": 16
+    },
+    {
+      "name": "stepmultB",
+      "addr": 5744,
+      "size": 48
+    }
+  ]
+}

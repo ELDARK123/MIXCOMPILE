@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.15,
+   "SizeCost": 0.15,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.3
+  },
+  "FLA": {
+   "SecurityGain": 0.9,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.55,
+   "SizeCost": 0.55,
+   "CorrectnessRisk": 0.45
+  },
+  "SPLIT": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.15,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.05
+  },
+  "IBR": {
+   "SecurityGain": 0.65,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.3
+  },
+  "ICALL": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.35
+  },
+  "IGV": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.3
+  }
+ },
+ "rationale": "Round 1 built and ran cleanly with no ICE, so this candidate shifts weight toward security and diversity while keeping cost sensitivity where this profile needs it: the binary is tiny (14161 text bytes, 39 functions), leaving ample size headroom, but the largest functions (_ZSt24__copy_move_backwa, _Z10deque_testPdS_i, the two _ZSt16__introsort_loop instantiations) are exactly the hot inner loops of sort/copy/container traversal, so RuntimeCost and SizeCost weights stay moderate-to-high for the expensive control-flow passes (BCF, FLA, IBR) to steer them away from those hot blocks rather than disabling them outright. FLA gets the highest SecurityGain/DiversityGain since flattening yields the strongest static-analysis resistance and the clean round-1 result suggests headroom to push it, tempered by a 0.45 CorrectnessRisk because this is template-heavy C++ where flattened loops and exception edges are the main correctness hazard. SUB and SPLIT are weighted aggressively (highest security/diversity, lowest cost/risk) because they are nearly free, compose well with flattening and branching passes, and arithmetic substitution lands well on this profile's arithmetic-heavy code (bignum Fibonacci in bigfib.cpp, Mandelbrot iteration in mandel-text.cpp). ICALL is favored on security over cost since indirection disrupts call-graph recovery across the many STL helper calls, while IGV is kept as a moderate all-rounder for global state used by the oopack/stepanov driver files.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Misc-C++__stepanov_container",
+  "run_id": "e10D_glm_agent_stepanov_container_2_2963",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T16:10:09Z"
+ }
+}

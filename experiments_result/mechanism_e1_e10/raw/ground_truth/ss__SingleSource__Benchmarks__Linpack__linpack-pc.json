@@ -1,0 +1,76 @@
+{
+  "sample_id": "ss__SingleSource__Benchmarks__Linpack__linpack-pc",
+  "rule": "k-th .text function (sorted by entry) of llvm reference pairs with k-th recovered function of target; offsets relative to first entry",
+  "functions": [
+    {
+      "name": "_start",
+      "addr": 4240,
+      "size": 38
+    },
+    {
+      "name": "second",
+      "addr": 4480,
+      "size": 21
+    },
+    {
+      "name": "what_date",
+      "addr": 4512,
+      "size": 1
+    },
+    {
+      "name": "main",
+      "addr": 4528,
+      "size": 6131
+    },
+    {
+      "name": "matgen",
+      "addr": 10672,
+      "size": 512
+    },
+    {
+      "name": "dgefa",
+      "addr": 11184,
+      "size": 1293
+    },
+    {
+      "name": "dgesl",
+      "addr": 12480,
+      "size": 1693
+    },
+    {
+      "name": "dmxpy",
+      "addr": 14176,
+      "size": 7894
+    },
+    {
+      "name": "epslon",
+      "addr": 22080,
+      "size": 16
+    },
+    {
+      "name": "print_time",
+      "addr": 22096,
+      "size": 1
+    },
+    {
+      "name": "idamax",
+      "addr": 22112,
+      "size": 293
+    },
+    {
+      "name": "dscal",
+      "addr": 22416,
+      "size": 167
+    },
+    {
+      "name": "daxpy",
+      "addr": 22592,
+      "size": 721
+    },
+    {
+      "name": "ddot",
+      "addr": 23328,
+      "size": 407
+    }
+  ]
+}

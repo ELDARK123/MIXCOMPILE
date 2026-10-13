@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.8,
+   "CorrectnessRisk": 0.2
+  },
+  "FLA": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.3
+  },
+  "SPLIT": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.15,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.15
+  },
+  "IBR": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.3
+  },
+  "ICALL": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.35
+  },
+  "IGV": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.1,
+   "CorrectnessRisk": 0.1
+  }
+ },
+ "rationale": "This benchmark (05-eks) is a compact numeric eigensolver (~14 KB text, 30 functions) dominated by a few hot, loop-heavy kernels (Trianglelise, Jacobi, QRiterate, DivideAndSolve), so the priority is high static-analysis confusion at minimal steady-state runtime cost. SUB and IGV get strong enablement weights (low RuntimeCost/SizeCost/Risk) because instruction substitution and global-variable indirection obscure data flow across all 30 functions essentially for free. SPLIT is favored since the five large functions (683-3343 bytes) benefit from being partitioned to degrade function-level matching at negligible overhead. FLA is kept moderately high for its strong SecurityGain against control-flow recovery on the big kernels, tempered by its size/runtime cost in tight numeric loops. BCF gets the highest cost penalties (RuntimeCost 0.7, SizeCost 0.8) because its code-blowup compounds badly on an already branch-dense floating-point workload, so it should only fire on the largest functions whose features justify it. IBR and ICALL are held at moderate security weights with elevated runtime/risk penalties: indirect branches tax hot inner loops and indirect calls add dispatch overhead with modest correctness risk in this call-sparse program, so they apply selectively rather than globally.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__McCat__05-eks",
+  "run_id": "e10C_glm_agent_05-eks_0_42576",
+  "arm": "C",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-05T23:23:23Z"
+ }
+}

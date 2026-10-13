@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.9,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.2
+  },
+  "BCF": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.45,
+   "CorrectnessRisk": 0.2
+  },
+  "FLA": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.25
+  },
+  "SPLIT": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.15
+  },
+  "IBR": {
+   "SecurityGain": 0.9,
+   "DiversityGain": 0.85,
+   "RuntimeCost": 0.55,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.2
+  },
+  "ICALL": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.45,
+   "CorrectnessRisk": 0.2
+  },
+  "IGV": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.3
+  }
+ },
+ "rationale": "Round 0 built and ran correctly with no ICE, so this candidate raises aggressiveness across all seven passes: SecurityGain and DiversityGain are pushed high everywhere to maximize resistance on this tiny (4-function, ~1.1KB text) bit-manipulation benchmark whose small hot functions (ReverseBits32/64, main) tolerate substantial transformation; SUB and IBR get the strongest weights since arithmetic and block-level indirection are cheap, broadly applicable, and hard to reverse; BCF, ICALL, and FLA follow closely, with FLA tempered slightly because the suite is float-heavy (fbench/flops-style code) and control-flow flattening interacts poorly with tight numeric loops; SPLIT is kept at moderate-high weights since its cost is mostly size and this binary has ample headroom; IGV carries the highest CorrectnessRisk (0.3) because global-variable reordering is the most likely pass to perturb the bit-reversal lookup semantics, and its gains overlap with SUB/BCF. RuntimeCost/SizeCost weights sit in the 0.4-0.7 band: high enough that cost-tolerant small functions still qualify for passes, but below the security dimensions so overhead remains bounded and correctness is preserved as in round 0.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Misc__revertBits",
+  "run_id": "e10D_glm_agent_revertBits_1_4420",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T16:34:09Z"
+ }
+}

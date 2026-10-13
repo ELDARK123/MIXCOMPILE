@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.15
+  },
+  "BCF": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.45,
+   "RuntimeCost": 0.55,
+   "SizeCost": 0.45,
+   "CorrectnessRisk": 0.35
+  },
+  "FLA": {
+   "SecurityGain": 0.45,
+   "DiversityGain": 0.4,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.45,
+   "CorrectnessRisk": 0.4
+  },
+  "SPLIT": {
+   "SecurityGain": 0.35,
+   "DiversityGain": 0.35,
+   "RuntimeCost": 0.25,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.25
+  },
+  "IBR": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.45,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.3
+  },
+  "ICALL": {
+   "SecurityGain": 0.45,
+   "DiversityGain": 0.4,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.4
+  },
+  "IGV": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.35,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.35
+  }
+ },
+ "rationale": "Round 0 failed with a compiler internal error, so all weights are pulled into a moderate 0.15-0.55 band with no extreme highs or lows that could drive the pass pipeline into degenerate transformations. SUB remains the anchor pass: it is cheap, safe, and effective on this benchmark's arithmetic-heavy eigenvalue/QR code (Jacobi, QRiterate, HouseMatrix), so it keeps the highest security/diversity weights with the lowest cost and risk. BCF and FLA stay enabled but tempered (0.45-0.55 costs/risks) because this is a loop-dense numerical workload where bogus control flow and flattening hit the hot loops of Trianglelise, Jacobi, and QRiterate hardest, and aggressive flattening of large functions (3343-byte Trianglelise) is a plausible source of the prior internal error. SPLIT is kept light (0.25-0.35) as a low-risk size-friendly complement, IBR gets moderate opaque-predicate weight for branch-level diversity without heavy runtime cost, ICALL is moderate since indirect-call conversion on floating-point-heavy code adds modest overhead with some correctness sensitivity, and IGV stays mild for inter-procedural diversity. Overall the table favors safe arithmetic transformation, applies control-flow passes selectively, and preserves acceptable runtime and size on a 14 KB text binary.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__McCat__05-eks",
+  "run_id": "e10D_glm_agent_05-eks_1_42603",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-05T23:23:40Z"
+ }
+}

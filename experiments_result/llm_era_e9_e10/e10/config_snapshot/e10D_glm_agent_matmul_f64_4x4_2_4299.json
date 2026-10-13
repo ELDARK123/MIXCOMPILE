@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.9
+  },
+  "BCF": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.85
+  },
+  "FLA": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.55,
+   "CorrectnessRisk": 0.7
+  },
+  "SPLIT": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.9
+  },
+  "IBR": {
+   "SecurityGain": 0.65,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.45,
+   "CorrectnessRisk": 0.8
+  },
+  "ICALL": {
+   "SecurityGain": 0.35,
+   "DiversityGain": 0.4,
+   "RuntimeCost": 0.55,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.75
+  },
+  "IGV": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.65,
+   "CorrectnessRisk": 0.8
+  }
+ },
+ "rationale": "Round 1 built and passed with no ICE, so this round raises security and diversity weights across the board to push stronger obfuscation while keeping cost weights moderate so the feature-driven selector still throttles aggressive transforms on hot code. This program is dominated by wrap_mul4's tight 4x4 double-precision multiply loop, so FLA gets the highest SecurityGain (0.85) to flatten the loop-body control flow but its RuntimeCost weight is held at 0.35 so the selector suppresses flattening where runtime sensitivity features are strongest; BCF is strong on security (0.70) but its SizeCost weight is the lowest (0.40) because the whole text section is only ~1KB and bogus-flow bloat is cheap here, whereas its RuntimeCost weight (0.45) tempers it on the hot loop. SUB and SPLIT are nearly free and low-risk, so they get high weights across security, diversity, and correctness dimensions to apply broadly. IGV is weighted up (0.70 security) since the benchmark reads constant/global tables that benefit from hiding. ICALL is deliberately de-emphasized (0.35 security): the program has only three functions and almost no call sites, so indirection adds overhead with little RE value. IBR stays moderately weighted (0.65) to obscure branch targets in the flattened regions without compounding FLA's runtime cost. CorrectnessRisk weights remain high everywhere so the selector avoids stacking risky passes on the same functions, preserving the round-1 build success.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Misc__matmul_f64_4x4",
+  "run_id": "e10D_glm_agent_matmul_f64_4x4_2_4299",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T16:32:08Z"
+ }
+}

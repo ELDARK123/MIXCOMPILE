@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.15,
+   "SizeCost": 0.1,
+   "CorrectnessRisk": 0.05
+  },
+  "BCF": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.55,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.15
+  },
+  "FLA": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.75,
+   "SizeCost": 0.65,
+   "CorrectnessRisk": 0.25
+  },
+  "SPLIT": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.15,
+   "CorrectnessRisk": 0.05
+  },
+  "IBR": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.2
+  },
+  "ICALL": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.25
+  },
+  "IGV": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.1,
+   "CorrectnessRisk": 0.1
+  }
+ },
+ "rationale": "The profile is a static-only snapshot of an Adobe-C++ benchmark from SingleSource: a template-heavy C++ workload with function-object dispatch, dense numeric loops, and no reported function inventory, so pass selection must hedge rather than target specific hot functions. SUB, SPLIT, and IGV carry low runtime/size/risk costs and good security or diversity yield, so they get high application weights and form the safe baseline layer, with SUB weighted highest since constant substitution is nearly free and effective against C++ template-inlined constants. FLA is the strongest single deterrent against static control-flow recovery but carries the highest runtime and size cost and moderate correctness risk for exception-heavy C++; it stays enabled at a moderate-to-high weight so it concentrates on loop/kernel functions while lighter passes cover the rest. BCF is retained at a moderate weight because its opaque predicates add real size bloat that compounds with FLA, and its security overlap with FLA makes it a secondary option. IBR and ICALL get moderate weights: indirect branching disrupts CFG recovery but costs indirect-dispatch overhead, and ICALL is capped because converting direct calls to indirect ones in C++ risks breaking inlining, vtable semantics, and unwind behavior. CorrectnessRisk weights are kept low across the board relative to SecurityGain so the selector still favors protection, while elevated risk entries on FLA, IBR, and ICALL prevent over-application on code where they are most fragile.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Adobe-C++__functionobjects",
+  "run_id": "e10C_glm_agent_functionobjects_0_84980",
+  "arm": "C",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T11:10:02Z"
+ }
+}

@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.55,
+   "SizeCost": 0.55,
+   "CorrectnessRisk": 0.15
+  },
+  "FLA": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.2
+  },
+  "SPLIT": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.45,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.1
+  },
+  "ICALL": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  },
+  "IGV": {
+   "SecurityGain": 0.65,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.15
+  }
+ },
+ "rationale": "Round 0 built and ran cleanly with no ICE, so this candidate leans more aggressively into obfuscation while keeping hot-loop costs in check: mandel-text is a tiny, compute-bound integer/FP program dominated by one main with tight iteration loops, so SUB gets the highest SecurityGain (arithmetic substitution is cheapest to hide constants and least risky here), FLA stays high since flattening a single main is low-risk and disrupts loop/branch recovery, and BCF is raised but capped because its runtime/size blowup multiplies inside hot Mandelbrot inner loops. IBR, ICALL, and IGV remain enabled at moderate weights for structural diversity (indirect branches, calls, and globals all apply fine to a small text section), and SPLIT is kept as a low-cost complement that makes FLA's flattened dispatcher harder to reverse. CorrectnessRisk weights stay low across the board since round 0 showed the toolchain handles this benchmark well; RuntimeCost/SizeCost weights near or above 0.5 for BCF and moderately high for FLA bias the selector away from stacking the most expensive passes on the same hot function.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Misc-C++__mandel-text",
+  "run_id": "e10D_glm_agent_mandel-text_1_52076",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T02:01:47Z"
+ }
+}

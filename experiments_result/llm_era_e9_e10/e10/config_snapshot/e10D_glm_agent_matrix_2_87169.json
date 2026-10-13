@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.1,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.4,
+   "RuntimeCost": 0.9,
+   "SizeCost": 0.8,
+   "CorrectnessRisk": 0.3
+  },
+  "FLA": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.8,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.5
+  },
+  "SPLIT": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.4
+  },
+  "ICALL": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.3
+  },
+  "IGV": {
+   "SecurityGain": 0.3,
+   "DiversityGain": 0.3,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.4
+  }
+ },
+ "rationale": "The Shootout matrix benchmark is a small, loop-intensive numeric kernel with no source-level functions or globals of significance, so the hot inner loops dominate both runtime and code-size concerns while the attack surface is the loop-body arithmetic and control flow. SUB is cheap, correct, and adds arithmetic diversity, so it gets the highest benefit weights with minimal cost penalties. SPLIT similarly carries near-zero runtime/size cost and fragments the loop control flow, aiding diversity cheaply. FLA and BCF are the strongest structural defenses but impose heavy dispatch/clone overhead exactly in the hot multiply-accumulate loops, so their high SecurityGain is offset by strong RuntimeCost/SizeCost penalties to keep them selective rather than blanket-applied. IBR and ICALL add indirection overhead on branches and calls that fire constantly in a numeric kernel, so they are kept at moderate benefit with elevated cost weights; IGV is nearly useless here (the program has essentially no global state worth hiding) and is effectively discouraged via low benefit and non-trivial cost weights, keeping overall overhead acceptable while preserving correctness.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Shootout__matrix",
+  "run_id": "e10D_glm_agent_matrix_2_87169",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T11:46:36Z"
+ }
+}

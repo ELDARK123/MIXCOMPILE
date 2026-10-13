@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.9,
+   "DiversityGain": 0.9,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  },
+  "BCF": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.3
+  },
+  "FLA": {
+   "SecurityGain": 0.9,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.3
+  },
+  "SPLIT": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.3
+  },
+  "ICALL": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.3
+  },
+  "IGV": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.9,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.2
+  }
+ },
+ "rationale": "Round 1 built and ran correctly, so the weights are pushed toward stronger obfuscation. The program is tiny (388 bytes of text, 3 functions), so size is effectively unconstrained; the main care point is runtime, since the sample is a compute-bound floating-point benchmark (fbench/flops/pi loops). SUB gets the highest weights because it is cheap, always applicable, and directly raises reverse-engineering effort on the dense arithmetic code. FLA and BCF are weighted high for security because control-flow flattening plus bogus predicates give the largest analysis resistance on the small set of functions, with modest RuntimeCost/SizeCost weights since the absolute overhead is tiny at this code size. ICALL and IGV are boosted for diversity \u2014 indirect calls and hidden global state disrupt static call-graph and data-flow recovery, and myadd/main give them a target. IBR is kept slightly lower on SecurityGain than FLA because indirect branching stacks with flattening and its runtime penalty lands directly in the hot float loop. SPLIT stays as a low-cost diversifier. CorrectnessRisk weights stay low across the board given round 1 showed clean compilation and execution with no ICE fallback.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Misc__pi",
+  "run_id": "e10D_glm_agent_pi_2_98678",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T14:58:11Z"
+ }
+}

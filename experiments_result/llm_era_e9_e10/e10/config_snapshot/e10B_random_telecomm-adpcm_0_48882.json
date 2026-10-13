@@ -1,0 +1,60 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.7397,
+   "DiversityGain": 0.1843,
+   "RuntimeCost": 0.9966,
+   "SizeCost": 0.8075,
+   "CorrectnessRisk": 0.615
+  },
+  "BCF": {
+   "SecurityGain": 0.5294,
+   "DiversityGain": 0.8171,
+   "RuntimeCost": 0.7235,
+   "SizeCost": 0.7744,
+   "CorrectnessRisk": 0.9416
+  },
+  "FLA": {
+   "SecurityGain": 0.3875,
+   "DiversityGain": 0.3256,
+   "RuntimeCost": 0.999,
+   "SizeCost": 0.7543,
+   "CorrectnessRisk": 0.3205
+  },
+  "SPLIT": {
+   "SecurityGain": 0.6801,
+   "DiversityGain": 0.6523,
+   "RuntimeCost": 0.9771,
+   "SizeCost": 0.9853,
+   "CorrectnessRisk": 0.8245
+  },
+  "IBR": {
+   "SecurityGain": 0.9968,
+   "DiversityGain": 0.0987,
+   "RuntimeCost": 0.8431,
+   "SizeCost": 0.2462,
+   "CorrectnessRisk": 0.1131
+  },
+  "ICALL": {
+   "SecurityGain": 0.5716,
+   "DiversityGain": 0.0363,
+   "RuntimeCost": 0.728,
+   "SizeCost": 0.0795,
+   "CorrectnessRisk": 0.8275
+  },
+  "IGV": {
+   "SecurityGain": 0.3159,
+   "DiversityGain": 0.6302,
+   "RuntimeCost": 0.0321,
+   "SizeCost": 0.6747,
+   "CorrectnessRisk": 0.7549
+  }
+ },
+ "rationale": "B-arm random search candidate 1",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__MiBench__telecomm-adpcm",
+  "run_id": "e10B_random_telecomm-adpcm_0_48882",
+  "arm": "B_random",
+  "utc": "2026-10-06T01:08:02Z"
+ }
+}

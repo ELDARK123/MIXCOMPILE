@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.2
+  },
+  "FLA": {
+   "SecurityGain": 0.9,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.3
+  },
+  "SPLIT": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.2
+  },
+  "ICALL": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.3
+  },
+  "IGV": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  }
+ },
+ "rationale": "reversefile is a small, I/O-bound Shootout C++ benchmark whose logic (line buffering, string handling, a reversal loop) is simple, so static profile features are sparse and the main goal is maximizing per-function transformation coverage rather than targeting heavy compute kernels. FLA and BCF get the highest SecurityGain because control-flow flattening and bogus-flow insertion are the strongest barriers to static/dynamic analysis of the reversal logic, and their runtime/size costs are acceptable here since the program spends most of its time in I/O syscalls rather than obfuscated arithmetic. SUB and SPLIT are cheap, low-risk workhorse passes and are weighted broadly so nearly every function receives them, adding instruction-level diversity at negligible overhead. IBR is emphasized on DiversityGain to convert branch structure into indirect dispatch, complementing FLA. ICALL and IGV are kept at moderate weights: reversefile has few indirect-call sites and few global variables, so the security payoff is limited, and CorrectnessRisk is kept slightly higher for ICALL to account for C++ virtual-call and exception-handling interactions that must not be broken.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Shootout-C++__reversefile",
+  "run_id": "e10D_glm_agent_reversefile_1_86893",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T11:41:59Z"
+ }
+}

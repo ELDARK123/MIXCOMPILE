@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.45,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.3
+  },
+  "BCF": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.45
+  },
+  "FLA": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.25,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.35
+  },
+  "SPLIT": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.8
+  },
+  "IBR": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.4
+  },
+  "ICALL": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.3
+  },
+  "IGV": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.4
+  }
+ },
+ "rationale": "The profile gives no function-level features (Prolangs-C++ 'simul' is a C++ multiprocessor simulator typical of its suite: class-heavy, control-flow-rich, moderate loops, global simulator state), so the table hedges across dimensions: FLA and BCF get the highest SecurityGain weights since control-flow flattening and bogus predicates are the strongest reverse-engineering barriers for branch-dense simulator dispatch loops, but their low RuntimeCost/SizeCost weights keep them from being applied to hot inner-loop functions where their overhead concentrates; SUB is kept available broadly (near-neutral cost weights, low risk) because instruction substitution is nearly free and adds layered arithmetic-level confusion; SPLIT receives high cost and low risk weights so the cheap, safe splitter applies widely without meaningful runtime/size penalty, and it raises basic-block counts that make FLA/BCF output harder to structure-recover; IBR, ICALL, and IGV get solid Security/Diversity weights because indirect branches, opaque indirect calls, and global-variable hiding each target a distinct static-analysis technique that the other passes do not cover, while moderate risk weights reflect that aggressive indirect-call and global-masking transforms can interact badly with C++ virtual dispatch if features are stale, so the selector stays conservative where those features flag risk.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__Prolangs-C++__simul",
+  "run_id": "e10D_glm_agent_simul_2_84607",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T11:04:06Z"
+ }
+}

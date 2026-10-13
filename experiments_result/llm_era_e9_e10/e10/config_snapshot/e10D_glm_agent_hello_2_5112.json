@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.85,
+   "RuntimeCost": 0.9,
+   "SizeCost": 0.9,
+   "CorrectnessRisk": 0.7
+  },
+  "BCF": {
+   "SecurityGain": 0.9,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 1.0,
+   "SizeCost": 1.0,
+   "CorrectnessRisk": 0.8
+  },
+  "FLA": {
+   "SecurityGain": 0.95,
+   "DiversityGain": 0.85,
+   "RuntimeCost": 1.0,
+   "SizeCost": 0.9,
+   "CorrectnessRisk": 0.85
+  },
+  "SPLIT": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.95,
+   "SizeCost": 0.95,
+   "CorrectnessRisk": 0.9
+  },
+  "IBR": {
+   "SecurityGain": 0.9,
+   "DiversityGain": 0.85,
+   "RuntimeCost": 1.0,
+   "SizeCost": 0.85,
+   "CorrectnessRisk": 0.8
+  },
+  "ICALL": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.9,
+   "RuntimeCost": 1.0,
+   "SizeCost": 0.9,
+   "CorrectnessRisk": 0.75
+  },
+  "IGV": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.9,
+   "SizeCost": 0.85,
+   "CorrectnessRisk": 0.8
+  }
+ },
+ "rationale": "Round 1 built and ran correctly with no ICE fallback, so the toolchain handles this binary well and the correct move is to push obfuscation intensity upward rather than retrench. The target is hello from the Shootout suite: only two tiny functions (17-byte main) executing a single print-and-exit path, meaning runtime and size budgets are effectively unconstrained \u2014 there is no hot loop to protect and even aggressive expansion is invisible at this scale. Accordingly I raised RuntimeCost and SizeCost weights to near 1.0 across all passes so cost-sensitive feature matching never vetoes an application, kept SecurityGain/DiversityGain high (0.7-0.95) to drive maximum pass selection, and enabled all seven passes: FLA and BCF dominate for control-flow destruction of main, IBR and ICALL remove direct branch/call targets to frustrate static analysis of the tiny text section, SPLIT adds basic-block fragmentation that composes with FLA, and SUB/IGV round out arithmetic and data-reference diversity. CorrectnessRisk weights stay at 0.7-0.9 (below the benefit weights) so riskier transformations are not overly favored but remain available, which is acceptable given round 1 demonstrated clean codegen and the trivial CFG of _start/main leaves little room for miscompilation.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Shootout__hello",
+  "run_id": "e10D_glm_agent_hello_2_5112",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T16:45:39Z"
+ }
+}

@@ -1,0 +1,76 @@
+{
+  "sample_id": "ms__MultiSource__Benchmarks__TSVC__Searching-dbl",
+  "rule": "k-th .text function (sorted by entry) of llvm reference pairs with k-th recovered function of target; offsets relative to first entry",
+  "functions": [
+    {
+      "name": "_start",
+      "addr": 4272,
+      "size": 38
+    },
+    {
+      "name": "dummy",
+      "addr": 4512,
+      "size": 3
+    },
+    {
+      "name": "set1d",
+      "addr": 4528,
+      "size": 244
+    },
+    {
+      "name": "set1ds",
+      "addr": 4784,
+      "size": 244
+    },
+    {
+      "name": "set2d",
+      "addr": 5040,
+      "size": 380
+    },
+    {
+      "name": "sum1d",
+      "addr": 5424,
+      "size": 76
+    },
+    {
+      "name": "check",
+      "addr": 5504,
+      "size": 677
+    },
+    {
+      "name": "init",
+      "addr": 6192,
+      "size": 39978
+    },
+    {
+      "name": "s331",
+      "addr": 46176,
+      "size": 337
+    },
+    {
+      "name": "max",
+      "addr": 46528,
+      "size": 8
+    },
+    {
+      "name": "s332",
+      "addr": 46544,
+      "size": 380
+    },
+    {
+      "name": "min",
+      "addr": 46928,
+      "size": 8
+    },
+    {
+      "name": "set",
+      "addr": 46944,
+      "size": 1122
+    },
+    {
+      "name": "main",
+      "addr": 48080,
+      "size": 177
+    }
+  ]
+}

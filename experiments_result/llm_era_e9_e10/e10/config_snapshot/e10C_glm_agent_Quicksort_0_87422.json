@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.2
+  },
+  "FLA": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.5
+  },
+  "SPLIT": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.1,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.3
+  },
+  "ICALL": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.4
+  },
+  "IGV": {
+   "SecurityGain": 0.3,
+   "DiversityGain": 0.4,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.3
+  }
+ },
+ "rationale": "This profile is Stanford Quicksort: a tiny, function-sparse benchmark dominated by a few small, hot, recursive arithmetic- and comparison-heavy kernels, with essentially no global state and no source-level metadata to exploit. Arithmetic substitution (SUB) is prioritized because comparison/swap/partition code is dense in cheap-to-transform integer operations, giving strong static-analysis resistance at negligible size cost and low runtime impact on short loops. FLA and ICALL are kept at moderate-high weights \u2014 control-flow flattening and indirect calls frustrate the recursive structure recovery an analyst would attempt on Quicksort's partition/recursion pattern \u2014 but their RuntimeCost and CorrectnessRisk weights are elevated because flattening hot recursive kernels risks both slowdown and miscompilation-sensitive behavior on comparison-driven control flow. BCF gets a mid weight: useful opaque-predicate clutter for a program this small, but its runtime/size overhead on hot partition loops warrants restraint. SPLIT and IBR are cheap diversifiers well suited to small basic blocks, so they are favored with low cost weights. IGV is down-weighted across the board since the program has almost no global variables to protect, so it would add indirection overhead with little security return; omitting it entirely is also acceptable if a stricter runtime budget is desired.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Stanford__Quicksort",
+  "run_id": "e10C_glm_agent_Quicksort_0_87422",
+  "arm": "C",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T11:50:42Z"
+ }
+}

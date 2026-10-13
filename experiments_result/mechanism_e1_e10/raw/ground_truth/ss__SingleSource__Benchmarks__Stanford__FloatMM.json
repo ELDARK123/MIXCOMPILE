@@ -1,0 +1,41 @@
+{
+  "sample_id": "ss__SingleSource__Benchmarks__Stanford__FloatMM",
+  "rule": "k-th .text function (sorted by entry) of llvm reference pairs with k-th recovered function of target; offsets relative to first entry",
+  "functions": [
+    {
+      "name": "_start",
+      "addr": 4176,
+      "size": 38
+    },
+    {
+      "name": "Initrand",
+      "addr": 4416,
+      "size": 12
+    },
+    {
+      "name": "Rand",
+      "addr": 4432,
+      "size": 26
+    },
+    {
+      "name": "rInitmatrix",
+      "addr": 4464,
+      "size": 142
+    },
+    {
+      "name": "rInnerproduct",
+      "addr": 4608,
+      "size": 105
+    },
+    {
+      "name": "Mm",
+      "addr": 4720,
+      "size": 489
+    },
+    {
+      "name": "main",
+      "addr": 5216,
+      "size": 37
+    }
+  ]
+}

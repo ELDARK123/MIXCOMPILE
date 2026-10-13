@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.2
+  },
+  "FLA": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.2
+  },
+  "SPLIT": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.3
+  },
+  "ICALL": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.3
+  },
+  "IGV": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.4,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.2
+  }
+ },
+ "rationale": "Round 0 built and passed with no ICE, so weights can be shifted modestly toward stronger obfuscation without risking the working baseline. SUB gets the highest SecurityGain/DiversityGain because arithmetic substitution suits this program's compute-heavy, branch-light kernels (isqrt, cubic, rad2deg) with low runtime and correctness cost. FLA stays moderately aggressive to flatten main's dispatch-heavy structure, but its RuntimeCost is raised slightly since main contains the program's loops. BCF is held back (high RuntimeCost/SizeCost) because bogus control flow inflates a tiny 2.6 KB text section disproportionately and slows the hot integer loops for modest marginal security over SUB+FLA. SPLIT is encouraged nearly unconditionally as the cheapest diversifier. IBR and ICALL remain enabled at moderate strength to break static call/branch graph reconstruction, with CorrectnessRisk kept at 0.3 since indirect addressing of a small function set is well-trodden. IGV is kept enabled but mild: the program has few globals, so its contribution is limited and it should not compete with higher-value passes.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__MiBench__automotive-basicmath",
+  "run_id": "e10D_glm_agent_automotive-basicmath_1_48770",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T01:06:38Z"
+ }
+}

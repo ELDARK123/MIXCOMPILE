@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.9,
+   "DiversityGain": 0.85,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.2
+  },
+  "BCF": {
+   "SecurityGain": 0.45,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.15,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.3
+  },
+  "FLA": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.45,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.35
+  },
+  "SPLIT": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.15
+  },
+  "IBR": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.25
+  },
+  "ICALL": {
+   "SecurityGain": 0.35,
+   "DiversityGain": 0.4,
+   "RuntimeCost": 0.25,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  },
+  "IGV": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.45,
+   "CorrectnessRisk": 0.25
+  }
+ },
+ "rationale": "Round 1 compiled and ran correctly, so this table pushes obfuscation harder on the dimensions that suit this benchmark: flops-1 is dominated by a dense floating-point arithmetic loop in main, so SUB gets the highest weights (it substitutes FP/integer operations with equivalent sequences, directly obscuring the numeric kernels with modest overhead), and IGV is raised to protect the FP constants and accumulator globals the loop reads and writes every iteration. BCF, FLA, and IBR are kept at moderate levels because the hot FP loop makes them the most expensive transforms in runtime and code size, and the binary is tiny (542 text bytes, 2 functions), so bloating it risks dominating the profile; their moderate weights let the feature-driven selector apply them only where loop structure makes them worthwhile. SPLIT stays mid-range as a cheap enabler that improves granularity for FLA/BCF without meaningful cost, ICALL stays low since this program is call-sparse and indirect-call rewriting buys little, and all CorrectnessRisk weights are kept low-to-moderate to preserve the verified correctness from round 1 while still allowing selection on structurally favorable functions.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Misc__flops-1",
+  "run_id": "e10D_glm_agent_flops-1_2_3376",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T16:17:07Z"
+ }
+}

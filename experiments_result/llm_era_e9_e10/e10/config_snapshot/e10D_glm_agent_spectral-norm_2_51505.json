@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.15,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.45,
+   "CorrectnessRisk": 0.1
+  },
+  "FLA": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.15
+  },
+  "SPLIT": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.05
+  },
+  "IBR": {
+   "SecurityGain": 0.65,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.25,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.1
+  },
+  "ICALL": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.1
+  },
+  "IGV": {
+   "SecurityGain": 0.45,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.15,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.1
+  }
+ },
+ "rationale": "Round 1 built and ran correctly, so this candidate raises obfuscation pressure while protecting the hot floating-point kernels. spectral-norm is dominated by tiny, extremely hot FP loops (eval_A_times_u / eval_At_times_u called O(n^2) times, A[i][k] macro arithmetic), so SUB gets the highest weights since instruction substitution obscures the arithmetic identity of those inner loops with near-zero runtime penalty, and IBR is favored next to break the straight-line branch structure of the kernels. FLA and BCF receive solid SecurityGain but the highest RuntimeCost/SizeCost weights of the table, so the selector will preferentially avoid flattening/bogus-control-flow on the hottest small functions while still applying them where features tolerate it. SPLIT is kept as a cheap diversity amplifier on the larger main/eval_AtA_times_u bodies, and ICALL/IGV stay low because this program is almost call-free (a handful of leaf math functions) with essentially no global-variable surface, making those passes mostly dead weight and size overhead here.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__BenchmarkGame__spectral-norm",
+  "run_id": "e10D_glm_agent_spectral-norm_2_51505",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T01:52:19Z"
+ }
+}

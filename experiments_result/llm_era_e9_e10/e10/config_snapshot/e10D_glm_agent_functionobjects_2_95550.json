@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.15
+  },
+  "BCF": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.1
+  },
+  "FLA": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.1
+  },
+  "SPLIT": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.25,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.05
+  },
+  "IBR": {
+   "SecurityGain": 0.65,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.1
+  },
+  "ICALL": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.15
+  },
+  "IGV": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.35,
+   "RuntimeCost": 0.25,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.2
+  }
+ },
+ "rationale": "Round 1 built and ran correctly, so this table pushes obfuscation moderately higher while protecting the program's hot numeric loops (loop_unroll, simple_types, stepanov kernels dominate runtime). SUB gets the highest weights since arithmetic substitution is cheap, always applicable in these integer-heavy kernels, and composes well with other passes; FLA stays fairly high because control-flow flattening yields strong static-analysis resistance and the benchmark's largest functions (main, introsort instantiations) benefit most, but its RuntimeCost weight is kept below SUB to limit flattening of tight inner loops. BCF is mid-range: opaque predicates add real analysis friction but their per-branch overhead argues against aggressive application in hot code. SPLIT is favored for diversity at near-zero cost, helping distinguish otherwise similar introsort instantiations. IBR and ICALL are moderate contributors \u2014 bogus branches thicken the CFG cheaply and indirect calls hinder cross-referencing, but both carry per-execution cost. IGV is kept lowest and risk-weighted: this benchmark has few globals, so its payoff is small and global-variable transformation carries the most subtle correctness risk for C++ statics; it remains enabled at reduced weight for incremental diversity rather than disabled.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Adobe-C++__functionobjects",
+  "run_id": "e10D_glm_agent_functionobjects_2_95550",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T14:06:01Z"
+ }
+}

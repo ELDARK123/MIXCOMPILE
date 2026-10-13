@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.1
+  },
+  "FLA": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.25,
+   "SizeCost": 0.45,
+   "CorrectnessRisk": 0.1
+  },
+  "SPLIT": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.05
+  },
+  "IBR": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.1
+  },
+  "ICALL": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.25,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.1
+  },
+  "IGV": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.1
+  }
+ },
+ "rationale": "Round 1 built and ran correctly, so the headroom is in pushing obfuscation coverage up while keeping the hot arithmetic loops (usqrt, SolveCubic, the main benchmark iteration) from absorbing large runtime penalties. SUB, SPLIT, and IBR are the cheapest structural transforms, so they get the highest SecurityGain/DiversityGain weights and low RuntimeCost weights to layer broad low-cost obfuscation across all six functions; with only 2632 bytes of text, size budget is ample, so SizeCost weights are moderate-to-high to let BCF and FLA expand the body. FLA and BCF get strong SecurityGain but deliberately low RuntimeCost weights so the selector preferentially applies them to cold/medium functions (main's setup paths, rad2deg/deg2deg glue) rather than the tight isqrt/round loops, capping dynamic overhead. ICALL stays moderate since the program has few call sites (indirection there mostly diversifies rather than hides logic), and IGV is kept lower because this benchmark is computation-dominated with minimal global state, limiting its payoff. All CorrectnessRisk weights stay at or below 0.1 to preserve the clean round-1 correctness result while nudging application breadth upward from the previous candidate.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__MiBench__automotive-basicmath",
+  "run_id": "e10D_glm_agent_automotive-basicmath_2_48799",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T01:06:52Z"
+ }
+}

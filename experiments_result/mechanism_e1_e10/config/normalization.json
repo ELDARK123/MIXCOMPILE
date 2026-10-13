@@ -1,0 +1,18 @@
+{
+  "purpose": "Binary normalization rules frozen before any measurement; remove identifiable build noise before diversity/similarity comparison while preserving raw hashes alongside.",
+  "hash_layers": [
+    {"name": "raw_full_sha256", "definition": "SHA-256 of the original linked binary, no modification"},
+    {"name": "stripped_full_sha256", "definition": "SHA-256 after `llvm-strip` (removes symtab, debug; keeps .note sections)"},
+    {"name": "text_sha256", "definition": "SHA-256 of the .text section extracted with llvm-objcopy -O binary --only-section=.text (primary uniqueness metric)"}
+  ],
+  "noise_sections_recorded": [".note.gnu.build-id", ".note.ABI-tag", ".comment", ".gnu_debuglink"],
+  "rules": [
+    "Diversity uniqueness counts use text_sha256 and stripped_full_sha256, never raw_full_sha256 alone.",
+    "Similarity (opcode n-gram, byte edit distance) computed on extracted .text or disassembly of .text only.",
+    "PIE address normalization: function entry deltas computed relative to each function's enclosing section base before cross-binary matching.",
+    "radiff2 -s similarity is recorded as a supplementary whole-binary metric and never cited alone as a security result.",
+    "No section may be added or removed from binaries post hoc; any change to these rules requires a new frozen normalization.json version."
+  ],
+  "frozen_utc": "2026-09-03T03:30:00Z",
+  "version": 1
+}

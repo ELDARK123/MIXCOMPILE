@@ -1,0 +1,231 @@
+{
+  "sample_id": "ms__MultiSource__Benchmarks__ASC_Sequoia__AMGmk",
+  "rule": "k-th .text function (sorted by entry) of llvm reference pairs with k-th recovered function of target; offsets relative to first entry",
+  "functions": [
+    {
+      "name": "_start",
+      "addr": 4432,
+      "size": 38
+    },
+    {
+      "name": "hypre_CSRMatrixCreate",
+      "addr": 4672,
+      "size": 74
+    },
+    {
+      "name": "hypre_CSRMatrixDestroy",
+      "addr": 4752,
+      "size": 98
+    },
+    {
+      "name": "hypre_CSRMatrixInitialize",
+      "addr": 4864,
+      "size": 100
+    },
+    {
+      "name": "hypre_CSRMatrixSetDataOwner",
+      "addr": 4976,
+      "size": 6
+    },
+    {
+      "name": "hypre_CSRMatrixSetRownnz",
+      "addr": 4992,
+      "size": 375
+    },
+    {
+      "name": "hypre_CSRMatrixRead",
+      "addr": 5376,
+      "size": 528
+    },
+    {
+      "name": "hypre_CSRMatrixPrint",
+      "addr": 5904,
+      "size": 324
+    },
+    {
+      "name": "hypre_CSRMatrixCopy",
+      "addr": 6240,
+      "size": 467
+    },
+    {
+      "name": "hypre_CSRMatrixClone",
+      "addr": 6720,
+      "size": 951
+    },
+    {
+      "name": "hypre_CSRMatrixUnion",
+      "addr": 7680,
+      "size": 2214
+    },
+    {
+      "name": "hypre_CSRMatrixMatvec",
+      "addr": 9904,
+      "size": 1921
+    },
+    {
+      "name": "hypre_CSRMatrixMatvecT",
+      "addr": 11840,
+      "size": 1227
+    },
+    {
+      "name": "hypre_CSRMatrixMatvec_FF",
+      "addr": 13072,
+      "size": 1014
+    },
+    {
+      "name": "hypre_error_handler",
+      "addr": 14096,
+      "size": 7
+    },
+    {
+      "name": "HYPRE_GetError",
+      "addr": 14112,
+      "size": 7
+    },
+    {
+      "name": "HYPRE_CheckError",
+      "addr": 14128,
+      "size": 5
+    },
+    {
+      "name": "HYPRE_DescribeError",
+      "addr": 14144,
+      "size": 163
+    },
+    {
+      "name": "HYPRE_GetErrorArg",
+      "addr": 14320,
+      "size": 13
+    },
+    {
+      "name": "hypre_OutOfMemory",
+      "addr": 14336,
+      "size": 58
+    },
+    {
+      "name": "hypre_MAlloc",
+      "addr": 14400,
+      "size": 93
+    },
+    {
+      "name": "hypre_CAlloc",
+      "addr": 14496,
+      "size": 100
+    },
+    {
+      "name": "hypre_ReAlloc",
+      "addr": 14608,
+      "size": 103
+    },
+    {
+      "name": "hypre_Free",
+      "addr": 14720,
+      "size": 10
+    },
+    {
+      "name": "GenerateSeqLaplacian",
+      "addr": 14736,
+      "size": 1972
+    },
+    {
+      "name": "main",
+      "addr": 16720,
+      "size": 362
+    },
+    {
+      "name": "test_Matvec",
+      "addr": 17088,
+      "size": 484
+    },
+    {
+      "name": "test_Relax",
+      "addr": 17584,
+      "size": 449
+    },
+    {
+      "name": "test_Axpy",
+      "addr": 18048,
+      "size": 398
+    },
+    {
+      "name": "hypre_BoomerAMGSeqRelax",
+      "addr": 18448,
+      "size": 594
+    },
+    {
+      "name": "hypre_SeqVectorCreate",
+      "addr": 19056,
+      "size": 51
+    },
+    {
+      "name": "hypre_SeqMultiVectorCreate",
+      "addr": 19120,
+      "size": 56
+    },
+    {
+      "name": "hypre_SeqVectorDestroy",
+      "addr": 19184,
+      "size": 42
+    },
+    {
+      "name": "hypre_SeqVectorInitialize",
+      "addr": 19232,
+      "size": 95
+    },
+    {
+      "name": "hypre_SeqVectorSetDataOwner",
+      "addr": 19328,
+      "size": 6
+    },
+    {
+      "name": "hypre_SeqVectorRead",
+      "addr": 19344,
+      "size": 280
+    },
+    {
+      "name": "hypre_SeqVectorPrint",
+      "addr": 19632,
+      "size": 316
+    },
+    {
+      "name": "hypre_SeqVectorSetConstantValues",
+      "addr": 19952,
+      "size": 96
+    },
+    {
+      "name": "hypre_SeqVectorCopy",
+      "addr": 20048,
+      "size": 218
+    },
+    {
+      "name": "hypre_SeqVectorCloneDeep",
+      "addr": 20272,
+      "size": 377
+    },
+    {
+      "name": "hypre_SeqVectorCloneShallow",
+      "addr": 20656,
+      "size": 185
+    },
+    {
+      "name": "hypre_SeqVectorScale",
+      "addr": 20848,
+      "size": 121
+    },
+    {
+      "name": "hypre_SeqVectorAxpy",
+      "addr": 20976,
+      "size": 246
+    },
+    {
+      "name": "hypre_SeqVectorInnerProd",
+      "addr": 21232,
+      "size": 183
+    },
+    {
+      "name": "hypre_VectorSumElts",
+      "addr": 21424,
+      "size": 142
+    }
+  ]
+}

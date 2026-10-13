@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.15,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.85,
+   "SizeCost": 0.55,
+   "CorrectnessRisk": 0.35
+  },
+  "FLA": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.9,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.5
+  },
+  "SPLIT": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.45,
+   "CorrectnessRisk": 0.25
+  },
+  "IBR": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.55,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.3
+  },
+  "ICALL": {
+   "SecurityGain": 0.65,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.25
+  },
+  "IGV": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.25,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  }
+ },
+ "rationale": "Round 1 built and passed, so this candidate raises obfuscation pressure while protecting the program's defining characteristic: ffbench is dominated by extremely hot floating-point loops (fourn FFT, fbench kernel, flops/whetstone arithmetic), where loop-level transformations like FLA and BCF multiply per-iteration overhead. I keep their RuntimeCost weights high (0.90/0.85) so feature-matching steers them away from the hot functions, while lifting their SecurityGain so they still fire on any cold code if selected. SUB is nearly free at runtime and size, so it gets the biggest security/diversity boost (0.75/0.75) with minimal cost penalties \u2014 it is the safest way to add resistance to a pure-arithmetic workload. ICALL and IBR add indirection-based resistance at moderate runtime cost (0.45/0.55), appropriate since the few large functions (fourn, main) spend time in tight loops where indirect branches are less frequent than basic arithmetic. IGV is cheap (0.25 runtime) and adds diversity to global access patterns. CorrectnessRisk penalties stay moderate for FLA (0.50) since flattening control flow in FP-heavy code with exception-sensitive schedules is the likeliest correctness hazard, and low for SUB/IGV which are semantics-preserving by construction.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Misc__ffbench",
+  "run_id": "e10D_glm_agent_ffbench_2_97613",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T14:40:43Z"
+ }
+}

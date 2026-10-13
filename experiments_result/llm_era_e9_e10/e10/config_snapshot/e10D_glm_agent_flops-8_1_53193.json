@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.2
+  },
+  "FLA": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.2
+  },
+  "SPLIT": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.2
+  },
+  "ICALL": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.3
+  },
+  "IGV": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.3
+  }
+ },
+ "rationale": "Round 0 compiled and ran correctly, so this round raises aggressiveness: BCF and FLA get the highest weights since bogus control flow and flattening are the strongest barriers to static analysis of the hot arithmetic kernel in main, with elevated RuntimeCost/SizeCost weights signaling acceptable overhead for this 810-byte binary; SUB stays moderately weighted as cheap instruction-level diversity on the dense FP expression tree; IBR, ICALL, and IGV are kept at mid-level weights to add indirect dispatch, call indirection, and global-variable indirection that complicate cross-referencing without compounding risk on this small function set; SPLIT remains low-cost structural diversity that synergizes with FLA; all CorrectnessRisk weights stay low-to-mid since round 0 showed no ICE or miscompilation, leaving headroom to push further in later rounds.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Misc__flops-8",
+  "run_id": "e10D_glm_agent_flops-8_1_53193",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T02:20:09Z"
+ }
+}

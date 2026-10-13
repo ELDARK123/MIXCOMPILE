@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.15
+  },
+  "BCF": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.55,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.2
+  },
+  "FLA": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.55,
+   "CorrectnessRisk": 0.3
+  },
+  "SPLIT": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.45,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.2
+  },
+  "ICALL": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.55,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.25
+  },
+  "IGV": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.3
+  }
+ },
+ "rationale": "Round 1 built and ran cleanly with no ICE or fallback, so this candidate escalates obfuscation across all seven passes while keeping the guardrails that produced the clean build. SecurityGain and DiversityGain are raised to 0.70-0.85 everywhere, with SUB and FLA highest because the workload is dominated by the arithmetic-heavy Mandelbrot loop in a single large main: instruction substitution hardens the float/integer datapath cheaply, and flattening disrupts the control flow of the long-running kernel where reverse-engineering effort concentrates. BCF and IBR stay strong but carry moderate RuntimeCost weights (0.50-0.55) so opaque-predicate and branch machinery is applied where loop features favor it without stacking worst-case overhead on the hot path. ICALL and IGV are pushed up to attack static analysis of the C++ call and global structure, with IGV's CorrectnessRisk at 0.30 since global-to-local rewrites are the most likely source of subtle miscompiles. Cost weights remain below their security counterparts throughout so selection is driven by security/diversity fit, and SPLIT's low cost profile makes it a safe baseline diversifier. If this round also builds and passes, the next iteration can push CorrectnessRisk weights on FLA/IGV higher for further gains.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Misc-C++__mandel-text",
+  "run_id": "e10D_glm_agent_mandel-text_2_52109",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T02:02:13Z"
+ }
+}

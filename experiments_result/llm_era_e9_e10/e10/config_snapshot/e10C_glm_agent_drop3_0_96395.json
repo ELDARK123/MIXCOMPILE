@@ -1,0 +1,47 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.55,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.15
+  },
+  "SPLIT": {
+   "SecurityGain": 0.65,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.25,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.1
+  },
+  "FLA": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.35
+  },
+  "BCF": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.9,
+   "SizeCost": 0.85,
+   "CorrectnessRisk": 0.25
+  },
+  "IBR": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.8,
+   "SizeCost": 0.55,
+   "CorrectnessRisk": 0.45
+  }
+ },
+ "rationale": "drop3 is a 3-function, ~1.1KB bit-manipulation benchmark whose core (drop_0xx) runs in a tight data-processing loop, so the table favors low-overhead arithmetic and structural passes while penalizing branch-heavy transformations: SUB gets the highest security/diversity weights because instruction substitution obscures the bitwise drop logic cheaply and with near-zero correctness risk; SPLIT is weighted as a cheap enabler that improves FLA's effectiveness on the two substantial function bodies (drop_0xx, main) without measurable cost; FLA is moderately favored for its strong control-flow hiding on these small functions but with elevated RuntimeCost weight to keep the dispatch loop out of drop_0xx's hot path if features indicate it; BCF is retained with a lower security weight and very high RuntimeCost/SizeCost weights since bogus predicates both bloat a 1KB text segment and tax the hot loop disproportionately; IBR is kept at low security weight with high runtime/correctness-risk weights because indirect branching adds dispatch overhead and fragility for little gain on so few basic blocks; ICALL and IGV are omitted entirely \u2014 with three functions, no meaningful indirect-call sites or global-variable surface, indirection there buys diversity only on paper while directly degrading the timed loop and _start.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__BitBench__drop3",
+  "run_id": "e10C_glm_agent_drop3_0_96395",
+  "arm": "C",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T14:20:26Z"
+ }
+}

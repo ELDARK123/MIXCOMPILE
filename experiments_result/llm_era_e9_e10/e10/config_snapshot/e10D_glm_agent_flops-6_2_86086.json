@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.9,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.9,
+   "SizeCost": 0.8,
+   "CorrectnessRisk": 0.2
+  },
+  "FLA": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.3
+  },
+  "SPLIT": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.4
+  },
+  "ICALL": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.5
+  },
+  "IGV": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.2
+  }
+ },
+ "rationale": "flops-6 is a small, loop-intensive floating-point kernel (a Misc SingleSource benchmark) with essentially no source-level structure, no meaningful call graph, and hot arithmetic inner loops, so the weight table favors passes that transform arithmetic and basic-block layout while suppressing passes whose overhead compounds inside hot loops. SUB gets the highest SecurityGain/DiversityGain and low cost weights because mixed Boolean-arithmetic substitution directly obscures the FP/integer instruction mix at low cost and low risk, making it ideal for compute-dense code. BCF carries high RuntimeCost/SizeCost weights so the feature-driven selector discounts it for this program's hot-loop profile, since bogus control flow would multiply loop-body overhead for marginal gain. FLA is kept at moderate security weight with elevated runtime cost, allowing selective flattening of cooler functions without penalizing the hot kernel. SPLIT and IGV are cheap, low-risk diversifiers enabled broadly to add layout and data-representation variability. IBR and ICALL are given modest security weights with elevated runtime/correctness weights because this program has few indirect-call sites and its tight branches are performance-critical, so indirect dispatch conversions offer poor cost/benefit; they remain considered but will rarely be selected for hot functions.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Misc__flops-6",
+  "run_id": "e10D_glm_agent_flops-6_2_86086",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T11:28:45Z"
+ }
+}

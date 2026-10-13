@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.9,
+   "DiversityGain": 0.9,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.2
+  },
+  "FLA": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.8,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.3
+  },
+  "SPLIT": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.4
+  },
+  "ICALL": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.4
+  },
+  "IGV": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.3
+  }
+ },
+ "rationale": "The moments benchmark is a compute-bound, FP-arithmetic-intensive Shootout C++ program with hot inner loops and essentially no source-level metadata (empty profile), so the table favors passes that transform arithmetic and basic-block structure cheaply while penalizing anything that perturbs the hot loop path. SUB gets the highest SecurityGain/DiversityGain weights because numeric code is dense in arithmetic/logic operations that substitution obscures at near-zero runtime and correctness cost; SPLIT is similarly cheap structural diversity with low risk weights. FLA carries a high RuntimeCost weight (0.8) so the selector only flattens functions whose features justify it, since control-flow flattening badly disturbs tight numeric loops; BCF is moderated (0.6 runtime/size) to allow some bogus-flow padding on cold functions without bloating the small binary. IBR gets a moderately high RuntimeCost (0.7) and the highest CorrectnessRisk (0.4) because indirect branches cost real dispatch time on hot paths and can interact badly with floating-point control flow; ICALL and IGV are kept mid-range since moments has few indirect calls and modest global-variable usage, letting the feature-driven selector apply them only where function features (e.g., many globals or call targets) actually favor those dimensions.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Shootout-C++__moments",
+  "run_id": "e10D_glm_agent_moments_2_86836",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T11:40:59Z"
+ }
+}

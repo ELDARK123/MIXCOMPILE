@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.85,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.15,
+   "CorrectnessRisk": 0.05
+  },
+  "BCF": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.1
+  },
+  "FLA": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.2
+  },
+  "SPLIT": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.05
+  },
+  "IBR": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.15
+  },
+  "ICALL": {
+   "SecurityGain": 0.45,
+   "DiversityGain": 0.4,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.15,
+   "CorrectnessRisk": 0.2
+  },
+  "IGV": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.25,
+   "SizeCost": 0.1,
+   "CorrectnessRisk": 0.15
+  }
+ },
+ "rationale": "The round-0 candidate built, ran, and preserved correctness with no ICE fallback, so this round raises obfuscation pressure rather than retreating. fasta is a tiny two-function program dominated by one compute-dense main with tight hot loops, so per-pass weights emphasize control-flow and arithmetic transforms that survive well on a single large function while keeping runtime-cost weights elevated enough to protect loop throughput: SUB stays cheap and near-always applicable (high SecurityGain/DiversityGain, minimal RuntimeCost), BCF and FLA are pushed higher as the primary defenses since opaque predicates and control-flow flattening give the most resistance on one big function body, and SPLIT is kept moderately weighted to feed FLA more basic blocks to flatten, increasing its effectiveness on a program with few functions. IBR, ICALL, and IGV get mid-range security weights with noticeably higher runtime-cost weights because indirect branches, indirect calls, and global-variable indirection pay off less on a two-function program with very few call sites and globals, and their dispatch overhead lands directly in main's hot loop; keeping their RuntimeCost weights around 0.25-0.45 lets the selector apply them only where features strongly favor them. CorrectnessRisk stays low across the board since round 0 showed no instability, but is not zeroed to preserve a safety margin for the more semantics-touching passes (FLA, ICALL).",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__BenchmarkGame__Large__fasta",
+  "run_id": "e10D_glm_agent_fasta_1_51030",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T01:44:10Z"
+ }
+}

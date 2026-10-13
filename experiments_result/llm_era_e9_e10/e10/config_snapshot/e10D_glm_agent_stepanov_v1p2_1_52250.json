@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.1,
+   "CorrectnessRisk": 0.05
+  },
+  "BCF": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.1
+  },
+  "FLA": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.15
+  },
+  "SPLIT": {
+   "SecurityGain": 0.35,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.05,
+   "SizeCost": 0.15,
+   "CorrectnessRisk": 0.05
+  },
+  "IBR": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.2
+  },
+  "ICALL": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.15,
+   "CorrectnessRisk": 0.25
+  },
+  "IGV": {
+   "SecurityGain": 0.65,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.3
+  }
+ },
+ "rationale": "Round 0 built, ran, and preserved correctness with no ICE fallback, so this candidate escalates aggressiveness within safe bounds. SUB and SPLIT stay cheap and low-risk, so their security/diversity weights are raised to saturate the feature-driven selector \u2014 arithmetic substitution and block splitting compose well with every other pass on this program's few large functions (main at ~3.4KB, summarize, test0). FLA and BCF receive high SecurityGain weights because the tiny text budget (4.4KB total) has ample room for their size cost, and the stepanov/mandel loop-dominated workload tolerates modest dispatch overhead; RuntimeCost is kept around 0.45-0.5 rather than higher because oopack and bigfib are compute-heavy numeric benchmarks where flattening-induced dispatch and bogus-flow predicate evaluation compound across hot loops. IBR's weight is pushed up since indirect branches strongly resist static CFG recovery on such a small, easily-analyzed binary, with CorrectnessRisk at 0.2 reflecting residual concerns around exception-heavy C++ code. ICALL at SecurityGain 0.7 hides call targets from cross-referencing tools, and its 0.25 risk reflects indirect-call devirtualization hazards in templated C++ (oopack is template-heavy). IGV keeps a moderate 0.3 CorrectnessRisk \u2014 global-variable encoding interacts badly with constant initializers in this kind of benchmark \u2014 while still being elevated to obscure the container/string globals. Overall: raise pressure across all seven passes since the round-0 baseline showed no failures, biasing the selector toward the low-risk composable passes while allowing the high-impact structural passes on the large hot functions only when features favor them.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Misc-C++__stepanov_v1p2",
+  "run_id": "e10D_glm_agent_stepanov_v1p2_1_52250",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T02:04:41Z"
+ }
+}

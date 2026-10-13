@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.15,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.2
+  },
+  "FLA": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.2
+  },
+  "SPLIT": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.65,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.15,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.15
+  },
+  "ICALL": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.15,
+   "SizeCost": 0.15,
+   "CorrectnessRisk": 0.25
+  },
+  "IGV": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.25,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.15
+  }
+ },
+ "rationale": "This program is a tightly-coupled floating-point benchmark harness (whetstone/fbench/flops/FFT kernels) with only two tiny functions and 384 bytes of text, so the dominant constraint is runtime overhead on hot FP loops plus preserving numerically-verifiable correctness, while the tiny code surface limits how much any pass can diversify. SUB is the workhorse: it is cheap, correctness-preserving, and directly obscures the arithmetic identity of FP kernels, so it gets the highest SecurityGain and lowest risk/cost weights. FLA and IGV follow as medium-strong contributors: flattening complicates the loop/branch structure that a reverse engineer would anchor on, and IGV adds value-level diversity at modest cost; both are held back slightly on RuntimeCost/SizeCost because hot-loop dispatch overhead is real. SPLIT is enabled with mid weights as a cheap enabler that increases block-level diversity and gives other passes more blocks to transform. BCF and IBR are kept but with strongly damped RuntimeCost/SizeCost weights since bogus control flow and indirect branching are the most expensive transformations per executed edge in inner loops; they should only fire on features that indicate low execution frequency. ICALL is the weakest: this code is dominated by straight-line FP arithmetic with few call sites, indirect-call rewriting adds a runtime multiplier exactly where the program is most sensitive, and it carries the highest CorrectnessRisk weight (0.25) to keep it off FP-critical paths; it is retained only for its diversity contribution on the harness/driver code.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Misc__dt",
+  "run_id": "e10C_glm_agent_dt_0_3110",
+  "arm": "C",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T16:12:28Z"
+ }
+}

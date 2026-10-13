@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.85,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.05
+  },
+  "BCF": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.1
+  },
+  "FLA": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.45,
+   "CorrectnessRisk": 0.2
+  },
+  "SPLIT": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.15,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.05
+  },
+  "IBR": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.15
+  },
+  "ICALL": {
+   "SecurityGain": 0.65,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.25,
+   "SizeCost": 0.15,
+   "CorrectnessRisk": 0.2
+  },
+  "IGV": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.1
+  }
+ },
+ "rationale": "This is an extremely small C++ program (49 lines, 5 functions, ~293 text bytes) whose logic is a recursive primes sieve with tiny class methods, so the priority is structural/control-flow diversity per byte rather than raw strength: SUB gets the highest emphasis on DiversityGain with minimal cost/risk weights because instruction substitution is nearly free and maximizes per-instruction entropy in already-tiny function bodies; SPLIT is boosted (DiversityGain 0.75, low costs) because splitting basic blocks enables and amplifies the effect of BCF/FLA on functions too small to obfuscate well otherwise; FLA and BCF carry solid SecurityGain weights but their RuntimeCost/SizeCost weights are kept moderate since flattening and bogus-branch inflation would dominate a 293-byte binary and the loop-heavy sieve/filter/counter methods are runtime-sensitive; ICALL is favored for DiversityGain (0.8, low size cost) because virtual/indirect call indirection on the sieve->filter->counter chain materially hides the dataflow graph at negligible size; IBR gets moderate weights as its indirect-jump overhead is acceptable only in main and the larger sieve::out, not the 10-byte counter::out; and IGV is kept in play at moderate weights since the sieve's state can be scattered, but is not emphasized given the program's minimal global-data footprint; CorrectnessRisk weights are uniformly low across the table because none of these passes threaten the simple, exception-free arithmetic at the core of this benchmark.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__Prolangs-C++__primes",
+  "run_id": "e10C_glm_agent_primes_0_98216",
+  "arm": "C",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T14:50:42Z"
+ }
+}

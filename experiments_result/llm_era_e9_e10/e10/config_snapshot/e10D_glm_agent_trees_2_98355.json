@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.2
+  },
+  "BCF": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.55,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.15
+  },
+  "FLA": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.55,
+   "CorrectnessRisk": 0.2
+  },
+  "SPLIT": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.2
+  },
+  "ICALL": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.55,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.25
+  },
+  "IGV": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.25
+  }
+ },
+ "rationale": "Round 1 built and ran correctly with no ICE fallback, so the safe move is to raise obfuscation intensity across the board rather than retune defensively. This is a tiny C++ program (34 functions, ~3.6 KB text) dominated by small Tree constructors and a modest main, so absolute size growth from BCF/FLA is cheap in bytes while flattening and bogus control flow in these small, branch-light functions yield disproportionate RE resistance; accordingly FLA SizeCost and BCF SecurityGain were raised so they apply more broadly alongside SUB. SUB gets the strongest SecurityGain/DiversityGain since arithmetic substitution is near-free on this simple code. ICALL and IGV are pushed harder (0.85) because indirect dispatch and global-to-local variable remapping disrupt the structural signatures of the repeated constructor pairs (C1/C2 duplicates) and string-heavy Tree setup, which are the easiest anchors for a reverser; their CorrectnessRisk weights stay moderate at 0.25 to permit application while the clean round-1 run suggests vtable/constructor interactions are tolerable. SPLIT stays the lightest pass (0.60) since its blocks are already tiny and it mainly serves as a diversity multiplier for FLA/BCF rather than a primary defense. Runtime weights were kept in the 0.45-0.60 band overall: acceptable per-function growth without letting the scheduler reject the hotspot main on cost grounds.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__Prolangs-C++__trees",
+  "run_id": "e10D_glm_agent_trees_2_98355",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T14:52:57Z"
+ }
+}

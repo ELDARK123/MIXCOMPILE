@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.05
+  },
+  "BCF": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.15
+  },
+  "FLA": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.55,
+   "CorrectnessRisk": 0.2
+  },
+  "SPLIT": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.05
+  },
+  "IBR": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.25,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "ICALL": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.15,
+   "CorrectnessRisk": 0.1
+  },
+  "IGV": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  }
+ },
+ "rationale": "This is an extremely small benchmark (231 text bytes, 3 functions) whose core is a hot nested loop, so the priority is cheap, correctness-safe transforms that add real static-analysis friction without inflating the tiny binary or slowing the loop: SUB gets the highest weight (low cost, strong arithmetic-layer security and diversity), while SPLIT, IBR, ICALL, and IGV provide complementary control-flow, indirect-call, and global-variable indirection at modest cost, with ICALL especially useful since the C++ Shootout sources are call-heavy. BCF and FLA are kept at moderate weights rather than disabled: they raise security notably but their runtime and size blowup is disproportionate on a 154-byte main and would be dominated by the hot loop and startup path, so the cost weights are set high enough that only functions whose features strongly favor those dimensions receive them.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Shootout-C++__nestedloop",
+  "run_id": "e10C_glm_agent_nestedloop_0_4767",
+  "arm": "C",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T16:39:45Z"
+ }
+}

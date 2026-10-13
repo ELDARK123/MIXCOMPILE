@@ -1,0 +1,51 @@
+{
+  "sample_id": "ms__MultiSource__Benchmarks__MiBench__security-sha",
+  "rule": "k-th .text function (sorted by entry) of llvm reference pairs with k-th recovered function of target; offsets relative to first entry",
+  "functions": [
+    {
+      "name": "_start",
+      "addr": 4256,
+      "size": 38
+    },
+    {
+      "name": "sha_init",
+      "addr": 4496,
+      "size": 27
+    },
+    {
+      "name": "sha_update",
+      "addr": 4528,
+      "size": 157
+    },
+    {
+      "name": "byte_reverse",
+      "addr": 4688,
+      "size": 187
+    },
+    {
+      "name": "sha_transform",
+      "addr": 4880,
+      "size": 667
+    },
+    {
+      "name": "sha_final",
+      "addr": 5552,
+      "size": 152
+    },
+    {
+      "name": "sha_stream",
+      "addr": 5712,
+      "size": 403
+    },
+    {
+      "name": "sha_print",
+      "addr": 6128,
+      "size": 30
+    },
+    {
+      "name": "main",
+      "addr": 6160,
+      "size": 171
+    }
+  ]
+}

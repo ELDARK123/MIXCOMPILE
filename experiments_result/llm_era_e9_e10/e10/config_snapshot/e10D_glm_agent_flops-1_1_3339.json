@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.9,
+   "DiversityGain": 0.85,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.2
+  },
+  "FLA": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.25
+  },
+  "SPLIT": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.15,
+   "SizeCost": 0.15,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  },
+  "ICALL": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.25,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.3
+  },
+  "IGV": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.15,
+   "CorrectnessRisk": 0.25
+  }
+ },
+ "rationale": "Round 0 built and ran cleanly with no correctness or ICE issues, so this round pushes obfuscation strength up across the board. SUB is raised highest (0.9/0.85) because instruction substitution is nearly free at runtime and safe even in dense floating-point code like this flops-1 kernel, giving cheap security and diversity. SPLIT is boosted (0.8/0.75) since it is low-cost and enlarges the surface that BCF/FLA then obscure. BCF and FLA are increased to solidly attack control-flow recovery, but their RuntimeCost and SizeCost weights stay below ~0.4 because this is a tight numeric benchmark where per-iteration overhead dominates; FLA is kept slightly below BCF since flattening carries more loop-overhead risk in hot loops. IBR is raised moderately to break basic-block boundaries at acceptable cost. ICALL and IGV are raised the least and given the highest CorrectnessRisk weights (0.3/0.25): indirect calls and global-variable indirection interact most delicately with optimized floating-point code and a two-function binary (main/_start) where symbol indirection buys less diversity, so the selector applies them only where features strongly favor security. Overall the table trades a modest, controlled runtime/size budget for substantially stronger static reverse-engineering resistance, while keeping risk weights low enough to preserve the round-0 correctness result.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Misc__flops-1",
+  "run_id": "e10D_glm_agent_flops-1_1_3339",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T16:16:15Z"
+ }
+}

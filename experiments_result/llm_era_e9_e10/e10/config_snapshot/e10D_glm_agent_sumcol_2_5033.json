@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.15
+  },
+  "FLA": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.15
+  },
+  "SPLIT": {
+   "SecurityGain": 0.65,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.15
+  },
+  "ICALL": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.15
+  },
+  "IGV": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.15
+  }
+ },
+ "rationale": "Round 1 built and ran correctly with no ICE fallback, so the pipeline tolerates this profile and I am raising security and diversity weights across all seven passes while keeping cost weights low enough that selection remains feature-gated. sumcol is a tiny I/O-bound program (3 functions, 343 text bytes), so size overhead is essentially free and RuntimeCost weights stay well under the security weights \u2014 its runtime is dominated by stdin parsing, making it robust to control-flow transformations. BCF and IBR get the highest SecurityGain since bogus control flow and indirect branching most disrupt static disassembly of small functions where a single main() carries nearly all the logic; FLA and SUB follow to flatten and obscure arithmetic in the column-summing loop. ICALL and IGV are boosted for diversity because with only three functions, indirect calls and global variable encoding add disproportionate analyst friction per byte. SPLIT is kept slightly lower on SecurityGain since main() is too small to benefit much from splitting, but its DiversityGain remains high. CorrectnessRisk weights stay at 0.1-0.15, reflecting confidence from the successful round-1 build while leaving headroom for the pass selector to skip transformations on functions whose features (e.g., the CSR/init functions) raise genuine risk.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Shootout-C++__sumcol",
+  "run_id": "e10D_glm_agent_sumcol_2_5033",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T16:44:01Z"
+ }
+}

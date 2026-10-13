@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.9,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.15,
+   "SizeCost": 0.15,
+   "CorrectnessRisk": 0.1
+  },
+  "SPLIT": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.15,
+   "CorrectnessRisk": 0.05
+  },
+  "FLA": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.55,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.3
+  },
+  "BCF": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.85,
+   "SizeCost": 0.75,
+   "CorrectnessRisk": 0.3
+  },
+  "IBR": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  },
+  "ICALL": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.45,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.35
+  },
+  "IGV": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.4,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  }
+ },
+ "rationale": "Salsa20 is a stream cipher dominated by a small number of extremely hot ARX (add-rotate-XOR) kernels, so the priority is data-path obfuscation with near-zero per-operation overhead: SUB gets the highest SecurityGain weight because instruction substitution directly obscures the arithmetic identities of the quarter-round while costing almost nothing in speed or size, and SPLIT is weighted strongly as a nearly free diversifier of basic-block structure. FLA receives a solid weight to disrupt the control-flow graph and hinder pattern-matching of the cipher rounds, but its RuntimeCost is held moderate since any dispatcher overhead lands directly in the hot encryption loop. BCF is deliberately de-emphasized (high RuntimeCost/SizeCost) because bogus predicate evaluation multiplies the cost of tight loops for marginal added security on code this small. IBR is kept at a moderate weight for branch hiding in less critical regions, while ICALL is restrained \u2014 indirect calls would defeat inlining of the quarter-rounds and carry the highest CorrectnessRisk \u2014 and IGV stays modest since the benchmark exposes little global state (static profile shows no source lines or large functions to exploit), making static-data obfuscation low-yield. Overall the table biases the selector toward cheap, high-security-gain transformations and away from expensive control-flow inflation, preserving correctness and acceptable performance for a cryptographic kernel.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Misc__salsa20",
+  "run_id": "e10D_glm_agent_salsa20_2_86474",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T11:35:19Z"
+ }
+}

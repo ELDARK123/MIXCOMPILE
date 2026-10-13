@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.25,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.35
+  },
+  "BCF": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.8,
+   "SizeCost": 0.75,
+   "CorrectnessRisk": 0.5
+  },
+  "FLA": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.6
+  },
+  "SPLIT": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.3
+  },
+  "IBR": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.45
+  },
+  "ICALL": {
+   "SecurityGain": 0.35,
+   "DiversityGain": 0.4,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.4
+  },
+  "IGV": {
+   "SecurityGain": 0.3,
+   "DiversityGain": 0.3,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.4
+  }
+ },
+ "rationale": "Round 1 built and ran correctly, so weights shift toward stronger obfuscation while respecting that flops-3 is a tiny (575-byte main) floating-point kernel where loop-body overhead directly multiplies into runtime. SUB is favored most: arithmetic substitution is nearly free at runtime and size and lands exactly on this program's dense FP/logic instruction mix, so its cost penalties stay low. FLA and BCF get strong security weights but elevated RuntimeCost/SizeCost penalties so the selector applies them sparingly to the hot numeric loop rather than everywhere, since dispatcher and opaque-predicate overhead is most damaging in tight FP loops. SPLIT and IBR provide cheap structural diversity and are enabled moderately, with IBR's runtime penalty mid-range because indirect branching slows predictable branch-heavy kernels. ICALL and IGV are kept low-benefit here \u2014 the program has almost no indirect-call or global-variable surface \u2014 but remain in the table at reduced weights so they can fire on the few applicable sites without meaningful risk.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Misc__flops-3",
+  "run_id": "e10D_glm_agent_flops-3_2_97916",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T14:45:45Z"
+ }
+}

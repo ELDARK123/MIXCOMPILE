@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.65,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.7
+  },
+  "BCF": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.75,
+   "CorrectnessRisk": 0.6
+  },
+  "FLA": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.75,
+   "CorrectnessRisk": 0.6
+  },
+  "SPLIT": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.7
+  },
+  "IBR": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.6
+  },
+  "ICALL": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.55,
+   "CorrectnessRisk": 0.6
+  },
+  "IGV": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.6
+  }
+ },
+ "rationale": "Round 0 built and ran correctly, so this round pushes obfuscation strength up while respecting Fhourstones' profile: a small (4.9KB text), compute-bound alpha-beta search dominated by the large 'ab' recursive search loop and heavy use of global state (board, history/transposition tables). FLA gets the highest SecurityGain/DiversityGain because flattening 'ab' and the per-move drivers destroys control-flow signatures of the search, and the binary has ample size headroom (high SizeCost tolerance); BCF complements it with opaque predicates but its RuntimeCost tolerance is kept lowest since the hot 'ab' path suffers multiplicatively with bogus branches. SPLIT stays cheap and safe, and pairs well with FLA by creating more flattenable regions. IBR and ICALL are raised moderately to convert the program's branch/call graph into indirect dispatch, which both obscures 'ab''s recursion structure and adds diversity without the multiplicative hot-loop cost of BCF. IGV is emphasized because this program is global-table heavy, so indirection over globals (inithistory/transpose state) yields strong static-analysis resistance at low risk. SUB stays enabled broadly as a low-cost baseline transformation across all 23 functions. All seven passes remain enabled since round 0 showed no correctness or ICE issues, leaving headroom to escalate; CorrectnessRisk weights are kept below 0.7 to avoid over-selecting risky transforms on recursive hot code.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__Fhourstones-3.1",
+  "run_id": "e10D_glm_agent_Fhourstones-3.1_1_93094",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T13:25:24Z"
+ }
+}

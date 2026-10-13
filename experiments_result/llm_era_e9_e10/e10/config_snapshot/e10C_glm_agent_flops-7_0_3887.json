@@ -1,0 +1,54 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.9,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.15,
+   "CorrectnessRisk": 0.05
+  },
+  "SPLIT": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.1,
+   "CorrectnessRisk": 0.05
+  },
+  "IGV": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.15
+  },
+  "FLA": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.85,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.2
+  },
+  "BCF": {
+   "SecurityGain": 0.35,
+   "DiversityGain": 0.4,
+   "RuntimeCost": 0.95,
+   "SizeCost": 0.9,
+   "CorrectnessRisk": 0.2
+  }
+ },
+ "rationale": "flops-7 is a tiny (471 bytes text, single main) straight-line floating-point kernel whose entire behavior is a tight arithmetic loop, so the dominant constraints are runtime overhead and code-size inflation on an already minuscule function body. SUB is applied aggressively because arithmetic substitution is nearly free at runtime, preserves correctness trivially, and directly obscures the FP operation mix that defines this benchmark; SPLIT adds cheap basic-block fragmentation for modest diversity at negligible cost; IGV is weighted favorably because the program is constant-heavy (loop bounds and FP coefficients) and hiding globals/constants yields strong diversity for little overhead. IBR is kept at a moderate level since the loop-back and conditional structure benefits from branch indirection but it carries real indirect-branch dispatch cost in a hot loop. FLA and BCF are heavily penalized on RuntimeCost and SizeCost because flattening and bogus control flow multiply basic blocks and insert dispatcher overhead that would devastate a compute-bound FP benchmark, and their security benefit on a single small function does not justify it; ICALL is omitted entirely since this program makes no indirect or virtual calls for it to protect.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Misc__flops-7",
+  "run_id": "e10C_glm_agent_flops-7_0_3887",
+  "arm": "C",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T16:25:38Z"
+ }
+}

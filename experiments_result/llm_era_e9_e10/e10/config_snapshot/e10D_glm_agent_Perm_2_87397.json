@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.2
+  },
+  "BCF": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.8,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.3
+  },
+  "FLA": {
+   "SecurityGain": 0.9,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.4
+  },
+  "SPLIT": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.2
+  },
+  "IBR": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.3
+  },
+  "ICALL": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.4
+  },
+  "IGV": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.3
+  }
+ },
+ "rationale": "Perm is a small, recursive, arithmetic- and control-flow-heavy benchmark with no source metadata, so the strategy is to strongly obscure the structural logic (recursive permutation generation) while bounding overhead on its hot computational core. FLA gets the highest SecurityGain/DiversityGain weights since flattening the state machine of recursive routines destroys call-graph reconstruction, which is the primary analysis target for such a tiny program; BCF and IBR also get high security weights to add opaque predicates and indirect branching that frustrate static CFG recovery, but their RuntimeCost weights are kept elevated so cost-sensitive functions (hot recursion loops) are spared the worst overhead. SUB is favored broadly (pure instruction substitution, low correctness risk) because Perm's dense arithmetic offers many substitution opportunities at negligible size cost, so its SizeCost/CorrectnessRisk weights stay low to encourage application everywhere. ICALL and IGV receive moderate-to-high weights to hide call targets and global variable access patterns \u2014 valuable given the benchmark's pointer/swap-heavy style \u2014 with CorrectnessRisk kept moderate to avoid destabilizing indirect calls in recursive code. SPLIT is nearly disabled (lowest security value, modest diversity) because the program is already small and splitting basic blocks adds little against RE while inflating size; it is retained only for large-block functions if any exist. Overall, security-oriented weights dominate, but RuntimeCost weights above their SizeCost counterparts reflect that Perm is compute-bound and runtime overhead matters more than binary growth.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Stanford__Perm",
+  "run_id": "e10D_glm_agent_Perm_2_87397",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T11:50:19Z"
+ }
+}

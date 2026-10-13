@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.15,
+   "CorrectnessRisk": 0.05
+  },
+  "BCF": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.1
+  },
+  "FLA": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.45,
+   "CorrectnessRisk": 0.15
+  },
+  "SPLIT": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.1,
+   "CorrectnessRisk": 0.05
+  },
+  "IBR": {
+   "SecurityGain": 0.65,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.1
+  },
+  "ICALL": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.25,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.2
+  },
+  "IGV": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.15
+  }
+ },
+ "rationale": "Round 0 built and ran cleanly with no ICE or correctness failures, so this round raises obfuscation pressure while keeping overhead bounded. The program is small (1720 text bytes, 16 functions) with heavy C++ virtual dispatch (quotient/prod/sum expr hierarchies), so IGV is weighted high to hide vtable-dispatched globals and SUB is prioritized since the deriv/print_m functions are arithmetic-heavy and SUB is cheap and safe. SPLIT gets high DiversityGain with near-zero cost because splitting these small functions enlarges the surface that FLA and BCF then transform, improving their effectiveness on tiny bodies. FLA and BCF are raised moderately (SecurityGain 0.70/0.75) since correctness held last round, but their RuntimeCost/SizeCost weights stay mid-range so the selector still avoids applying them to the hottest small functions where overhead would dominate. IBR adds control-flow indirection that composes with the existing virtual-call patterns; ICALL is kept slightly lower with a modest CorrectnessRisk weight because the code already has abundant indirect calls and over-transforming them risks subtle breakage in the C++ call sites. Net effect: stronger transformation coverage than round 0, concentrated on cheap, high-yield passes for this size class, with cost dimensions retained as brakes against overhead explosion on a program whose total text is under 2KB.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__Prolangs-C++__deriv1",
+  "run_id": "e10D_glm_agent_deriv1_1_97710",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T14:42:14Z"
+ }
+}

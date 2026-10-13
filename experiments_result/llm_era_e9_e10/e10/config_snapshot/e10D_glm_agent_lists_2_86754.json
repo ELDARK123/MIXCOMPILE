@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.8,
+   "SizeCost": 0.8,
+   "CorrectnessRisk": 0.9
+  },
+  "BCF": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.7
+  },
+  "FLA": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.6
+  },
+  "SPLIT": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.75,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.85
+  },
+  "IBR": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.4
+  },
+  "ICALL": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.5
+  },
+  "IGV": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.6
+  }
+ },
+ "rationale": "The target is a small, pointer- and loop-intensive C++ linked-list microbenchmark (Shootout lists) with no profile data available, so per-function features are weak and the table must be conservative: cheap, low-risk passes (SUB, SPLIT) get the highest weights across all dimensions since they add instruction- and layout-level diversity with negligible overhead, while high-impact control-flow passes (BCF, FLA) get moderate weights so they apply mainly to larger, branch-heavy functions rather than the tight list-traversal hot loops, keeping the benchmark's runtime acceptable. IBR, ICALL, and IGV are kept at low-moderate weights: indirect branching and indirect calls are risky and costly in pointer-dense C++ list code with virtual dispatch and function objects, and the program has little global state for IGV to meaningfully protect. CorrectnessRisk weights track confidence in each pass on unprofiled C++ with rich pointer semantics.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Shootout-C++__lists",
+  "run_id": "e10D_glm_agent_lists_2_86754",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T11:39:43Z"
+ }
+}

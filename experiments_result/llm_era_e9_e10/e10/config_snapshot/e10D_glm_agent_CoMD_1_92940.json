@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.1,
+   "CorrectnessRisk": 0.05
+  },
+  "BCF": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.1
+  },
+  "FLA": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.55,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.15
+  },
+  "SPLIT": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.15,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.05
+  },
+  "IBR": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "ICALL": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.15,
+   "CorrectnessRisk": 0.1
+  },
+  "IGV": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.15,
+   "CorrectnessRisk": 0.05
+  }
+ },
+ "rationale": "Round 0 compiled and ran correctly, so weights are pushed toward stronger obfuscation while keeping costs bounded. SUB and IGV get the highest weights because they are nearly free at runtime, apply well to CoMD's heavy arithmetic on global simulation state (eamForce, ljForce, linkCells), and carry minimal correctness risk. IBR and ICALL are raised to break static control-flow and call-graph recovery cheaply across the 79 functions, including the large main/printPerformanceResults/eamForce bodies. BCF and FLA get moderate weights rather than maximum: they deliver the strongest control-flow hiding but CoMD's hot loops (force computation, timestep integration, halo exchange) amplify their runtime and code-size blowup, so RuntimeCost/SizeCost weights are kept high enough to limit application to functions whose features justify it. SPLIT stays mid-weight as a low-cost complement that fragments the large printPerformanceResults and main bodies, improving FLA/BCF effectiveness without meaningful overhead.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__DOE-ProxyApps-C__CoMD",
+  "run_id": "e10D_glm_agent_CoMD_1_92940",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T13:22:36Z"
+ }
+}

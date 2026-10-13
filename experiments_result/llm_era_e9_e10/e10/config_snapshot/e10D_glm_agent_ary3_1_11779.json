@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.25,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.15
+  },
+  "BCF": {
+   "SecurityGain": 0.45,
+   "DiversityGain": 0.4,
+   "RuntimeCost": 0.65,
+   "SizeCost": 0.55,
+   "CorrectnessRisk": 0.4
+  },
+  "FLA": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.45,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.5
+  },
+  "SPLIT": {
+   "SecurityGain": 0.35,
+   "DiversityGain": 0.4,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  },
+  "IBR": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.25
+  },
+  "ICALL": {
+   "SecurityGain": 0.45,
+   "DiversityGain": 0.45,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.35
+  },
+  "IGV": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.45,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.35
+  }
+ },
+ "rationale": "Round 0 failed with a compiler internal error caused by extreme weights, so every value is now pulled into a balanced 0.15-0.65 band with no dimension pinned at either extreme. The target is a tiny (512-byte text, 2-function) Shootout benchmark dominated by a tight arithmetic loop in main, so runtime cost is the dominant constraint: SUB stays favored because instruction substitution has the best security-to-runtime ratio and negligible correctness risk on straight-line arithmetic code, and IBR is moderately favored as a cheap control-flow-integrity-preserving dispatcher obfuscation. BCF and FLA carry the heaviest runtime and transformation penalties and were the likely destabilizers of the previous candidate, so their SecurityGain weights are reduced to modest levels and their RuntimeCost/CorrectnessRisk weights are raised so the selector applies them sparingly, if at all, to the small hot functions. SPLIT, ICALL, and IGV sit near neutral: they add diversity breadth without dominating any dimension, letting the feature-driven selector compose them on functions whose features actually favor those dimensions while keeping overall build robustness.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Shootout__ary3",
+  "run_id": "e10D_glm_agent_ary3_1_11779",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-05T14:49:57Z"
+ }
+}

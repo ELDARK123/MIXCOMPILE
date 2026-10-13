@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.25,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.65,
+   "CorrectnessRisk": 0.25
+  },
+  "FLA": {
+   "SecurityGain": 0.9,
+   "DiversityGain": 0.85,
+   "RuntimeCost": 0.55,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.35
+  },
+  "SPLIT": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.15,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  },
+  "ICALL": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.3
+  },
+  "IGV": {
+   "SecurityGain": 0.65,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.35
+  }
+ },
+ "rationale": "The round-0 candidate built and ran correctly, so this round raises control-flow obfuscation pressure: FLA and BCF get the highest SecurityGain weights to flatten and bogus-condition the larger functions (do_merge, output_voronoi_diagram, build_delaunay), while IBR is weighted high because its cheap block-level indirection disrupts basic-block-level diffing and static matching with low runtime cost. SUB is kept moderately high since voronoi is arithmetic-heavy (circle_center, vector.c) and instruction substitution is nearly free at runtime; SPLIT is boosted as a low-risk size-cheap enhancer that compounds with FLA by increasing flattening targets. ICALL and IGV are raised moderately to diversify call sites and global references but their CorrectnessRisk weights stay elevated (indirect-call lowering and global-variable wrapping interact with the floating-point-heavy code and can trip optimizers), so the selector applies them selectively. RuntimeCost for BCF remains the highest nonzero cost so hot loops in the triangulation are protected without fully saturating runtime, and all CorrectnessRisk values are kept low-to-moderate given the prior clean correctness result, inviting the selector to explore more aggressive coverage than round 0.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__Olden__voronoi",
+  "run_id": "e10D_glm_agent_voronoi_1_97418",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T14:37:15Z"
+ }
+}

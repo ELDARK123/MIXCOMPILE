@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.4,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.2
+  },
+  "FLA": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.3
+  },
+  "SPLIT": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  },
+  "IBR": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.3
+  },
+  "ICALL": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.3
+  },
+  "IGV": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.2
+  }
+ },
+ "rationale": "Round 1 failed with a compiler internal error, so this candidate flattens all weights into a moderate, balanced band (0.2-0.6) avoiding the extremes likely responsible for the internal failure, while keeping all seven passes enabled. The program is a small (195 lines, 12 functions, ~1.3 KB text) bit-serial decoder from BitBench whose hot path is the five11/read_11_bits bit-pumping loop, so SUB gets the highest SecurityGain since instruction substitution is cheap, safe, and effective against pattern-matching of its small arithmetic kernels, while BCF and FLA are kept at moderate security weights with elevated RuntimeCost (0.5-0.6) so the selector applies them selectively rather than blanket-applying opaque predicates and flattening to the hot loop. SPLIT and IGV carry low runtime/size costs and decent diversity gain to add structural variety across the 12 functions cheaply, and IBR/ICALL sit at mid-band values to contribute block-level indirection without dominating selection. CorrectnessRisk is uniformly kept low-to-moderate (0.1-0.3) to preserve correctness on this control-flow-dense benchmark.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__BitBench__five11",
+  "run_id": "e10D_glm_agent_five11_2_42455",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-05T23:21:03Z"
+ }
+}

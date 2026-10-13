@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.2
+  },
+  "FLA": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  },
+  "SPLIT": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.2
+  },
+  "ICALL": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.2
+  },
+  "IGV": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.1,
+   "CorrectnessRisk": 0.1
+  }
+ },
+ "rationale": "Round 0 built and ran correctly with no ICE or fallback, so this candidate escalates aggressiveness across all seven passes. The target is a trivial 3-function, 191-byte binary where runtime performance is irrelevant (hello.cpp does one print), making RuntimeCost weights uniformly low (0.1-0.4). SUB and BCF get the highest SecurityGain (0.8) as the strongest statement-level and control-flow barriers; FLA follows closely to flatten the already-simple control flow of main. IBR is pushed hard (0.8 security) since opaque predicates and bogus blocks pad the tiny text section substantially, which is desirable here given the minimal SizeCost sensitivity. ICALL and IGV add indirect-call and inter-block indirection diversity at low correctness risk for this program's trivial call graph. SPLIT is kept moderate to fragment basic blocks and feed the other passes more surface. CorrectnessRisk weights remain low (0.1-0.2) since round 0 showed clean compilation, but are kept nonzero to gate the passes on the static-initializer function _GLOBAL__sub_I_hello.cpp, where aggressive transformation carries the only real hazard in this target.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Shootout-C++__hello",
+  "run_id": "e10D_glm_agent_hello_1_54495",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T02:41:59Z"
+ }
+}

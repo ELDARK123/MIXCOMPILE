@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.9,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.2
+  },
+  "FLA": {
+   "SecurityGain": 0.9,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.3
+  },
+  "SPLIT": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.3
+  },
+  "ICALL": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.3
+  },
+  "IGV": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  }
+ },
+ "rationale": "Round 1 built and ran correctly, so this candidate raises obfuscation pressure while protecting lpbench's hot numeric kernels (daxpy, dgesl, dgefa, matgen dominate the 5 KB text and execute in tight loops). SUB and SPLIT stay near-maximal: they are near-free transformations that add diversity and precondition basic blocks for stronger passes. FLA gets the highest SecurityGain since control-flow flattening is the strongest structural defense for the large main/dgefa bodies, but its RuntimeCost/SizeCost weights (0.7/0.6) keep it off the innermost loops where dispatch overhead would hurt. BCF is favored moderately (0.7 security) with cost weights at 0.6 so bogus arithmetic lands mostly in cold/outer blocks rather than the FFT and LU inner loops. IBR is pushed up (0.8) to obscure branch targets with acceptable indirect-branch cost given this program's small call/branch count, and ICALL/IGV are enabled at moderate levels to hide call and global-reference structure; all CorrectnessRisk weights remain at or below 0.3 because the program's fixed-pointer numeric code (common in almabench/fftbench style sources) tolerates indirection but not aggressive transformation errors. Net effect: diversity-first, strong structural obfuscation on large functions, cost-gated on hot loops.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__CoyoteBench__lpbench",
+  "run_id": "e10D_glm_agent_lpbench_2_51674",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T01:54:46Z"
+ }
+}

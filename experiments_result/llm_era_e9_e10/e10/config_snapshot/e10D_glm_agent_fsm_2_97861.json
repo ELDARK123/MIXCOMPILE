@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.15,
+   "CorrectnessRisk": 0.05
+  },
+  "BCF": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.45,
+   "CorrectnessRisk": 0.1
+  },
+  "FLA": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  },
+  "SPLIT": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.05
+  },
+  "IBR": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.1
+  },
+  "ICALL": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.25
+  },
+  "IGV": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.35
+  }
+ },
+ "rationale": "Round 1 built and ran cleanly, so this candidate escalates obfuscation while retaining safety margins. SUB gets the strongest weights since instruction substitution carries near-zero runtime/size/correctness cost and is ideal for this tiny (1399-byte text) benchmark where every function benefits. BCF and IBR are pushed higher to add opaque predicates and indirect branching that frustrate static control-flow recovery, with moderate cost weights because the program is compute-light so some overhead is tolerable. FLA stays strong on security/diversity with a slightly raised CorrectnessRisk weight to be gentle with the C++ constructors (_ZN6sampleC1/C2Ev, _ZN3fsmC1/C2EP6triple) whose paired C1/C2 definitions make miscompilation observable. ICALL is favored moderately since main and fsm dispatch offer a few call sites to virtualize, but its CorrectnessRisk weight tempers aggressive indirecting around C++ linkage. SPLIT provides cheap synergy by enlarging basic-block pools for BCF/FLA to act on. IGV is kept as the weakest pass: with few globals in this benchmark its payoff is limited and its risk around C++ initialization order is the highest, so its elevated CorrectnessRisk weight lets the feature driver apply it only where global-access features clearly dominate.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__Prolangs-C++__fsm",
+  "run_id": "e10D_glm_agent_fsm_2_97861",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T14:44:32Z"
+ }
+}

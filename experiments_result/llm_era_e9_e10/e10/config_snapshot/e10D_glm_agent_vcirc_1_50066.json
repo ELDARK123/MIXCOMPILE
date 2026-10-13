@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.15,
+   "SizeCost": 0.15,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.55,
+   "SizeCost": 0.55,
+   "CorrectnessRisk": 0.3
+  },
+  "FLA": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.65,
+   "SizeCost": 0.45,
+   "CorrectnessRisk": 0.3
+  },
+  "SPLIT": {
+   "SecurityGain": 0.45,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  },
+  "IBR": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  },
+  "ICALL": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.35
+  },
+  "IGV": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.3
+  }
+ },
+ "rationale": "Round 0 built and ran cleanly with no reported problems, so this candidate shifts weight toward stronger reverse-engineering resistance while respecting the program's profile: 13 tiny functions (max 70 text bytes, 209 bytes total) mean size budget is generous but per-function control flow is short, so FLA gets only moderate security weight with elevated runtime/size cost sensitivity (flattening tiny methods yields little and the virtual-dispatch C++ code is hot in benchmark loops), while BCF stays enabled at moderate weight since bogus predicates add opaque predicates cheaply on small bodies. SUB is pushed highest: instruction substitution is near-free in both time and space, safe on arithmetic-heavy vector/point code (vpoint.h coordinate math), and compounds diversity when stacked with other passes. IBR and ICALL carry high security weight because indirect branching and indirect calls disrupt both static CFG recovery and x86 call-target analysis of the virtual method bodies, with tolerable cost weights given the tiny text; SPLIT is tuned mainly for diversity to fragment the few larger functions (_ZN6Circle6ExpandEi, _ZN5Point6MoveToEii) before FLA/BCF act on them; IGV is enabled at moderate weight to obscure any file-scope state in the Circle/Point drawing code. CorrectnessRisk weights are kept modest everywhere since round 0 showed clean compilation with no ICE fallback, but not zero, preserving the correctness guard on this virtual-call-heavy C++ sample.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__Prolangs-C++__vcirc",
+  "run_id": "e10D_glm_agent_vcirc_1_50066",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T01:28:12Z"
+ }
+}

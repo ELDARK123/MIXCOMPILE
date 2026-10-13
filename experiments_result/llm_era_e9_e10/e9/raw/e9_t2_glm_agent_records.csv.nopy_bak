@@ -1,0 +1,4 @@
+run_id,level,e9_arm,sample_id,function,symbol,prompt_sha256,model,cosine,elem_constants,elem_calls,elem_structs,elem_idents,hits,score_T2,tokens_in,tokens_out,response_raw,latency_s,status
+t2_glm_agent_A1_dc_NewAdcViewCntl_10403,L1,A1,ms__MultiSource__Benchmarks__NPB-serial__dc,FUN_00148d20,NewAdcViewCntl,4fddbbc50fad45f5,glm_agent,,,,,,,,0,0,No module named 'numpy',,error:No module named 'numpy'
+t2_glm_agent_A1_dc_SharedSortAggregate_10469,L1,A1,ms__MultiSource__Benchmarks__NPB-serial__dc,FUN_0012d3c0,SharedSortAggregate,90fa8deec5aef374,glm_agent,,,,,,,,0,0,No module named 'numpy',,error:No module named 'numpy'
+t2_glm_agent_A1_dc_TreeInsert_10562,L1,A1,ms__MultiSource__Benchmarks__NPB-serial__dc,FUN_00183930,TreeInsert,756021d97dd9425e,glm_agent,,,,,,,,0,0,No module named 'numpy',,error:No module named 'numpy'

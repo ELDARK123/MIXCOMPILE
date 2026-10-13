@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.95,
+   "DiversityGain": 0.85,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.8
+  },
+  "BCF": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.85
+  },
+  "FLA": {
+   "SecurityGain": 0.9,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.45,
+   "CorrectnessRisk": 0.8
+  },
+  "SPLIT": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.8,
+   "SizeCost": 0.75,
+   "CorrectnessRisk": 0.9
+  },
+  "IBR": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.85,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.55,
+   "CorrectnessRisk": 0.85
+  },
+  "ICALL": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.8
+  },
+  "IGV": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.7
+  }
+ },
+ "rationale": "Round 1 built and ran correctly, so this round pushes obfuscation aggressiveness upward while keeping the runtime-sensitive core of this program (mandel/fbench-style FP loops) protected from the costliest transforms: BCF and FLA keep RuntimeCost weights low (~0.35-0.4) so they are applied mainly to cold or control-flow-favoring functions rather than hot numeric kernels, while SUB gets a high SecurityGain (0.95) since instruction substitution is cheap and effective on arithmetic-heavy code, and IBR/ICALL/IGV get raised Security and Diversity weights to add inter-block randomization, indirect call indirection, and global-variable wiring that broaden structural diversity for reverse engineers. SPLIT stays moderate with high CorrectnessRisk tolerance since round 1 showed no ICE or miscompilation, giving headroom to split basic blocks more freely; all CorrectnessRisk weights remain high (0.7-0.9) to preserve the verified correctness from round 1, and no pass is disabled because the reference binary is tiny (1193 text bytes, 5 functions) and can absorb the size growth of full-coverage FLA/BCF/SPLIT without approaching overhead limits.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Misc__mandel",
+  "run_id": "e10D_glm_agent_mandel_2_53525",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T02:25:51Z"
+ }
+}

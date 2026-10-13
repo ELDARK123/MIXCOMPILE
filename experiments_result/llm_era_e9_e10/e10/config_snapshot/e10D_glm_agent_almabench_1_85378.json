@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.4
+  },
+  "BCF": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.45,
+   "CorrectnessRisk": 0.3
+  },
+  "FLA": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.55,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.35
+  },
+  "SPLIT": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.25,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.2
+  },
+  "IBR": {
+   "SecurityGain": 0.45,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.45,
+   "CorrectnessRisk": 0.3
+  },
+  "ICALL": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.55,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.5
+  },
+  "IGV": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.55
+  }
+ },
+ "rationale": "almabench is a small, compute-bound floating-point benchmark (AM1 pseudo-potential integration) dominated by a few hot numeric loops and heavy double-precision arithmetic, so the highest value comes from cheap, value-preserving arithmetic obfuscation: SUB gets the strongest weights since algebraic/substitute transformations thrive on dense integer and FP arithmetic with modest overhead; SPLIT is favored for its near-zero runtime cost and good diversity contribution across the benchmark's loop bodies. BCF and FLA are kept at mid weights \u2014 they meaningfully impede static analysis of the control flow but the hot inner loops make their runtime cost a real concern, so moderate RuntimeCost weights let the feature-driven selector apply them selectively to cold functions. IBR and ICALL are down-weighted because branch/opaque-predicate insertion and indirect-call conversion add per-iteration overhead precisely where this program spends all its time, and ICALL carries extra CorrectnessRisk with few indirect-call sites to hide. IGV is included at moderate weight \u2014 the benchmark's numeric constant tables benefit from global-value hiding \u2014 but with an elevated CorrectnessRisk weight since tampering with FP constants can silently alter numerical results. Overall the table biases the selector toward arithmetic and structural diversity while gating control-flow-heavy passes by their runtime cost.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__CoyoteBench__almabench",
+  "run_id": "e10D_glm_agent_almabench_1_85378",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T11:16:47Z"
+ }
+}

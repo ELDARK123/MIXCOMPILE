@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.2
+  },
+  "BCF": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.4
+  },
+  "FLA": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.5
+  },
+  "SPLIT": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.3
+  },
+  "IBR": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.4
+  },
+  "ICALL": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.5
+  },
+  "IGV": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.4,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.4
+  }
+ },
+ "rationale": "The round-0 build failed with a compiler internal error, so this candidate flattens all weights into a moderate 0.2-0.6 band, avoiding the near-0.0 and near-1.0 extremes that likely tripped the pass-selection/combination logic (e.g. aggressive FLA/BCF stacking on this tiny 12-function, 1259-byte program). SUB keeps the highest SecurityGain/DiversityGain since instruction substitution is cheap, low-risk, and well-suited to the arithmetic-heavy bit-reading loops (read_x_bits, read_11_bits); BCF and IBR stay at moderate security weights to add control-flow and inter-block noise without the heavy runtime/size bloat that would hurt the two ~360-byte hot functions; FLA, ICALL, and IGV are held near neutral (0.4-0.5) so they participate only where features favor them, limiting correctness risk on the decoder-heavy code; SPLIT stays lightweight (low RuntimeCost weight) since it composes well with FLA and adds diversity at minimal cost. CorrectnessRisk weights are kept at or below 0.5 everywhere so no pass is pushed onto fragile paths, which should both restore buildability and preserve correct execution.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__BitBench__five11",
+  "run_id": "e10D_glm_agent_five11_1_42440",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-05T23:20:55Z"
+ }
+}

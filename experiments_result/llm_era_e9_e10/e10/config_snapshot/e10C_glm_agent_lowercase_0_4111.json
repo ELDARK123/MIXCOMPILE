@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.8,
+   "CorrectnessRisk": 0.2
+  },
+  "FLA": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.8,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.5
+  },
+  "SPLIT": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.3
+  },
+  "ICALL": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.3
+  },
+  "IGV": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  }
+ },
+ "rationale": "This sample is a dense floating-point benchmark suite (fbench, whetstone, flops, oourafft, himenobmtxpa) compiled down to essentially one hot, loop-dominated main (684 text bytes), so the dominant constraint is per-iteration overhead on tightly optimized FP loops while the tiny code size makes relative size growth cheap to absorb. SUB and SPLIT are nearly free and semantically safe, so they get high SecurityGain/DiversityGain weights and low cost weights to be applied broadly, providing a cheap baseline layer of arithmetic and structure diversity. FLA and BCF offer the strongest RE resistance but impose branch-dispatch and bogus-block overhead exactly where this program is hottest, so their cost weights are kept high (and FLA's CorrectnessRisk elevated, since flattening large FP kernels with sensitive loop-carried FP state is where miscompilation risk concentrates) to let the selector restrain them on hot/costly functions rather than disabling them outright. IBR and ICALL carry per-iteration indirect-branch/call overhead with limited payoff in a program with few calls and simple control flow, so they sit in the middle with moderate cost weights. IGV is a low-risk, low-cost global/data indirection that diversifies the data references common in these kernels, so it is kept active with modest weights. Overall the table biases selection toward cheap, safe, diversity-adding passes while letting the cost dimensions throttle the expensive control-flow passes on this runtime-critical workload.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Misc__lowercase",
+  "run_id": "e10C_glm_agent_lowercase_0_4111",
+  "arm": "C",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T16:29:26Z"
+ }
+}

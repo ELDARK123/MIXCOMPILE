@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.8,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.2
+  },
+  "FLA": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.2
+  },
+  "SPLIT": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.3
+  },
+  "ICALL": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  },
+  "IGV": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.4
+  }
+ },
+ "rationale": "The static profile is empty (no source lines, function list, or size data), so this is treated as a small-to-medium general-purpose C++ program (the Prolangs-C++ family benchmark), where the priority is strong control-flow obfuscation with modest overhead. FLA and BCF get the highest SecurityGain weights since flattening and bogus-control-flow most directly defeat static and dynamic reverse engineering, but their elevated RuntimeCost/SizeCost weights signal the compiler should apply them selectively to functions whose features tolerate overhead. SUB is cheap, correctness-safe arithmetic obfuscation with good diversity payoff, so it is favored broadly. SPLIT is inexpensive and synergizes with FLA by increasing basic-block population, so it is kept enabled as a low-cost amplifier. IBR provides opaque inter-block routing that complements FLA but carries moderate correctness risk (0.3) from indirect-branch lowering on C++ code, so it is weighted conservatively. ICALL is favored moderately: indirect-call substitution hides call targets well at low runtime cost, which suits a program whose function inventory is unknown. IGV is kept enabled mainly for its diversity benefit (per-build global-value variation) with low cost, but its CorrectnessRisk weight (0.4) is the highest in the table because global-value transformations on C++ with static initializers and RTTI can be fragile, so it should only fire where features indicate safety. Overall the table biases toward control-flow-centric obfuscation (FLA/BCF/SPLIT/IBR) while using low-risk cheap passes (SUB/ICALL/IGV) to raise diversity without compounding overhead.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__Prolangs-C++__family",
+  "run_id": "e10D_glm_agent_family_2_84380",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T10:59:56Z"
+ }
+}

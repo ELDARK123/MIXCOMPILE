@@ -1,0 +1,47 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "MIXCOMPILE run manifest unit record",
+  "type": "object",
+  "required": [
+    "run_id", "experiment_id", "sample_id", "split", "configuration_id", "profile",
+    "weight_file", "weight_sha256", "compiler_path", "compiler_sha256",
+    "source_revision", "pass_set", "seed", "command", "start_utc", "end_utc",
+    "exit_code", "status", "failure_reason"
+  ],
+  "properties": {
+    "run_id": {"type": "string"},
+    "experiment_id": {"type": "string", "enum": ["E1", "E2", "E3", "E4", "E5", "E6", "E7", "ADMIT", "SMOKE"]},
+    "sample_id": {"type": "string"},
+    "split": {"type": "string", "enum": ["tuning", "validation", "test", "security_subset", "real_world", "smoke"]},
+    "configuration_id": {"type": "string"},
+    "profile": {"type": "string", "description": "value passed to -mix-profile; LLVM baseline uses 'none'"},
+    "weight_file": {"type": "string"},
+    "weight_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$|^none$"},
+    "compiler_path": {"type": "string"},
+    "compiler_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "source_revision": {"type": "string", "description": "PassDecider.cpp sha256 prefix or git revision of LLVM source"},
+    "pass_set": {"type": "array", "items": {"type": "string", "enum": ["SUB", "BCF", "FLA", "SPLIT", "IBR", "ICALL", "IGV"]}},
+    "seed": {"type": "integer", "minimum": 0},
+    "command": {"type": "array", "items": {"type": "string"}, "description": "argv array, no shell"},
+    "start_utc": {"type": "string"},
+    "end_utc": {"type": "string"},
+    "exit_code": {"type": "integer"},
+    "status": {"type": "string", "enum": ["complete", "build_failed", "semantic_failed", "activation_unverified", "configuration_mismatch", "nondeterministic_build", "timeout", "insufficient_activation", "pending"]},
+    "failure_reason": {"type": "string"},
+    "artifacts": {
+      "type": "array",
+      "items": {"type": "object", "required": ["path", "sha256"], "properties": {"path": {"type": "string"}, "sha256": {"type": "string"}}}
+    },
+    "environment": {
+      "type": "object",
+      "properties": {
+        "nproc": {"type": "integer"},
+        "mem_gb": {"type": "number"},
+        "kernel": {"type": "string"},
+        "tool_versions": {"type": "object"}
+      }
+    },
+    "logs": {"type": "array", "items": {"type": "string"}},
+    "dumped_cost_config_sha256": {"type": "string", "description": "sha256 of -mix-dump-cost-config output verifying loaded weights"}
+  }
+}

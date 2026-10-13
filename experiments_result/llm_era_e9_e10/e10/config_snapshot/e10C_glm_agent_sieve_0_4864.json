@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  },
+  "BCF": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.3
+  },
+  "FLA": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.8,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.4
+  },
+  "SPLIT": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.2
+  },
+  "IBR": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.4
+  },
+  "ICALL": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.5
+  },
+  "IGV": {
+   "SecurityGain": 0.3,
+   "DiversityGain": 0.3,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.5
+  }
+ },
+ "rationale": "This program is extremely small (4 functions, ~1 KB of text) and dominated by two hot, loop-heavy functions (main and the sieve routine), so the weight table prioritizes low-cost, high-security transformations and penalizes anything that multiplies loop-body work: SUB gets the highest security/diversity weights since instruction substitution is cheap in both time and space and essentially risk-free on arithmetic-heavy sieve code; IBR is favored next because flattening dispatch via indirect branches obscures control flow with modest overhead suitable for a binary this tiny; BCF and FLA carry high RuntimeCost and SizeCost weights so they are applied selectively only where the feature profile indicates a cold or control-flow-dense region, since bogus paths and loop flattening would disproportionately inflate a 1 KB text section and slow the sieve's inner loops; SPLIT is encouraged as a nearly free diversity booster that helps smaller transforms compose; ICALL is kept moderate with a raised CorrectnessRisk weight because indirect-call rewriting on C++ code with static initializers (_GLOBAL__sub_I_sieve.cpp) can be fragile; and IGV is weighted lowest across the board because this program has minimal global state to protect, making its risk/benefit profile unattractive.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Shootout-C++__sieve",
+  "run_id": "e10C_glm_agent_sieve_0_4864",
+  "arm": "C",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T16:41:33Z"
+ }
+}

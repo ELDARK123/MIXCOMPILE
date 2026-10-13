@@ -1,0 +1,36 @@
+{
+  "selected_utc": "2026-09-12T07:45:53Z",
+  "selected_candidate": "optimized",
+  "weight_file": "config/optimized_pass_weights.json",
+  "weight_sha256": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "profile": "optimized",
+  "split_used": "validation",
+  "hard_constraints_preregistered": {
+    "compile_success_rate": 1.0,
+    "semantic_pass_rate": 1.0,
+    "timeout_rate": 0.0,
+    "exec_ratio_median_max": 2.0,
+    "size_ratio_median_max": 2.0,
+    "note": "preregistered 2026-09-12 BEFORE any test-split execution; caps chosen from design intent (bounded overhead), not from validation results"
+  },
+  "primary_objective_preregistered": {
+    "rule": "maximize activation_median subject to exec_ratio_median <= 1.6 (optimized design intent: bounded runtime overhead <= 60%)",
+    "tie_break": [
+      "lower exec_ratio_median",
+      "bootstrap median stability"
+    ],
+    "note": "rule preregistered 2026-09-12 before test; validation-only data used"
+  },
+  "selection_basis": {
+    "optimized_validation": {
+      "n_units": "1290",
+      "correct_pass_rate": "1.0000",
+      "exec_ratio_median": "1.578",
+      "size_ratio_median": "1.5439",
+      "activation_median": "21.0"
+    },
+    "non_inferiority": "no random candidate reaches activation >= 21 at exec <= 1.6x; optimized dominates 28/30 randoms (higher activation at lower cost, or comparable activation much cheaper)",
+    "e3_sensitivity": "single-dim perturbation mean pass-set Jaccard 0.888 (min 0.721); joint perturbation 0.832 (min 0.790) \u2014 locally stable"
+  },
+  "test_freeze_rule": "selected candidate fixed for all test-split analysis; no test results may modify weights, thresholds, pass set, or selection rules"
+}

@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.55,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.2
+  },
+  "FLA": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.35
+  },
+  "SPLIT": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.15,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.65,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.3
+  },
+  "ICALL": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.35
+  },
+  "IGV": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.45,
+   "CorrectnessRisk": 0.4
+  }
+ },
+ "rationale": "The empty static profile (no source lines, unknown function set) indicates a small, class-driven C++ benchmark (Prolangs-C++ office) with likely short, call-heavy functions and no hot numeric kernels, so the table biases toward transformations with strong resistance-per-cost: SUB and SPLIT are nearly free and are weighted to apply broadly; ICALL and IBR get high security/diversity weights because C++ virtual-heavy code tolerates indirection well and they defeat static call-graph recovery, with moderate runtime-cost weights to keep the compiler from applying them to obviously hot functions; FLA receives the highest SecurityGain since control-flow flattening is the strongest structural deterrent, but its elevated RuntimeCost weight (0.7) restricts it to functions whose features indicate low execution frequency; BCF is enabled moderately with raised SizeCost (0.6) because its bogus-block bloat matters more in a small binary; and IGV is kept at the lowest security weight with the highest CorrectnessRisk weight (0.4) since global-variable indirection offers the least resistance here and carries the most risk in C++ with static initialization and ODR-sensitive globals \u2014 the net effect maximizes layered reverse-engineering resistance while letting the cost dimensions gate the expensive passes on this size- and latency-sensitive small binary.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__Prolangs-C++__office",
+  "run_id": "e10D_glm_agent_office_2_84533",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T11:02:35Z"
+ }
+}

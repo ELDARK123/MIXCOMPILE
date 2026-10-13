@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.1,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.1
+  },
+  "FLA": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  },
+  "SPLIT": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.15,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.25
+  },
+  "ICALL": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.4,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.1,
+   "CorrectnessRisk": 0.2
+  },
+  "IGV": {
+   "SecurityGain": 0.3,
+   "DiversityGain": 0.3,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.3
+  }
+ },
+ "rationale": "01-qbsort is a small sorting benchmark (recursive quicksort, bubble sort) dominated by compact, loop/recursion-heavy functions with few calls and few globals, and with an empty static profile the table favors cheap, broadly applicable passes. SUB gets high SecurityGain/DiversityGain with near-zero cost weights since arithmetic substitution is nearly free on this integer-heavy code. FLA gets the strongest security weight because the control flow (sort loops, recursion drivers) is exactly what flattening protects, with moderate cost weights to keep loop-dominated hot functions from excessive slowdown. BCF and SPLIT are enabled at moderate levels: BCF adds meaningful control-flow confusion at acceptable size cost for these tiny functions, while SPLIT is cheap and enlarges the basic-block pool that FLA/BCF transform more effectively. IBR is kept at moderate security/diversity weights with a raised RuntimeCost weight since indirect branching on tight sort-loop back edges is where overhead concentrates. ICALL is only lightly weighted because the benchmark has few call sites to obscure, and IGV is effectively deprioritized (lowest security/diversity weights, highest CorrectnessRisk weight) since the program has minimal global state, so its transformation surface and payoff are both small.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__McCat__01-qbsort",
+  "run_id": "e10D_glm_agent_01-qbsort_2_83838",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T10:51:11Z"
+ }
+}

@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.9,
+   "SizeCost": 0.9,
+   "CorrectnessRisk": 0.9
+  },
+  "SPLIT": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.9,
+   "SizeCost": 0.85,
+   "CorrectnessRisk": 0.9
+  },
+  "IBR": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.75,
+   "CorrectnessRisk": 0.8
+  },
+  "ICALL": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.65,
+   "SizeCost": 0.75,
+   "CorrectnessRisk": 0.75
+  },
+  "IGV": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.75,
+   "CorrectnessRisk": 0.7
+  },
+  "BCF": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.7
+  },
+  "FLA": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.45
+  }
+ },
+ "rationale": "This is a very small C++ program (16 functions, ~1.4KB text, largest function only 308 bytes), so size-inflating passes are the main constraint: BCF and FLA get low SizeCost/RuntimeCost weights (with FLA also moderately penalized on CorrectnessRisk since C++ code with constructors and potential exception edges is riskier to flatten), meaning they will only fire on the few larger functions (main, sample::sample, fsm::fsm) whose features justify the blowup, rather than doubling the size of an already-tiny binary. Cheap, composable passes dominate instead: SUB has near-zero cost and strong diversity value on arithmetic-heavy FSM code, SPLIT is enabled broadly to fragment the small basic blocks and create more transformation sites for downstream passes, and IBR/ICALL/IGV get balanced mid-to-high weights because indirect branches, indirect calls, and indirect global access give good resistance per byte on a program this small while preserving correctness in straight-line, loop-light FSM logic. The aggregate effect is layered lightweight obfuscation everywhere plus selective heavy flattening/bogging only where the feature profile of the handful of larger functions supports it.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__Prolangs-C++__fsm",
+  "run_id": "e10C_glm_agent_fsm_0_97818",
+  "arm": "C",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T14:44:04Z"
+ }
+}

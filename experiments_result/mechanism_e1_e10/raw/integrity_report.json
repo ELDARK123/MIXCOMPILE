@@ -1,0 +1,14 @@
+{
+  "run_root": "/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/test_20260912T090000Z",
+  "matrix": "/home/vincent/Desktop/experiments-MIXCOMPILE/result/config/experiment_matrix_e7b.json",
+  "generated_utc": "2026-09-29T04:58:29Z",
+  "counters": {
+    "built": 713,
+    "build_failed": 7
+  },
+  "per_experiment": {
+    "E7B|complete|pass": 713,
+    "E7B|build_failed|None": 7
+  },
+  "problems": []
+}

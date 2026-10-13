@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.85,
+   "RuntimeCost": 0.15,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "SPLIT": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.15,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.15
+  },
+  "BCF": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.55,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.2
+  },
+  "FLA": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.75,
+   "CorrectnessRisk": 0.35
+  },
+  "IBR": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.65,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.4
+  },
+  "ICALL": {
+   "SecurityGain": 0.45,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.55
+  },
+  "IGV": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.3
+  }
+ },
+ "rationale": "allroots is a tiny (205-line, 7-function, ~2.4 KB text) numeric kernel with tight iteration loops (newton, HORNERS, allroots) whose runtime is directly measured in the MultiSource suite, so the table favors transformations whose cost is paid once at compile time and penalizes anything executed per-iteration: SUB and SPLIT get high Security/Diversity weights with low cost sensitivities because they add static analysis friction with essentially no loop-body overhead; IGV is moderately favored since obfuscating the constants in values.h and global state diversifies the program cheaply; BCF is allowed at moderate weight (it is effective against control-flow recovery on the larger deflat/main functions) but with raised RuntimeCost/SizeCost sensitivities because bogus predicates inside hot loops are the main overhead risk for a 2.4 KB binary; FLA is held to low effective application via high runtime/size penalties since flattening deflat and main would inflate a very small text section and slow dispatch, and its CorrectnessRisk sensitivity is elevated to protect the delicate convergence loops; IBR and ICALL are effectively discouraged through high runtime and correctness-risk sensitivities \u2014 indirect branches add per-iteration cost in the numerical kernels and indirect calls add risk for near-zero payoff in a program with only seven functions and a trivial call graph.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__Prolangs-C__allroots",
+  "run_id": "e10C_glm_agent_allroots_0_50179",
+  "arm": "C",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T01:30:18Z"
+ }
+}

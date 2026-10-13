@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.1
+  },
+  "SPLIT": {
+   "SecurityGain": 0.3,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "FLA": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.3
+  },
+  "BCF": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.2
+  },
+  "IBR": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  },
+  "ICALL": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.2
+  },
+  "IGV": {
+   "SecurityGain": 0.3,
+   "DiversityGain": 0.4,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.2
+  }
+ },
+ "rationale": "This benchmark is tiny (9 functions, ~1.8KB text) and compute-centric (recursive QuickSort, BubbleSort fallback, parsing loop in ReadList), so the strategy favors cheap, universally applicable transforms plus strong control-flow hiding on the sorting hot path. SUB and SPLIT get high security/diversity weights with low cost weights because they add opaque instruction-level diversity nearly for free across all functions including small helpers. FLA receives the highest SecurityGain since flattening QuickSort's recursive/partition control flow and ReadList's loop destroys the most valuable static CFG structure, with moderate RuntimeCost/CorrectnessRisk weights acknowledging acceptable-but-nonzero overhead on a sorting workload. BCF is kept mid-range: its size bloat is a poor fit for a 1.8KB binary, so low SizeCost weight limits it to functions where its features genuinely justify it. IBR and ICALL get moderate security weights to add indirect indirection at branches and call sites (main/QuickSort recursion, PrintList calls) without heavy dispatch overhead, and IGV stays modest since this program has few globals (mainly the shared list/array state in sort.c), limiting both its payoff and its blast radius. All CorrectnessRisk weights stay \u22640.3 to ensure the recursion and pointer-heavy list handling in QuickSort/ReadList remain functionally intact.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__McCat__01-qbsort",
+  "run_id": "e10C_glm_agent_01-qbsort_0_93153",
+  "arm": "C",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T13:26:34Z"
+ }
+}

@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.1,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.2
+  },
+  "FLA": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.3
+  },
+  "SPLIT": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.2
+  },
+  "ICALL": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.3
+  },
+  "IGV": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.3
+  }
+ },
+ "rationale": "Round 0 built and ran correctly with no ICE fallback, so the table is pushed toward stronger obfuscation while respecting this program's profile: a tiny 2.9KB binary whose runtime is dominated by the hot mmult/mkmatrix loops in main. SUB gets the highest security weight and near-zero cost penalties because instruction substitution is essentially free at runtime and size, making it ideal for the arithmetic-heavy matrix kernels; SPLIT gets maximal diversity weight since it composes cheaply with other passes and this shootout-style code has simple, easily-reversed control flow to break up. BCF and IBR are favored moderately (0.7 security) with only mild runtime penalties (0.3) to add bogus paths and indirect branching against static analysis without badly hurting the hot loops, while FLA is held at a slightly lower security weight with a higher runtime penalty (0.4) because full flattening of the recursive/hot matrix functions carries the largest execution cost; ICALL and IGV stay mid-range with modest correctness-risk penalties since indirect calls/globals add resistant indirection but this program has few call sites and a small global surface to protect, and raising risk penalties there guards the correct-execution margin that round 0 confirmed we have room to spend elsewhere.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Shootout-C++__matrix",
+  "run_id": "e10D_glm_agent_matrix_1_54582",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T02:43:32Z"
+ }
+}

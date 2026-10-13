@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.15,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.05
+  },
+  "BCF": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.75,
+   "SizeCost": 0.8,
+   "CorrectnessRisk": 0.2
+  },
+  "FLA": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.55
+  },
+  "SPLIT": {
+   "SecurityGain": 0.45,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.15,
+   "CorrectnessRisk": 0.05
+  },
+  "IBR": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.1
+  },
+  "ICALL": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.15
+  },
+  "IGV": {
+   "SecurityGain": 0.65,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.25
+  }
+ },
+ "rationale": "Round 0 built and ran correctly, so this table pushes obfuscation intensity up while keeping the hot path safe: SUB and SPLIT get high applicability (near-free arithmetic and basic-block splitting, ideal for the small rc4_crypt loop and rc4_setup KSA where every instruction matters at 1148 bytes of text); BCF keeps high SecurityGain but its honest high RuntimeCost/SizeCost lets the selector suppress it in the hot RC4 keystream loop while still applying it to cold main and _start; FLA is rated moderately useful with elevated CorrectnessRisk (0.55) so it only triggers on control-flow-dense functions like the KSA, not the tight crypt loop; IBR and ICALL get solid security/diversity with moderate costs since bogus control flow and indirect calls add real analysis friction cheaply at this binary size; IGV carries the highest DiversityGain (0.80) with low SizeCost because global variable remapping compounds well with SUB and costs almost nothing in a 4-function binary, with a moderate CorrectnessRisk penalty to avoid it on pointer-heavy code.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__Trimaran__enc-rc4",
+  "run_id": "e10D_glm_agent_enc-rc4_1_94978",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T13:56:38Z"
+ }
+}

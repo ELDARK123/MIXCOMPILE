@@ -1,0 +1,60 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.0589,
+   "DiversityGain": 0.6471,
+   "RuntimeCost": 0.1564,
+   "SizeCost": 0.0277,
+   "CorrectnessRisk": 0.1459
+  },
+  "BCF": {
+   "SecurityGain": 0.5405,
+   "DiversityGain": 0.1563,
+   "RuntimeCost": 0.2641,
+   "SizeCost": 0.594,
+   "CorrectnessRisk": 0.4054
+  },
+  "FLA": {
+   "SecurityGain": 0.0175,
+   "DiversityGain": 0.1582,
+   "RuntimeCost": 0.6599,
+   "SizeCost": 0.0791,
+   "CorrectnessRisk": 0.5912
+  },
+  "SPLIT": {
+   "SecurityGain": 0.5063,
+   "DiversityGain": 0.4008,
+   "RuntimeCost": 0.2619,
+   "SizeCost": 0.7802,
+   "CorrectnessRisk": 0.7547
+  },
+  "IBR": {
+   "SecurityGain": 0.0079,
+   "DiversityGain": 0.1844,
+   "RuntimeCost": 0.033,
+   "SizeCost": 0.7328,
+   "CorrectnessRisk": 0.5991
+  },
+  "ICALL": {
+   "SecurityGain": 0.3001,
+   "DiversityGain": 0.2388,
+   "RuntimeCost": 0.8909,
+   "SizeCost": 0.4045,
+   "CorrectnessRisk": 0.9188
+  },
+  "IGV": {
+   "SecurityGain": 0.1305,
+   "DiversityGain": 0.2322,
+   "RuntimeCost": 0.1965,
+   "SizeCost": 0.4582,
+   "CorrectnessRisk": 0.2539
+  }
+ },
+ "rationale": "B-arm random search candidate 2",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__Prolangs-C++__life",
+  "run_id": "e10B_random_life_1_84456",
+  "arm": "B_random",
+  "utc": "2026-10-06T11:00:56Z"
+ }
+}

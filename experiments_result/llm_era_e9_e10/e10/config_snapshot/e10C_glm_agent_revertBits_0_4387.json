@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.15,
+   "SizeCost": 0.15,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.85,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.55
+  },
+  "FLA": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.55,
+   "SizeCost": 0.45,
+   "CorrectnessRisk": 0.45
+  },
+  "SPLIT": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.15,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.3
+  },
+  "ICALL": {
+   "SecurityGain": 0.45,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.35
+  },
+  "IGV": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.55,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.35
+  }
+ },
+ "rationale": "revertBits is a micro-benchmark dominated by tiny, hot, bit-manipulation kernels (ReverseBits32/64 at 61-87 bytes, ~1.1 KB total text), so the priority is transformations that obscure dataflow-level bitwise logic cheaply while penalizing anything that multiplies execution cost inside tight loops. SUB gets the strongest security/diversity weights with near-zero cost sensitivity because arithmetic/logic substitution is exactly suited to shift-mask-reverse kernels and its overhead is minimal; SPLIT is similarly cheap and enlarges the block inventory that makes SUB/IBR selections more effective on these few-block functions. FLA is favored as the primary structural defense (small functions flatten well and resist static recovery) but with a moderately high RuntimeCost weight so it is not applied to the hottest loops indiscriminately; BCF is kept available but heavily penalized on RuntimeCost and SizeCost because bogus-path execution in a benchmark's inner loop is the worst overhead/cost-benefit trade here. IBR receives moderate security weight with a mid-range runtime penalty as a secondary control-flow hardener. ICALL and IGV remain in consideration at reduced security weights since this program has only a handful of call sites (main -> ReverseBits*) and few globals, limiting their payoff. CorrectnessRisk weights are kept low for the provably-safe local transforms (SUB, SPLIT) and moderate for control-flow rewrites, biasing selection toward transformations that preserve semantics on this strictly integer/branching workload.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Misc__revertBits",
+  "run_id": "e10C_glm_agent_revertBits_0_4387",
+  "arm": "C",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T16:33:40Z"
+ }
+}

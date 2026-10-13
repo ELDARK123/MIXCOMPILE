@@ -1,0 +1,60 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.5239,
+   "DiversityGain": 0.0903,
+   "RuntimeCost": 0.7184,
+   "SizeCost": 0.4507,
+   "CorrectnessRisk": 0.6902
+  },
+  "BCF": {
+   "SecurityGain": 0.3265,
+   "DiversityGain": 0.1513,
+   "RuntimeCost": 0.1937,
+   "SizeCost": 0.2657,
+   "CorrectnessRisk": 0.2705
+  },
+  "FLA": {
+   "SecurityGain": 0.5748,
+   "DiversityGain": 0.8194,
+   "RuntimeCost": 0.9636,
+   "SizeCost": 0.3178,
+   "CorrectnessRisk": 0.5263
+  },
+  "SPLIT": {
+   "SecurityGain": 0.3046,
+   "DiversityGain": 0.5738,
+   "RuntimeCost": 0.1186,
+   "SizeCost": 0.6938,
+   "CorrectnessRisk": 0.3892
+  },
+  "IBR": {
+   "SecurityGain": 0.5462,
+   "DiversityGain": 0.5927,
+   "RuntimeCost": 0.3308,
+   "SizeCost": 0.7287,
+   "CorrectnessRisk": 0.2357
+  },
+  "ICALL": {
+   "SecurityGain": 0.1115,
+   "DiversityGain": 0.9082,
+   "RuntimeCost": 0.7997,
+   "SizeCost": 0.2211,
+   "CorrectnessRisk": 0.4875
+  },
+  "IGV": {
+   "SecurityGain": 0.8156,
+   "DiversityGain": 0.5665,
+   "RuntimeCost": 0.9392,
+   "SizeCost": 0.6349,
+   "CorrectnessRisk": 0.37
+  }
+ },
+ "rationale": "B-arm random search candidate 2",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Shootout-C++__wordfreq",
+  "run_id": "e10B_random_wordfreq_1_55042",
+  "arm": "B_random",
+  "utc": "2026-10-06T02:50:42Z"
+ }
+}

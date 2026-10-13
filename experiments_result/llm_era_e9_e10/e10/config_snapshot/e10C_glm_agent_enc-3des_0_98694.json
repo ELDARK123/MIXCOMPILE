@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.9,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.25,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.85,
+   "SizeCost": 0.75,
+   "CorrectnessRisk": 0.2
+  },
+  "FLA": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.8,
+   "SizeCost": 0.65,
+   "CorrectnessRisk": 0.3
+  },
+  "SPLIT": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.2
+  },
+  "ICALL": {
+   "SecurityGain": 0.3,
+   "DiversityGain": 0.3,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.35
+  },
+  "IGV": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  }
+ },
+ "rationale": "enc-3des is a small (12.8KB text, 12 functions) crypto kernel whose hot path is concentrated in des3_crypt/des_crypt tight round loops, so cheap data-oriented transforms dominate: SUB gets the highest weights because cipher code is dense in boolean/arithmetic operations it can obscure at near-zero runtime and size cost with minimal correctness risk, and SPLIT complements it by breaking large basic blocks (7425-byte des3_crypt) into diverse fragments cheaply. Expensive control-flow passes are deliberately throttled: BCF and FLA carry high RuntimeCost/SizeCost weights so the selector applies them only to functions whose features show low loop intensity (e.g., key-schedule setup like des_main_ks, des3_set_3keys) rather than the encryption inner loops, keeping benchmark runtime acceptable in a 644-line program with little slack. IBR is kept at moderate weight to add branch indirection where blocks are not ultra-hot, while ICALL is down-weighted and risk-weighted because this codebase is dominated by direct intra-module calls with few indirect-call sites, so it adds overhead and correctness exposure with little diversity payoff; IGV stays mild since des.c uses few globals, offering modest diversity at low cost. Overall the table biases toward high-SecurityGain/low-cost passes and gates the costly passes behind cost-sensitive weights, maximizing resistance per unit of runtime/size overhead while preserving correctness.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__Trimaran__enc-3des",
+  "run_id": "e10C_glm_agent_enc-3des_0_98694",
+  "arm": "C",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T14:58:40Z"
+ }
+}

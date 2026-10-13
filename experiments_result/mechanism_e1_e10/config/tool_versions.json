@@ -1,0 +1,197 @@
+{
+ "generated_utc": "2026-09-03T02:51:45Z",
+ "tools": {
+  "mixcompile_clang": {
+   "version": "clang version 17.0.6 | Target: x86_64-unknown-linux-gnu",
+   "path": "/home/vincent/Desktop/llvm-project-17.0.6.src/build/bin/clang",
+   "status": "found_verified",
+   "path_future_experiments": "/home/vincent/Desktop/experiments-MIXCOMPILE/experiments_mixcompile_cybersecurity/artifacts/formal_toolchain/freeze_20260723T095408Z/bin/clang",
+   "sha256": "fe7f9bb8f584060e35771f66168da80c3b9eb3c75ce9071f73e4cd39b6e3b778"
+  },
+  "mixcompile_clangxx": {
+   "version": "clang version 17.0.6 | Target: x86_64-unknown-linux-gnu",
+   "path": "/home/vincent/Desktop/llvm-project-17.0.6.src/build/bin/clang++",
+   "status": "found_verified"
+  },
+  "llvm_lit": {
+   "version": "lit 17.0.6dev",
+   "path": "/home/vincent/Desktop/llvm-project-17.0.6.src/build/bin/llvm-lit",
+   "status": "found_verified"
+  },
+  "llvm_strip": {
+   "version": "llvm-strip, compatible with GNU strip | LLVM (http://llvm.org/):",
+   "path": "/home/vincent/Desktop/llvm-project-17.0.6.src/build/bin/llvm-strip",
+   "status": "found_verified"
+  },
+  "llvm_readelf": {
+   "version": "LLVM (http://llvm.org/): |   LLVM version 17.0.6",
+   "path": "/home/vincent/Desktop/llvm-project-17.0.6.src/build/bin/llvm-readelf",
+   "status": "found_verified"
+  },
+  "llvm_objdump": {
+   "version": "LLVM (http://llvm.org/): |   LLVM version 17.0.6",
+   "path": "/home/vincent/Desktop/llvm-project-17.0.6.src/build/bin/llvm-objdump",
+   "status": "found_verified"
+  },
+  "filecheck": {
+   "version": "LLVM (http://llvm.org/): |   LLVM version 17.0.6",
+   "path": "/home/vincent/Desktop/llvm-project-17.0.6.src/build/bin/FileCheck",
+   "status": "found_verified"
+  },
+  "cmake": {
+   "version": "cmake version 3.22.1 | ",
+   "path": "/usr/bin/cmake",
+   "status": "found_verified"
+  },
+  "ninja": {
+   "version": "1.11.1.git.kitware.jobserver-1",
+   "path": "/home/vincent/anaconda3/bin/ninja",
+   "status": "found_verified"
+  },
+  "python3": {
+   "version": "Python 3.10.12",
+   "path": "/usr/bin/python3",
+   "status": "found_verified"
+  },
+  "git": {
+   "version": "git version 2.25.1",
+   "path": "/usr/bin/git",
+   "status": "found_verified"
+  },
+  "curl": {
+   "version": "curl 7.81.0 (x86_64-pc-linux-gnu) libcurl/7.81.0 OpenSSL/3.0.2 zlib/1.2.13 brotli/1.0.9 zstd/1.5.5 libidn2/2.3.2 libpsl/0.21.0 (+libidn2/2.2.0) libssh/0.9.3/openssl/zlib nghttp2/1.52.0 librtmp/2.3 Ope",
+   "path": "/usr/bin/curl",
+   "status": "found_verified"
+  },
+  "ghidra_headless": {
+   "version": "12.1",
+   "path": "/home/vincent/Desktop/ghidra_12.1_PUBLIC/support/analyzeHeadless",
+   "status": "found_verified"
+  },
+  "java": {
+   "version": "openjdk version \"21.0.10\" 2026-01-20 | OpenJDK Runtime Environment (build 21.0.10+7-Ubuntu-122.04)",
+   "path": "/usr/bin/java",
+   "status": "found_verified"
+  },
+  "radiff2": {
+   "version": "radiff2 6.1.3 +35708 abi:82 @ linux-x86_64 | birth: git.6.1.2-246-g204f8eb85c 2026-04-10__10:42:42",
+   "path": "/home/vincent/.local/bin/radiff2",
+   "status": "found_verified"
+  },
+  "objdump": {
+   "version": "GNU objdump (GNU Binutils for Ubuntu) 2.38 | Copyright (C) 2022 Free Software Foundation, Inc.",
+   "path": "/usr/bin/objdump",
+   "status": "found_verified"
+  },
+  "sha256sum": {
+   "version": "sha256sum (GNU coreutils) 8.32 | Copyright (C) 2020 Free Software Foundation, Inc.",
+   "path": "/usr/bin/sha256sum",
+   "status": "found_verified"
+  },
+  "csmith": {
+   "version": "csmith 2.4.0 | Git version: 0cdc710",
+   "path": "/home/vincent/Desktop/csmith/src/csmith",
+   "status": "found_verified"
+  }
+ },
+ "source_hashes": {
+  "PassDecider.cpp": "c5152d559697ea4cef5fda0f9f3b622f020ab5d25af6e52294490eeec8c563b3",
+  "mixcompile_clang": "fe7f9bb8f584060e35771f66168da80c3b9eb3c75ce9071f73e4cd39b6e3b778"
+ },
+ "frozen_toolchain_rule": "user rule 2026-09-04: all subsequent experiments call the frozen formal toolchain clang in freeze_20260723T095408Z/bin/; hash-identical to llvm-project-17.0.6.src/build/bin/clang used for admission/tuning so far",
+ "e6_compiler": {
+  "path": "/home/vincent/Desktop/experiments-MIXCOMPILE/result/tools/frozen_toolchain_e6/bin/clang",
+  "sha256": "8c98b809c69afc8d4017d1a0607294bf307e6e68dbda2d9b96086d551f170035",
+  "note": "PassDecider.cpp patched 2026-09-17 (user-approved) adding default-off -mix-shuffle-features for E6; backup at result/cache/PassDecider.cpp.pre_e6.bak; prior compiler sha fe7f9bb8... ; default behavior verified unchanged"
+ },
+ "e9_qwen_secondary_attack_model": {
+  "path": "/home/vincent/Desktop/experiments-MIXCOMPILE/result/tools/models/qwen2.5-coder-14b-instruct-q4_k_m.gguf",
+  "sha256": "c1e659736d89ac1065fb495330fb824d94001974a4bfa78e7270e43476a8d940",
+  "size_bytes": 8988110272,
+  "quant": "Q4_K_M",
+  "source": "ModelScope Qwen/Qwen2.5-Coder-14B-Instruct-GGUF (official Qwen channel; HF unreachable from this network)",
+  "sha256_official_match": true,
+  "server_binary": "/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/realworld_20260918/llama_llvm/bin/llama-server",
+  "smoke": "llama-server :8199 load + 1 chat completion HTTP 200 OK (2026-09-29)"
+ },
+ "e9_main_attacker": {
+  "model_file": "/home/vincent/Desktop/experiments-MIXCOMPILE/result/tools/models/qwen2.5-coder-14b-instruct-q4_k_m.gguf",
+  "model_sha256": "c1e659736d89ac1065fb495330fb824d94001974a4bfa78e7270e43476a8d940",
+  "quantization": "Q4_K_M",
+  "llama_server_binary": "/home/vincent/Desktop/experiments-MIXCOMPILE/result/runs/realworld_20260918/llama_llvm/bin/llama-server",
+  "llama_server_build": "llama.cpp @ b8612-88d5f8ffc, cmake Ninja, LLAMA_BUILD_SERVER=ON, clang 17.0.6 frozen toolchain",
+  "decoding_params_pilot": "未记录，llama-server 默认（非协议参数）",
+  "decoding_params_protocol": "temperature=0, top_k=1, greedy（Phase 1 起）",
+  "context_size": 32768,
+  "threads": 8,
+  "source": "ModelScope Qwen/Qwen2.5-Coder-14B-Instruct-GGUF (官方 Qwen 渠道；HF 不可达)",
+  "smoke_verified": "2026-09-29 /v1/chat/completions HTTP 200"
+ },
+ "e9_secondary_attacker": {
+  "model": "DeepSeek-V4-Pro",
+  "status": "user_confirmed_2026-09-30",
+  "api_endpoint": "待用户提供（Phase 2 时需要 base_url + api_key）",
+  "role": "E9 副攻击者（不同家族前沿 API 模型）",
+  "decoding": "temperature=0",
+  "manifest_date": "2026-09-30"
+ },
+ "e9_deepseek_api": {
+  "base_url": "https://api.deepseek.com",
+  "model": "deepseek-v4-pro",
+  "api_key_hash": "d810afcc86e331d3",
+  "status": "confirmed_2026-09-30"
+ },
+ "e9_q8_0_model": {
+  "path": "/home/vincent/Desktop/experiments-MIXCOMPILE/result/tools/models/qwen2.5-coder-14b-instruct-q8_0.gguf",
+  "sha256": "8180f66e3458e298830cebe7c9e8a9bde0ae6511d399fd99d3385b64324ac85d",
+  "size_gb": 14.6,
+  "quant": "Q8_0"
+ },
+ "e9_primary_attack_model_api": {
+  "provider": "deepseek",
+  "model_id": "deepseek-v4-pro",
+  "model_id_source": "GET https://api.deepseek.com/models response field id, owned_by=deepseek, name=DeepSeek-V4-Pro (official runtime verification, not doc copy)",
+  "api_base": "https://api.deepseek.com",
+  "context_window": 1048576,
+  "max_output_tokens": 393216,
+  "reasoning_output": true,
+  "api_key_hash": "d810afcc86e331d3",
+  "snapshot_date": "2026-10-03",
+  "pricing_note": "official pricing page not fetchable from this network (WebFetch blocked); cost accounting per usage tokens with pricing to be confirmed by user",
+  "temperature": 0.0,
+  "smoke": "2026-10-03 POST /chat/completions HTTP 200, latency 1.27s, response model=deepseek-v4-pro, usage 88 in + 23 out tokens (incl 21 reasoning)"
+ },
+ "e9_secondary_attack_model_agent": {
+  "harness": "claude CLI 2.1.287 (Claude Code, /home/vincent/.vscode/extensions/anthropic.claude-code-2.1.287-linux-x64/resources/native-binary/claude)",
+  "gateway": "https://open.bigmodel.cn/api/anthropic (Anthropic-compatible gateway; stderr-verified 2026-10-03)",
+  "backend_model": "GLM-5.3 (user-designated 2026-10-03; gateway-mapped harness-side model string claude-opus-5-5, actual backend via bigmodel.cn gateway)",
+  "invocation_mode": "headless single-shot (claude -p), clean dir, CLAUDE_CONFIG_DIR redirected to empty cfg, --tools '' (tools off), --no-session-persistence",
+  "snapshot_date": "2026-10-03",
+  "isolation_checklist": "smoke 2026-10-03: exit 0, 3s, empty session dir + empty CLAUDE_CONFIG_DIR + tools off, server_tool_use=0; full checklist re-verified at Step 1 launch",
+  "smoke": "2026-10-03 headless single-shot exit 0, output normal, total_cost_usd=0.0056/instance"
+ },
+ "e9_role_swap_20261004": {
+  "decision": "user directive 2026-10-04: GLM-5.3 (agent-harness) promoted to PRIMARY attacker; DeepSeek-V4-Pro (API) demoted to SECONDARY/corroborator",
+  "primary": "glm53_agent (A0 calibration 96.7% passed G-E9-2)",
+  "secondary": "deepseek_v4pro_api (A0 calibration 100% passed; existing full-matrix L0/L1 data reused as corroboration subset, no new API spend for Phase 1)",
+  "supersedes": "11_攻防双臂_D1D5模型改判_执行提示词_20261003.md D1 mapping (kept in audit chain)",
+  "cost_note": "GLM agent ~$0.071/query vs DeepSeek ~$0.018/query measured; swap driven by user directive to cap DeepSeek spend",
+  "snapshot_date": "2026-10-04"
+ },
+ "e10_arm_mapping_20261005": {
+  "decision": "user 2026-10-05: Option 1 (keep protocol A-E unchanged)",
+  "consequence": "'LLM+other automated diversifying compiler' stays optional, NOT in main comparison; paper may not claim MIXCOMPILE superiority over other LLM+automated compilers",
+  "arms": "A frozen optimized / B non-LLM search / C LLM w/o 5-dim feedback / D LLM+5-dim feedback closedloop / E direct source rewrite",
+  "gate_ref": "Linux sequential prompt S7 s7 mapping table"
+ },
+ "e10_design_v1_2_20261005": {
+  "decision": "user 2026-10-05: E10 protected object changed from agent component to llvm-test-suite programs (public dataset)",
+  "rationale": "component admission A4 failed for 2/3 candidates (SWE-agent Python, OpenHands TS); openinterpreter codex-rs weak-single; dataset reuse of full E9 pipeline (build/correctness oracle/cost/attack) dominates",
+  "arms_on_dataset": "A frozen optimized (E1-E7 reuse) / B non-LLM search (random_pass reuse + rule search) / C LLM w/o 5-dim feedback / D LLM+5-dim feedback closedloop / E direct source rewrite",
+  "objects": "tuning 44 (pilot/development) + validation 43 (freeze check) + test 43 (held-out, blind once) per benchmark_split.json",
+  "candidates_per_program": 3,
+  "oracle": "reference_output files (per-program expected stdout) + cost pipeline + E9 attack chain for security",
+  "component_admission": "cancelled (A1-A7 downgraded to dataset property checks, already satisfied)"
+ },
+ "e10_d6_frozen": "config/e10_d6_frozen_20261006.json (user-approved 2026-10-06)"
+}

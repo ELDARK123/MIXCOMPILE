@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.2
+  },
+  "FLA": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.5
+  },
+  "SPLIT": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.3
+  },
+  "ICALL": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.4
+  },
+  "IGV": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.4
+  }
+ },
+ "rationale": "This is a tiny, pointer- and recursion-heavy Olden benchmark (11 functions, ~2 KB text) whose hot path is HashLookup/HashInsert inside the MST blue-rule traversal, so the table favors low-overhead passes and penalizes expensive ones. SUB, SPLIT, and IGV get low Runtime/Size/CorrectnessRisk weights since instruction substitution, block splitting, and global-reference indirection cost little while meaningfully raising static-analysis effort in such a small binary where every function (MakeGraph, MakeHash, Do_all_BlueRule, HashInsert) is worth obfuscating. BCF carries deliberately high RuntimeCost and SizeCost weights (0.7) because bogus control flow inflates a 2 KB binary quickly and the hash-lookup inner loop is hot, limiting it to functions where its security payoff is largest; FLA gets a moderate penalty plus a notable CorrectnessRisk weight (0.5) since flattening the recursive Do_all_BlueRule and pointer-dense graph construction risks subtle breakage even though its control-flow hiding is the strongest single defense. ICALL and IBR carry moderate cost weights (0.5-0.6) so they are applied selectively to the call/branch sites that matter (hash dispatch, blue-rule recursion) rather than program-wide, keeping runtime within the benchmark's acceptable envelope while maximizing diversity across all five obfuscation dimensions.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__Olden__mst",
+  "run_id": "e10C_glm_agent_mst_0_49423",
+  "arm": "C",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T01:17:29Z"
+ }
+}

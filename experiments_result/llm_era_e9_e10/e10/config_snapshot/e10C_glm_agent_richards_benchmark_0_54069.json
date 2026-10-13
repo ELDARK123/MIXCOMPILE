@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.15,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.8,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.3
+  },
+  "FLA": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.9,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.4
+  },
+  "SPLIT": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.15
+  },
+  "IBR": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.75,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.35
+  },
+  "ICALL": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.3
+  },
+  "IGV": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.25
+  }
+ },
+ "rationale": "This sample is dominated by floating-point tight-loop kernels (flops 1-8, whetstone, fbench, ffbench, himenobmtxpa, oourafft) where every transformed instruction executes millions of times, so the table weights passes by their loop-body overhead: SUB is nearly free and semantically safe, so it gets strong SecurityGain/DiversityGain with minimal cost weights and can apply broadly to raise per-instruction analysis difficulty; SPLIT is likewise cheap and mainly boosts diversity/size without hurting hot paths; BCF and FLA are kept applicable only with high RuntimeCost (0.8/0.9) and SizeCost sensitivity so the selector steers them toward cold, control-flow-rich code (the richards scheduler, schedule/worker dispatch, main) rather than the numeric kernels; IBR's indirect branches and ICALL's indirect calls break branch-predictor and BTB efficiency in tight loops, so both carry elevated RuntimeCost weights while still contributing on the call/branch-dense richards core (workfn, handlerfn, schedule); IGV gets moderate weights to hide global state access patterns without multiplying loads in the FP kernels. CorrectnessRisk weights stay low overall because all seven passes preserve semantics, but FLA/IBR carry the highest since flattening and indirect branching interact worst with floating-point exception-sensitive and self-timing code (ffbench, fbench).",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Misc__richards_benchmark",
+  "run_id": "e10C_glm_agent_richards_benchmark_0_54069",
+  "arm": "C",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T02:35:14Z"
+ }
+}

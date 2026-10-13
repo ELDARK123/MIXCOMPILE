@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.15
+  },
+  "BCF": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.2
+  },
+  "FLA": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.45,
+   "CorrectnessRisk": 0.25
+  },
+  "SPLIT": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.15,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.15
+  },
+  "ICALL": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.3
+  },
+  "IGV": {
+   "SecurityGain": 0.65,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.25,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.25
+  }
+ },
+ "rationale": "Round 1 built and ran correctly, so this round pushes obfuscation intensity up while respecting the hot-loop nature of this shootout benchmark: FLA and BCF get the highest weights to flatten and obscure the list-walking and allocation loops in main, with BCF's RuntimeCost kept at 0.45 so it applies to the large main function without crushing iterative benchmark workloads; SPLIT and IBR stay high since they are cheap control-flow diversifiers (low RuntimeCost/SizeCost) that complement FLA by fragmenting the flattened CFG; SUB is raised to 0.75 to replace arithmetic in pointer offsets and loop counters with opaque equivalents, as its cost and risk remain low on this integer-dominant code; ICALL is moderated (0.30 RuntimeCost, 0.30 CorrectnessRisk) because indirect-call dispatch on only 4 functions risks hurting inlining and optimization while adding modest security on a program with so few call sites; IGV is kept moderate to randomize global state access from the static initializer and globals without risking correctness in the static-init path. Overall the table favors control-flow transforms (FLA/BCF/SPLIT/IBR) over data-flow ones for a tiny, loop-heavy program, prioritizing structural resistance to static and dynamic analysis while keeping aggregate runtime and size growth in the acceptable band.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Shootout-C++__lists1",
+  "run_id": "e10D_glm_agent_lists1_2_4722",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T16:38:59Z"
+ }
+}

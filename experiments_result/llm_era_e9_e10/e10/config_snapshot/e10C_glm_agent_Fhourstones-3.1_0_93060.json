@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.9,
+   "SizeCost": 0.9,
+   "CorrectnessRisk": 0.3
+  },
+  "FLA": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.9,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.5
+  },
+  "SPLIT": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.8,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.4
+  },
+  "ICALL": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.3
+  },
+  "IGV": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.7,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.3
+  }
+ },
+ "rationale": "Fhourstones is a tiny (23 functions, ~4.9KB text) compute-bound alpha-beta search where nearly all execution time concentrates in the recursive ab/solve core, so expensive control-flow transforms must be gated hard: BCF and FLA get high RuntimeCost/SizeCost weights so the feature-driven selector only applies them to cold, security-relevant functions (inithistory, transpose, main's setup paths), never the hot search loop; FLA also carries elevated CorrectnessRisk since flattening the deep recursion and the move-generation loops is the most likely place to break the solver's transposition-table semantics. SUB and SPLIT are nearly free and correctness-safe, so they get low cost weights and high DiversityGain to provide baseline transformation across all 23 functions, maximizing per-build diversity on a binary this small. IBR, ICALL, and IGV sit in the middle: they meaningfully degrade static analysis of the call/branch graph (valuable because a 4.9KB binary is trivially fully recoverable without them) but add per-edge/per-call indirect dispatch overhead, so their RuntimeCost weights keep them off the innermost search blocks while still applying broadly elsewhere. SecurityGain stays moderately high for all passes since RE resistance is the stated objective, with the cost dimensions acting as the throttle that keeps total overhead acceptable for a benchmark whose measured runtime is its primary metric.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__Fhourstones-3.1",
+  "run_id": "e10C_glm_agent_Fhourstones-3.1_0_93060",
+  "arm": "C",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T13:24:54Z"
+ }
+}

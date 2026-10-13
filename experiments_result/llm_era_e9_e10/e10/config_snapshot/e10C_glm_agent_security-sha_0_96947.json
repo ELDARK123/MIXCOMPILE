@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.2
+  },
+  "BCF": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.85,
+   "SizeCost": 0.85,
+   "CorrectnessRisk": 0.3
+  },
+  "FLA": {
+   "SecurityGain": 0.85,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.85,
+   "SizeCost": 0.8,
+   "CorrectnessRisk": 0.4
+  },
+  "SPLIT": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.2
+  },
+  "IBR": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.3
+  },
+  "ICALL": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.4,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.4
+  },
+  "IGV": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.2
+  }
+ },
+ "rationale": "This MiBench security-sha target is tiny (1832 text bytes, 9 functions) with one dominant hot function, sha_transform (667 bytes, the SHA round loop), so passes whose overhead scales with executed blocks or basic-block count must be gated by high RuntimeCost/SizeCost weights: FLA and BCF get strong SecurityGain (0.85/0.80) because flattening and bogus-control-flow most disrupt static analysis of the round function, but their RuntimeCost (0.85) and SizeCost (0.80-0.85) weights ensure they are only applied where features justify it, protecting the hot loop and the small binary's code-size budget. SUB is favored broadly (SecurityGain 0.70, low risk/cost) as a cheap baseline transformation over the arithmetic-heavy SHA constants. SPLIT and IBR get moderate weights as low-to-medium overhead structural diversifiers useful on a program this small, while IGV is weighted cheap on runtime and size (0.20) since global-buffer indirection suits sha_stream's state arrays. ICALL is weakest (SecurityGain 0.40, CorrectnessRisk 0.40) because the program has few indirect-call opportunities and dispatch-through-pointer conversion on a hot cryptographic loop risks both performance and correctness; CorrectnessRisk weights are kept low (0.20-0.40) everywhere since SHA's bit-manipulation is easy to verify but the driver's I/O path tolerates little transformation error.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__MiBench__security-sha",
+  "run_id": "e10C_glm_agent_security-sha_0_96947",
+  "arm": "C",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T14:29:39Z"
+ }
+}

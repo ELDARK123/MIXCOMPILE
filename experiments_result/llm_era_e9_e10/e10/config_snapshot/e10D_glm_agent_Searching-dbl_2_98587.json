@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.9,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.2
+  },
+  "FLA": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.7,
+   "CorrectnessRisk": 0.2
+  },
+  "SPLIT": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  },
+  "ICALL": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.2
+  },
+  "IGV": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.3
+  }
+ },
+ "rationale": "Round 1 built and ran correctly, so the table is shifted toward stronger obfuscation while respecting the hot-loop nature of this TSVC Searching-dbl kernel: the 40KB 'init' function and search loops dominate execution, so BCF and FLA get high SecurityGain but mid-range RuntimeCost/SizeCost weights to concentrate bogus control flow and flattening where features favor them without blanket application to the hottest loops; SUB and SPLIT are cheap, low-risk transformations applied broadly (high Security/Diversity, low cost weights) to break arithmetic and basic-block patterns; IBR adds indirect branching on the now-larger CFGs with moderate runtime weight; ICALL hides call targets across the 14 small functions cheaply; and IGV gets high DiversityGain with elevated CorrectnessRisk weight so global-variable encoding is applied selectively given this kernel's heavy reliance on shared arrays. Since round 1 showed no ICE or miscompiles, CorrectnessRisk weights stay low-to-moderate overall, accepting somewhat more size growth against the ~43KB baseline.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__TSVC__Searching-dbl",
+  "run_id": "e10D_glm_agent_Searching-dbl_2_98587",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T14:56:35Z"
+ }
+}

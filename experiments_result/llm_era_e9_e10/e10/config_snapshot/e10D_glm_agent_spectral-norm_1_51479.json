@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.2
+  },
+  "BCF": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.5,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.2
+  },
+  "FLA": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.3
+  },
+  "SPLIT": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.2
+  },
+  "IBR": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.3
+  },
+  "ICALL": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.2
+  },
+  "IGV": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.2
+  }
+ },
+ "rationale": "Round 0 built and validated cleanly, so this round shifts weight toward obfuscation strength while respecting the program's profile: spectral-norm is a tiny (1738 text bytes, 6 functions) floating-point kernel whose eval_A/eval_A_times_u/eval_AtA_times_u loops are extremely hot, so control-flow passes that multiply basic blocks on hot paths (BCF, FLA) keep RuntimeCost/SizeCost weights modest at 0.3-0.4 rather than being disabled, since at this code size the absolute overhead is small and the previous build showed no correctness issues. SUB is cheap and safe on arithmetic-heavy code, so it gets the highest SecurityGain (0.7) with low CorrectnessRisk. SPLIT and IGV get boosted DiversityGain (0.7) because they restructure small functions cheaply and the program has many tiny functions (eval_A at 41 bytes) where split/basic-block-level diversity compounds well. ICALL is pushed to 0.7/0.7 since indirect calls defeat static call-graph recovery at negligible cost for this call pattern. IBR stays moderate with CorrectnessRisk 0.3 to preserve switch-dispatch correctness in the benchmark's loops. No passes are omitted: the clean round-0 result licenses full coverage with risk-weighted aggressiveness.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__BenchmarkGame__spectral-norm",
+  "run_id": "e10D_glm_agent_spectral-norm_1_51479",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T01:51:45Z"
+ }
+}

@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.35,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.65,
+   "RuntimeCost": 0.45,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.15
+  },
+  "FLA": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.55,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  },
+  "SPLIT": {
+   "SecurityGain": 0.55,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.15,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.05
+  },
+  "IBR": {
+   "SecurityGain": 0.75,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.35,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.1
+  },
+  "ICALL": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.75,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  },
+  "IGV": {
+   "SecurityGain": 0.65,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.25,
+   "CorrectnessRisk": 0.15
+  }
+ },
+ "rationale": "Round 1 compiled and passed, so this round raises aggressiveness across the board: SUB, BCF, and IBR get the highest SecurityGain/DiversityGain weights since arithmetic substitution, bogus control flow, and indirect branching give strong static-analysis resistance at modest cost on this small (969-byte text) binary; SPLIT stays cheap and low-risk to help FLA/BCF divide the few basic blocks available in main and sieve; ICALL and IGV are pushed up to diversify call sites and global layout, which is especially valuable with only four functions where inter-function structure is trivially recoverable. RuntimeCost and SizeCost tolerances are raised moderately (0.30-0.55) to allow the pass selector to accept more overhead given the previous clean build, but FLA's RuntimeCost stays the highest at 0.55 because sieve's hot loops are runtime-sensitive and flattening adds a dispatch loop on every iteration; CorrectnessRisk weights remain low (0.05-0.20) to preserve the demonstrated correctness while still favoring passes like SPLIT and IBR that have the safest transformation profiles.",
+ "_meta": {
+  "sid": "ss__SingleSource__Benchmarks__Shootout-C++__sieve",
+  "run_id": "e10D_glm_agent_sieve_2_4919",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T16:42:27Z"
+ }
+}

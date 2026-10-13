@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.1
+  },
+  "FLA": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.3
+  },
+  "SPLIT": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.4,
+   "CorrectnessRisk": 0.2
+  },
+  "ICALL": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.3
+  },
+  "IGV": {
+   "SecurityGain": 0.4,
+   "DiversityGain": 0.4,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.5
+  }
+ },
+ "rationale": "The office benchmark is a small Prolangs-C++ simulation with many tiny C++ member functions, no source-level profile data, and no hot loops of consequence, so aggressive cheap passes dominate: SUB and BCF get high SecurityGain/DiversityGain weights because arithmetic substitution and bogus control flow add strong static-analysis resistance with negligible cost on small functions. SPLIT is favored primarily for DiversityGain since it composes well with FLA/BCF and is nearly free at this function granularity. FLA and IBR are kept at moderate weights: flattening and indirect branching give the biggest reverse-engineering payoff on larger simulation routines, but their dispatcher overhead and size growth are unwelcome on the many trivial methods, so the moderate RuntimeCost/SizeCost weights let the feature-driven selector apply them selectively. ICALL is moderate \u2014 indirect calls hide the call graph but interoperate awkwardly with C++ virtual dispatch, reflected in its CorrectnessRisk of 0.3. IGV is weighted lowest and left in only for consideration: with a simulation-style program there are few global variables worth hiding, and its transformation of global accesses carries the highest correctness risk (0.5) relative to its modest security payoff, so the selector will effectively disable it unless features strongly favor it.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__Prolangs-C++__office",
+  "run_id": "e10D_glm_agent_office_1_84505",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T11:02:13Z"
+ }
+}

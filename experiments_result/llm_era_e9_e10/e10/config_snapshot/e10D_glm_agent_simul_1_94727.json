@@ -1,0 +1,61 @@
+{
+ "pass_weights": {
+  "SUB": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.2,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.1
+  },
+  "BCF": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.6,
+   "SizeCost": 0.6,
+   "CorrectnessRisk": 0.2
+  },
+  "FLA": {
+   "SecurityGain": 0.8,
+   "DiversityGain": 0.8,
+   "RuntimeCost": 0.5,
+   "SizeCost": 0.5,
+   "CorrectnessRisk": 0.2
+  },
+  "SPLIT": {
+   "SecurityGain": 0.5,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.1,
+   "SizeCost": 0.1,
+   "CorrectnessRisk": 0.1
+  },
+  "IBR": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.3,
+   "CorrectnessRisk": 0.2
+  },
+  "ICALL": {
+   "SecurityGain": 0.7,
+   "DiversityGain": 0.7,
+   "RuntimeCost": 0.4,
+   "SizeCost": 0.2,
+   "CorrectnessRisk": 0.3
+  },
+  "IGV": {
+   "SecurityGain": 0.6,
+   "DiversityGain": 0.6,
+   "RuntimeCost": 0.3,
+   "SizeCost": 0.1,
+   "CorrectnessRisk": 0.4
+  }
+ },
+ "rationale": "Round 0 compiled and ran cleanly with no ICE fallback, so this table raises obfuscation pressure while respecting the program's profile: a tiny 600-byte-text C++ simulation benchmark where main and pop_around::cycle are the analysis hotspots. FLA and BCF get the highest SecurityGain because flattening the control flow of the loop-heavy simulation_unit::move and pop_around::cycle plus adding opaque predicates is the biggest barrier to static recovery of the simulation logic; their RuntimeCost/SizeCost are held at moderate values since the binary is minuscule and absolute overhead will stay small. SUB and IBR stay low-cost, high-DiversityBoost levers \u2014 instruction substitution on arithmetic-heavy simulation code and bogus branches are cheap and safe, so they get broad coverage. ICALL is increased (0.7 SecurityGain) to indirect call sites in this OO code with many virtual-like dispatch points, with CorrectnessRisk kept low-moderate at 0.3 given clean round-0 behavior. SPLIT remains a cheap diversifier that synergizes with FLA by creating more basic blocks to flatten. IGV is capped with the highest CorrectnessRisk (0.4) because inter-block variable mangling on small C++ functions with references and this-pointer traffic is where semantic breakage is most likely; moderate SecurityGain/DiversityGain keep it in the mix without dominating. Net effect: full 7-pass coverage with control-flow transformation (FLA/BCF) leading, data/arith (SUB/IBR) broad, and riskier or costlier passes (IGV, ICALL) moderated.",
+ "_meta": {
+  "sid": "ms__MultiSource__Benchmarks__Prolangs-C++__simul",
+  "run_id": "e10D_glm_agent_simul_1_94727",
+  "arm": "D",
+  "weight_ref_sha": "8b23633cef3c2fbdae7e14d8d774e5d7f684ef7aa487aa6dcd5da8c9db340cf4",
+  "utc": "2026-10-06T13:52:27Z"
+ }
+}
