@@ -198,7 +198,9 @@ under explicit quantitative control, and (iii) produces mutually distinct
 variants across repeated compilations of the same source, so that an
 adversary's adaptation cannot be amortized across deployments?} The threat
 model is explicit: the adversary is an automated binary-analysis toolchain or
-an LLM-assisted analyst operating on deployed binaries. The defense goal is
+an LLM-assisted analyst operating on deployed binaries, without knowledge of
+the compilation seed, the weight profile, or the per-program decision log. The
+defense goal is
 to raise the per-target adaptation cost, and we do not claim unbreakability
 against human experts, cryptographic security, or immunity to a sufficiently
 resourced attacker.
@@ -386,7 +388,8 @@ through four stages.
 (1)~\textbf{Feature collection}. In a single traversal, all basic blocks
 and instructions of each eligible function are visited; CFG structure counts,
 instruction-type statistics, call flags, and inline-assembly flags are accumulated, and
-an IBR def-use safety pre-screen is performed at the same time. After the traversal,
+a def-use safety pre-screen for indirect branching (IBR, one of the seven passes
+below) is performed at the same time. After the traversal,
 the average CFG depth is computed with a single BFS from the entry block, and
 cyclomatic complexity plus the conditional-jump ratio are derived from the collected
 counts. The program is never re-analyzed per pass.
@@ -1029,7 +1032,9 @@ The mechanism experiments (E1--E7, diversity analyses) run on a frozen program s
 of 44 tuning / 43 validation / 43 test programs (program-level disjoint,
 \texttt{split\_seed=20260903}), drawn from the LLVM test-suite and benchmark
 families; weight selection was pre-registered on the validation split and
-confirmed once on the test split. Correctness verification compares obfuscated
+confirmed once on the test split (that is, the weights were fixed on the
+validation split before any test-split measurement, and no configuration was
+changed after the test split was examined). Correctness verification compares obfuscated
 builds against unobfuscated builds under the benchmark test inputs. The workload
 and analysis-cost measurements (llama.cpp, OpenSSL, cross-compiler radiff2, Ghidra
 decompilation time) use the optimized pass-vector configuration with seed 1,
@@ -1128,7 +1133,9 @@ without shifting the cost profile.
 
 \subsubsection{Per-pass calibration (E4)}
 The pass base vectors are calibrated, not invented: each pass was enabled alone, and
-its measured cost profile feeds the model coefficients (Table~\ref{tab:e4_perpass}).
+its measured cost profile feeds the model coefficients (Table~\ref{tab:e4_perpass});
+the calibration medians, normalized per dimension, are the base vectors of
+Table~\ref{tab:optimized_pass_vectors}.
 
 \begin{table}[!t]
 \centering
@@ -1240,7 +1247,10 @@ level: 12/12 programs, 100\% uniqueness. Structural distance to the unobfuscated
 0.912) and the most-affected (dc, 0.154) differ by roughly $6\times$, and the distance
 does not correlate obviously with security sensitivity (security-sha sits at 0.680,
 toward the ``similar'' side). Opcode 3-gram Jaccard against the unobfuscated build
-ranges 0.548--1.000 (mean 0.76). Diversity is real but program-dependent, and we
+ranges 0.548--1.000 (mean 0.76); this metric captures instruction-sequence overlap
+independent of control-flow rewiring, so a radiff2 of 0.39 with an opcode overlap of
+0.76 means the variants reorder familiar instructions rather than replace them
+wholesale. Diversity is real but program-dependent, and we
 report the spread rather than only the median. Table~\ref{tab:e7_diversity}
 summarizes the RQ3 metrics.
 
@@ -1602,7 +1612,9 @@ programs are known to carry undefined behavior (outside the constructive
 guarantee).
 
 MIXCOMPILE raises the per-target adaptation cost of automated and LLM-assisted
-adversaries and turns each deployment into an independent draw. Security-side
+adversaries and turns each deployment into an independent draw: a defense whose
+value lies in the economics it imposes on the attacker, at the moment when
+LLMs are driving that economics in the attacker's favor. Security-side
 validation of per-function targeting (complete vs.\ shuffled at matched overhead),
 MIR-level pass pool expansion, cost-model weight learning, and deeper integration
 of LLM agents with the machine-readable strategy interface are the natural
