@@ -31,7 +31,21 @@
 \usepackage{algorithmicx}
 \usepackage{algpseudocode}
 \usepackage{listings}
-\usepackage{lineno}
+\usepackage{subcaption}
+\usepackage{flushend}
+\usepackage{url}
+
+%% allow hyphenation of long compound tokens
+\hyphenation{de-com-pi-la-tion-time recon-sideration}
+
+%% Float tuning: allow double-column floats to land near their source
+\setcounter{topnumber}{4}
+\setcounter{dbltopnumber}{4}
+\renewcommand{\topfraction}{0.9}
+\renewcommand{\dbltopfraction}{0.9}
+\renewcommand{\textfraction}{0.07}
+\renewcommand{\floatpagefraction}{0.8}
+\renewcommand{\dblfloatpagefraction}{0.8}
 
 \newcommand{\todonote}[1]{\textcolor{red}{[TODO: #1]}}
 
@@ -44,12 +58,9 @@
 \theoremstyle{remark}
 \newtheorem{remark}{Remark}
 
-\modulolinenumbers[5]
-
 \journal{Computers \& Security}
 
 \begin{document}
-\linenumbers
 
 %%% Frontmatter
 \begin{frontmatter}
@@ -270,7 +281,7 @@ the three-pass canon (instruction substitution, bogus control flow, control-flow
 flattening) applied uniformly, and successors strengthen individual transforms:
 extended instruction replacement~\cite{bib9}, nested-switch and in-degree control-flow
 obfuscation~\cite{bib10}, code rearrangement~\cite{bib11}, and fragment
-fusion~\cite{bib12}. Optimization-space obfuscation~\cite{bib13} and genetic-algorithm
+fusion~\cite{bib12}. Optimization-space obfuscation~\cite{bib13} and genetic
 search over LLVM passes~\cite{bib14} show that the compiler's own machinery can
 obstruct analysis, and evaluation-methodology work~\cite{bib15} warns that
 obfuscation papers often skip resistance measurement. What unifies this line is the
@@ -338,11 +349,11 @@ diversity layers on top of a standard pass pool.
 
 \begin{table*}[!t]
 \centering
-\footnotesize
 \caption{Coordinate system of related mechanisms. ``---''~means the axis is absent in
 the published mechanism. MIXCOMPILE row in bold. Polaris overhead figures are from its
 synthetic (Csmith) evaluation~\cite{zhou2026polaris}.}
 \label{tab:coordsys}
+\resizebox{\textwidth}{!}{%
 \begin{tabular}{lllllll}
 \toprule
 Approach & Layer & Selection mechanism & Cost model & Semantic guarantee & Diversity product & Threat model \\
@@ -356,7 +367,7 @@ Polaris~\cite{zhou2026polaris} & MIR & none (fixed set) & --- & claimed & seed r
 AutoPass~\cite{li2026autopass} & IR & LLM agent & performance only & compiler oracle & --- (performance) & --- (performance) \\
 \textbf{MIXCOMPILE (this paper)} & IR & \textbf{feature-driven, per-function} & \textbf{5-dim explicit} & \textbf{constructive + differential} & \textbf{combinatorial variant pool} & \textbf{amortizing / LLM-assisted} \\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \end{table*}
 
 %=======================================================
@@ -434,7 +445,7 @@ experiment E6), and programs receive measurably different strategy unions
 
 \begin{figure*}[!t]
 \centering
-\includegraphics[width=0.8\textwidth]{mixcompile_flow_revised.pdf}
+\includegraphics[width=0.72\textwidth,height=0.88\textheight,keepaspectratio]{mixcompile_flow_revised.pdf}
 \caption{Overall MIXCOMPILE pipeline: input LLVM module $\rightarrow$ four stages $\rightarrow$ Metadata-annotated IR module.}
 \label{fig:pipeline}
 \end{figure*}
@@ -452,10 +463,11 @@ choice, and the full decision is recorded in an auditable log
 \begin{definition}[Program Feature Collector]
 Given an LLVM function $F$, MIXCOMPILE's feature collector produces a function-level feature
 tuple $\Phi_F$ and a set of basic-block-level feature tuples $\{\varphi_B\}_{B\in F}$.
-$\Phi_F$ characterizes the function's overall control-flow complexity, branch density,
-instruction composition, call behavior, presence of inline assembly, and IBR compatibility;
-$\varphi_B$ characterizes each basic block's local instruction scale, replaceable-instruction
-ratio, and call presence.
+$\Phi_F$ characterizes the overall control-flow complexity, branch density,
+instruction composition, call behavior, presence of inline assembly, and IBR compatibility
+of the function;
+$\varphi_B$ characterizes each basic block's local instruction scale,
+replaceable-instruction ratio, and call presence.
 \end{definition}
 
 The function-level feature tuple is formally defined as:
@@ -478,7 +490,7 @@ The basic-block-level feature tuple is formally defined as:
 Table~\ref{tab:features} lists the function-level and basic-block-level features together
 with their semantics and the passes they primarily influence.
 
-\begin{table}[!t]
+\begin{table*}[!t]
 \centering
 \footnotesize
 \caption{Program feature summary}
@@ -503,7 +515,7 @@ HasInlineAsm & Existence of inline assembly & IGV \\
 IBR Compatible & IBR def-use safety check result & IBR \\
 \bottomrule
 \end{tabular*}
-\end{table}
+\end{table*}
 
 \subsubsection{Function-Level CFG Structural Features}
 
@@ -625,8 +637,8 @@ out the full procedure.
 
 For each function $F$, MIXCOMPILE completes all feature extraction within a single
 traversal. After traversal, cyclomatic complexity is computed directly as
-$\text{NumEdges} - \text{NumBBs} + 2$, the conditional-jump ratio via
-$\text{SafeRatio}(\text{NumCondJumps}, \text{NumTotalJumps})$, and the average CFG
+$\text{NumEdges} - \text{NumBBs} + 2$, the conditional-jump ratio as the ratio of
+conditional to total jumps, and the average CFG
 depth via a single BFS. The per-function feature-extraction cost is $O(|I| + |E| +
 |U|)$, where $|I|$ is the number of IR instructions, $|E|$ the number of CFG edges,
 and $|U|$ the number of def-use relationships.
@@ -696,7 +708,11 @@ Although a selected profile is fixed for one experiment, MIXCOMPILE's score is
 dynamic. For a candidate pass $P$ and feature tuple $x$ (where $x$ is either $\Phi_F$
 or $\varphi_B$), the composite score works as follows:
 \begin{equation}
-\text{Score}(P, x, W) = w_{\mathrm{sec}} \cdot S_P(x) + w_{\mathrm{div}} \cdot D_P(x) - w_{\mathrm{run}} \cdot R_P(x) - w_{\mathrm{size}} \cdot Z_P(x) - w_{\mathrm{risk}} \cdot K_P(x)
+\begin{aligned}
+\text{Score}(P, x, W) ={}& w_{\mathrm{sec}} \cdot S_P(x) + w_{\mathrm{div}} \cdot D_P(x) \\
+ &- w_{\mathrm{run}} \cdot R_P(x) - w_{\mathrm{size}} \cdot Z_P(x) \\
+ &- w_{\mathrm{risk}} \cdot K_P(x)
+\end{aligned}
 \label{eq:score}
 \end{equation}
 
@@ -713,20 +729,20 @@ blocks, $N_I$ the number of instructions, $c$ the cyclomatic complexity, $q$ the
 BCF probability in percent, and $L$ the configured loop count.  We compute
 \begin{align}
 f_{\mathrm{BCF}} &= \operatorname{clamp}_{[0,1]}\left(\frac{c-2}{4}\right),
-&p &= \operatorname{clamp}_{[0,1]}(q/100), \\
+\qquad p = \operatorname{clamp}_{[0,1]}(q/100), \notag \\
 E_{\mathrm{sum}} &= \sum_{i=0}^{L-1}(1+3p)^i,
-&E_{BB} &= N_{BB}\,p\,E_{\mathrm{sum}}, \label{eq:bcf_workload}\\
-m_R &= 1+\frac{\log_2(1+18E_{BB})}{10},
-&m_Z &= 1+\frac{\log_2(1+E_{BB}(N_I/N_{BB}+18))}{12}.
+\qquad E_{BB} = N_{BB}\,p\,E_{\mathrm{sum}}, \label{eq:bcf_workload}\\
+m_R &= 1+\frac{\log_2(1+18E_{BB})}{10}, \notag \\
+m_Z &= 1+\frac{\log_2(1+E_{BB}(N_I/N_{BB}+18))}{12}.
 \label{eq:bcf_multipliers}
 \end{align}
 The adjusted BCF dimensions are
 \begin{align}
 S_{\mathrm{BCF}}&=s_{\mathrm{BCF}}f_{\mathrm{BCF}}, &
-D_{\mathrm{BCF}}&=d_{\mathrm{BCF}}f_{\mathrm{BCF}}, \\
+D_{\mathrm{BCF}}&=d_{\mathrm{BCF}}f_{\mathrm{BCF}}, \notag \\
 R_{\mathrm{BCF}}&=r_{\mathrm{BCF}}f_{\mathrm{BCF}}m_R, &
-Z_{\mathrm{BCF}}&=z_{\mathrm{BCF}}f_{\mathrm{BCF}}(1+\mathrm{CondJumpRatio})m_Z, \\
-K_{\mathrm{BCF}}&=k_{\mathrm{BCF}}f_{\mathrm{BCF}}. &&
+K_{\mathrm{BCF}}&=k_{\mathrm{BCF}}f_{\mathrm{BCF}}, \notag \\
+Z_{\mathrm{BCF}}&=z_{\mathrm{BCF}}f_{\mathrm{BCF}}(1+\mathrm{CondJumpRatio})\,m_Z.
 \end{align}
 Thus BCF cost reflects its configured probability, repeated expansion, original block
 size, and expected added instructions, instead of relying only on a static pass
@@ -774,12 +790,12 @@ $P$ lies within a predefined boundary interval close to its applicability thresh
 
 The specific boundary intervals are listed in Table~\ref{tab:boundary}.
 
-\begin{table}[!t]
+\begin{table*}[!t]
 \centering
 \footnotesize
 \caption{Pass boundary intervals}
 \label{tab:boundary}
-\begin{tabular}{ccc}
+\begin{tabular}{llp{0.45\textwidth}}
 \toprule
 Pass & Boundary Interval & Condition Description \\
 \midrule
@@ -792,7 +808,7 @@ IGV & --- & Always placed in boundary state after applicability filtering \\
 ICALL & --- & Always placed in boundary state after applicability filtering \\
 \bottomrule
 \end{tabular}
-\end{table}
+\end{table*}
 
 Boundary randomization triggers only when three conditions hold at the same time: the
 pass satisfies all structural preconditions, its net benefit exceeds the threshold, and
@@ -1061,7 +1077,7 @@ selection decision is recorded in a \texttt{CF\_DECISION} log archived with
 the binaries; recompiling with identical inputs reproduces the decision logs
 and the output binaries exactly. Repeated throughput measurements (llama.cpp,
 OpenSSL) are summarized with the arithmetic mean; heterogeneous, right-skewed
-quantities (radiff2 similarities, decompilation-time ratios) are summarized
+quantities (radiff2 similarities, ratios of decompilation time) are summarized
 with medians. Within one comparison, the same statistic is applied to every
 compiler. All throughput comparisons are additionally tested with two-sided
 Wilcoxon signed-rank tests paired by repetition (20 measurements per
@@ -1077,7 +1093,7 @@ information. We compared the pre-registered optimized profile against 30 random 
 weight configurations (plus fixed baselines) over 43 programs $\times$ 30 seeds,
 scoring every configuration on all five cost dimensions (Table~\ref{tab:e1_weights}).
 
-\begin{table}[!t]
+\begin{table*}[!t]
 \centering
 \footnotesize
 \caption{E1: weight benchmark. Random-weight configurations fall into four behavior
@@ -1094,7 +1110,7 @@ Random: high activation & 2 & 28--29 & $+$1.2--1.7\% & 1.0 \\
 \textbf{optimized (pre-reg.)} & --- & \textbf{27.0} & \textbf{1.0444$\times$} & \textbf{1.0} \\
 \bottomrule
 \end{tabular}
-\end{table}
+\end{table*}
 
 Three findings. \textbf{(1)~Dominance.} The optimized profile dominates 28 of the 30
 random candidates on the pre-registered validation criteria (test-split confirmation:
@@ -1267,7 +1283,7 @@ summarizes the RQ3 metrics.
 \footnotesize
 \caption{RQ3 diversity summary (optimized arm).}
 \label{tab:e7_diversity}
-\begin{tabular}{ll}
+\begin{tabular}{p{0.52\columnwidth}p{0.42\columnwidth}}
 \toprule
 Metric & Result \\
 \midrule
@@ -1345,7 +1361,27 @@ For pp512, optimized is 1.0\% faster than GCC (95\% CI of the throughput ratio
 it is 1.4\% slower than GCC (CI [0.984, 0.988]) and 7.5\% slower than LLVM (CI
 [0.924, 0.927]). All four differences are significant at $p<0.001$ (Wilcoxon
 signed-rank, $n=20$ per configuration). Optimized thus remains close
-to GCC in both scenarios but does not match LLVM.
+to GCC in both scenarios but does not match LLVM. Figure~\ref{fig:llama}(a)
+shows the throughput distributions; Figure~\ref{fig:llama}(b) the full-project
+build times.
+
+\begin{figure*}[!t]
+\centering
+\begin{subfigure}[t]{0.58\textwidth}
+\centering
+\includegraphics[width=\textwidth]{boxplot_llama2.pdf}
+\caption{llama.cpp inference throughput (tokens/s) under pp512 and tg128.}
+\label{fig:llama-box}
+\end{subfigure}\hfill
+\begin{subfigure}[t]{0.38\textwidth}
+\centering
+\includegraphics[width=\textwidth]{build_time.pdf}
+\caption{Full-project build time (s). OLLVM-full exceeds the 10{,}800\,s limit.}
+\label{fig:llama-build}
+\end{subfigure}
+\caption{Deployment cost on llama.cpp: (a) runtime throughput distributions and (b) full-project build time.}
+\label{fig:llama}
+\end{figure*}
 
 \paragraph{Build time.}
 Runtime is only half of the deployment cost; we also measure
@@ -1488,7 +1524,17 @@ difficulty.
 Ghidra processes five programs under the four variants with three repetitions each
 (per-program medians, then median of per-program ratios to LLVM).
 Table~\ref{tab:ghidra_ratios} reports the ratios relative to LLVM (per-variant
-medians: GCC 0.147\,s, LLVM 0.218\,s, OLLVM-full 0.800\,s, optimized 4.739\,s).
+medians: GCC 0.147\,s, LLVM 0.218\,s, OLLVM-full 0.800\,s, optimized 4.739\,s);
+Figure~\ref{fig:ghidra} shows the per-program breakdown.
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{decompile_time.pdf}
+\caption{Ghidra decompilation time per program under the four variants
+(three repetitions, medians). Optimized reaches 8.109$\times$ LLVM in the
+per-program median, versus 3.626$\times$ for OLLVM-full.}
+\label{fig:ghidra}
+\end{figure}
 
 \begin{table}[!t]
 \centering
@@ -1635,18 +1681,22 @@ extensions.
 
 \section*{Acknowledgements}
 
-This work is supported by the Science and Technology Project of State Grid Corporation of China (Research on Key Technologies of the Autonomous and Controllable Power Dedicated Network Security Protection Basic Platform, $52130025002S-473-ZN$).
+This work is supported by the Science and Technology Project of State Grid
+Corporation of China (Research on Key Technologies of the Autonomous and
+Controllable Power Dedicated Network Security Protection Basic Platform,
+No.~52130025002S-473-ZN).
 
 \section*{Declarations}
 
 \textbf{Data and code availability.} The MIXCOMPILE framework source code (the
 PassDecider selection engine and all seven obfuscation passes), the frozen
-configuration files (deployment-profile and pass-vector JSON, the benchmark split
-definition), and the scripts and raw measurement data underlying all reported
+configuration files (the deployment profile and pass vectors in JSON, the
+benchmark split definition), and the scripts and raw measurement data
+underlying all reported
 experiments (llama.cpp and OpenSSL throughput repetitions, radiff2 and Ghidra
 decompilation results, the E1--E8 mechanism-campaign records, and the E9/E10
 LLM-era study records) are available at
-https://github.com/ELDARK123/MIXCOMPILE.git.
+\url{https://github.com/ELDARK123/MIXCOMPILE.git}.
 
 %%% Bibliography
 \bibliographystyle{elsarticle-num}
