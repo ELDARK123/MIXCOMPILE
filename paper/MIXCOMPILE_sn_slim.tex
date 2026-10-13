@@ -1376,13 +1376,14 @@ OLLVM-full & $>$10{,}800 (timeout) & 168.3 (fail) \\
 Optimized MIXCOMPILE, OLLVM-full, GCC, and LLVM are compared on AES-128-CBC,
 ChaCha20-Poly1305, and SHA-512 (static build, \texttt{no-asm}, no modules; three
 warm-ups and 20 one-second measurements per cell; OpenSSL~3.6.1).
-Figure~\ref{fig:openssl} plots throughput across all six block sizes and
+Figure~\ref{fig:openssl} plots throughput across all six block sizes---its
+information beyond Table~\ref{tab:openssl_16384} is the block-size trend---and
 Table~\ref{tab:openssl_16384} reports the 16384-byte means.
 
 \begin{figure}[!t]
  \centering
  \includegraphics[width=0.9\textwidth]{openssl_perf.pdf}
- \caption{(a) AES-128-CBC throughput comparison across block sizes (16\,B to 16384\,B); (b) ChaCha20-Poly1305 throughput comparison across block sizes (16\,B to 16384\,B); and (c) SHA-512 throughput comparison across block sizes (16\,B to 16384\,B).}
+ \caption{OpenSSL throughput across block sizes (16\,B to 16384\,B) for (a) AES-128-CBC, (b) ChaCha20-Poly1305, and (c) SHA-512. The pattern common to all three algorithms: the fraction of LLVM throughput retained by optimized grows monotonically with block size (AES 0.23$\to$0.58, ChaCha20 0.23$\to$0.76, SHA-512 0.20$\to$0.37), while the advantage over OLLVM-full is largest at small blocks (up to 10.1$\times$) and narrows toward the largest (1.4$\times$); Table~\ref{tab:openssl_16384} reports the 16384-byte means.}
  \label{fig:openssl}
  \end{figure}
 
