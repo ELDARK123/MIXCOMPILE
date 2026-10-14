@@ -26,7 +26,7 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="big_box" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;dashed=1;strokeColor=#000000;strokeWidth=2;" value="&lt;div&gt;&lt;br/&gt;&lt;/div&gt;" vertex="1">
-          <mxGeometry height="1212" width="1065" x="410" y="310" as="geometry" />
+          <mxGeometry height="1212" width="870" x="507" y="310" as="geometry" />
         </mxCell>
         <mxCell id="hm8-GnAwXgWMbEi3TQaE-17" edge="1" parent="1" source="s1_box" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;strokeWidth=2;" target="s2_box">
           <mxGeometry relative="1" as="geometry" />
@@ -133,16 +133,16 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="annotated_ir" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=18;arcSize=12;strokeWidth=2;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;" value="&lt;b&gt;Annotated LLVM IR&amp;nbsp;&lt;/b&gt;" vertex="1">
-          <mxGeometry height="45" width="300" x="792" y="1560" as="geometry" />
+          <mxGeometry height="45" width="300" x="792" y="1548" as="geometry" />
         </mxCell>
         <mxCell id="hm8-GnAwXgWMbEi3TQaE-56" edge="1" parent="1" source="pass_manager" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeWidth=2;" target="diverse_binary">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="pass_manager" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=18;arcSize=12;strokeWidth=2;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;" value="&lt;b&gt;LLVM Pass Manager&lt;/b&gt;&#xa;Reads Metadata&#xa;Executes selected transformations" vertex="1">
-          <mxGeometry height="90" width="300" x="792" y="1640" as="geometry" />
+          <mxGeometry height="90" width="300" x="792" y="1615" as="geometry" />
         </mxCell>
         <mxCell id="diverse_binary" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=18;arcSize=12;strokeWidth=2;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;" value="&lt;b&gt;Diverse Binary Variant Set&lt;/b&gt;" vertex="1">
-          <mxGeometry height="45" width="300" x="792" y="1770" as="geometry" />
+          <mxGeometry height="45" width="300" x="792" y="1732" as="geometry" />
         </mxCell>
         <mxCell id="hm8-GnAwXgWMbEi3TQaE-4" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;strokeWidth=2;" value="&lt;font style=&quot;font-size: 18px;&quot;&gt;&lt;b&gt;Function-level&amp;nbsp;&lt;/b&gt;&lt;/font&gt;" vertex="1">
           <mxGeometry height="30" width="150" x="887" y="412.5" as="geometry" />
